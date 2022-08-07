@@ -1,2 +1,2 @@
 # paramaterial
-For processing and analysis of stress-strain datasets.
+Post-processing toolkit for materials testing data.
