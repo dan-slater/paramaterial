@@ -1,0 +1,260 @@
+// G:\quiksim\gleeble\2022\Sarah PSC Phase 1 2022\Calibration Data\Dynamic Strain Calibration\DSC_C2_5mm_Step-2.gsl -- hot deformation simulation
+// QuikSim2 2.4.5918.25012, QsHaz 2.4.5918.24954
+// Gin File - g:\gin\hds\hds.gin
+// Setup:
+// Jaw tempco set to 0.4200um/C, specimen tempco set to 23.0000nm/mm/C
+//
+
+set rampterm to 24000.0000pct
+set ramiterm to 0.1000pct
+set ramdterm to 120.0000pct
+// Heating...
+// Hydrawedge Auto-load
+
+// stress/strain setup...
+set strainmode to 3
+set strainsrc to Jaw.index
+set strainX0 to 9.94mm
+set strArea to 10.00mm*30.05mm
+set planeA to 0.866
+set planeB to 0.866
+// end of stress/strain setup.
+
+//Custom Variables
+//=============================================(1/)
+set stroke_1 to 4.9683mm+1.6116mm
+set Wedge_1 to 4.9717mm-9.9400mm
+set T_1 to 270C
+set Tx to 0.20mm
+set compliance_1 to 0.05mm //+ve to make deformation larger, -ve to make deformation smaller
+//=============================================(/1)
+
+acquire airrampres Force Jaw PowAngle PTemp Strain Stress Stroke TC1 TC2 wedge
+
+set TC1 to 0C
+set tempmode to TC1.control
+set h0 to 15.0000mm
+set stroke to 0cm
+set wedge to 0cm
+set heatbutton to on
+set mechanical to on
+delay 5sec
+set hypress to on
+delay 15sec
+
+
+set lastruntime to systime
+
+set airtc to on
+set airram to on
+delay 10sec
+zero stroke
+zero wedge
+zero Jaw
+set airForce = force
+set wedgeHold to 0.5mm
+
+//move wedge left until force is less than air force
+set step_inc to 0.001mm
+set step_inc_small to 0.001mm
+set step_sum to 0mm
+while force < (airForce+1.0kN)
+	set step_sum to step_sum + step_inc_small
+    ramp wedge to step_sum in 50msec
+end
+
+set step_sum to step_sum - wedgeHold
+ramp wedge to step_sum in 1sec
+
+ramp stroke to -step_sum in 1sec
+set step_sum to 0mm
+delay 100msec
+
+while force > (airForce-1.5kN)
+	set step_sum to step_sum + step_inc
+    ramp stroke to -step_sum in 50msec
+end
+
+sample at 10.0000Hz
+
+delay 100msec
+
+//=============================================(2/)
+//intermediate heatup for force and seating of sample. Should be enough that sample has just barely deformed enough for full contact with anvils.
+ramp stroke to -step_sum in 40sec &	
+ramp TC1 to 100.0000C in 40.0000sec
+
+//Maintain full seating while reducing total deformation due to thermal expansion
+ramp stroke to (-step_sum+Tx) in 80sec & 
+ramp TC1 to T_1 in 80.0000sec
+
+//Soak time at temperature before hit
+delay 60.0000sec
+//=============================================(/2)
+
+zero stroke
+zero wedge
+
+// Move into position for first deformation
+ramp stroke to Stroke_1 in 0.3sec
+delay 0.1sec
+ramp wedge to Wedge_1+Tx+wedgeHold-compliance_1 in 0.3sec 
+delay 0.1sec
+
+// Deformations...
+// Begin hit
+
+// final strain zero
+zero Jaw
+delay 0.1sec
+
+delay 50.0000msec
+//mute heating during hit
+set TC1 to 0C
+sample at 50000.0Hz
+delay 50.0000msec
+
+ramp stroke to 4.9683mm in 0.0032sec
+
+
+ramp stroke to 4.6298mm in 0.6905msec &
+ramp stroke to 4.3029mm in 0.6905msec &
+ramp stroke to 3.9872mm in 0.6905msec &
+ramp stroke to 3.6821mm in 0.6905msec &
+ramp stroke to 3.3875mm in 0.6905msec &
+ramp stroke to 3.1029mm in 0.6905msec &
+ramp stroke to 2.8280mm in 0.6905msec &
+ramp stroke to 2.5624mm in 0.6905msec &
+ramp stroke to 2.3059mm in 0.6905msec &
+ramp stroke to 2.0581mm in 0.6905msec &
+ramp stroke to 1.8188mm in 0.6905msec &
+ramp stroke to 1.5876mm in 0.6905msec &
+ramp stroke to 1.3643mm in 0.6905msec &
+ramp stroke to 1.1485mm in 0.6905msec &
+ramp stroke to 0.9402mm in 0.6905msec &
+ramp stroke to 0.7389mm in 0.6905msec &
+ramp stroke to 0.5445mm in 0.6905msec &
+ramp stroke to 0.3567mm in 0.6905msec &
+ramp stroke to 0.1752mm in 0.6905msec &
+ramp stroke to 0.0000mm in 0.6905msec &
+// End segment
+ramp stroke to -4.0000mm in 16.0373msec  // maxOverprogramDist
+delay 80.0000msec
+
+
+// End hit
+sample at 10.0000Hz
+
+
+// Cooling...
+set TC1 to 0C
+set quench1 to on
+set quench2 to on
+delay 60.0000sec
+set quench1 to off
+set quench2 to off
+//set airram to off
+delay 1sec
+//delay 30.0000sec
+// End cooling...
+
+
+// Shut down...
+sample off
+set heatbutton to off
+set tc1 to 0C
+set hypress to off
+set mechanical to off
+set temptrim to 0C
+delay 2sec
+set wedgezero to wedgezero-1mm
+// Variable dump..................
+// <deltah> = 4.9983
+// <beginseg> = 
+// <finalh> = 5.0017
+// <heat1temp> = 300
+// <wedgesettle> = 100
+// <initialdef> = 0.0000
+// <heating> = ramp wedge to -4.8201mm in 60.0000sec & // TX=0.1482mm
+//    ramp TC1 to 300.0000C in 60.0000sec
+//    set airram to off
+//    delay 60.0000sec
+//    set airram to on
+//    
+// <initialh> = 10.0000
+// <exittemp> = 300
+// <preacqfreq> = 10.0000
+// <finalh0> = 5.0017
+// <acqfreq> = 50000.0
+// <adjust> = 3.2700
+// <endseg> = // End segment
+// <yokecompliance> = 0.75
+// <hittype> = 1
+// <finaldef> = 4.9983
+// <ginversion> = 2.0
+// <hittime> = 15.0178
+// <heat1time> = 60.0000
+// <temptarget> = 300
+// <tx1> = 0.1482
+// <bud> = 1.5542
+// <butime> = 0.0034
+// <ti> = 300
+// <scomp> = -0.0300
+// <temprate> = 5.0000
+// <heatmute> = 0
+// <erate> = -53.2700
+// <overdwell> = 80.0000
+// <heatinc> = 0.005
+// <overtime> = 17.3356
+// <backup0> = 1.5542
+// <exitvelocity> = 230.7392
+// <cooling> = // Cooling...
+//    delay 30.0000sec
+//    // End cooling...
+//    
+// <maxoverprogramtime> = 20
+// <soaktime> = 0.1000
+// <maxoverprogramdist> = 4
+// <entryvelocity> = 461.3182
+// <overdist> = -4.0000
+// <compliance0> = -0.0300
+// <e'> = 50.0000
+// <compliance> = -0.0300
+// <autoload> = 1
+// <heatforce> = -100
+// <heat2temp> = 0
+// <endhit> = // End hit
+// <dwell> = 100.0000
+// <e> = 0.8000
+// <wedgeposduration> = 10
+// <overprogram> = ramp stroke to -4.0000mm in 17.3356msec  // maxOverprogramDist
+//    delay 80.0000msec
+//    
+// <hwedgesettle> = 50.0000
+// <heattime> = 0.0000
+// <controltc> = TC1
+// <heat1soak> = 60.0000
+// <acqvars> = airrampres Force Jaw PowAngle PTemp Strain Stress Stroke TC1 TC2
+// <tx0> = 0.1482
+// <heat2soak> = 0.0000
+// <strokelag> = 10
+// <dumpdelay> = 5
+// <deltah0> = 4.9983
+// <heat2time> = 0
+// <h0> = 10.0000
+// <hit> = 1
+// <defcount> = 1
+// <hipressdelay> = 15
+// <heat1> = 1
+// <strainsrc> = Jaw
+// <heat2> = 0
+// <strainsetup> = // stress/strain setup...
+//    set strainmode to 3
+//    set strainsrc to Jaw.index
+//    set strainX0 to 10.00mm
+//    set strArea to 10.00mm*30.00mm
+//    set planeA to 0.866
+//    set planeB to 0.866
+//    // end of stress/strain setup.
+//    
+// <beginhit> = // Begin hit

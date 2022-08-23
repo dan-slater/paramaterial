@@ -107,7 +107,7 @@ class TestReceipt:
             elif var_key.startswith('table'):
                 label = var_key.split('_')[1]
                 table_cfg = [cfg for cfg in table_cfgs if cfg['label'] == label][0]
-                self.receipt_vars[var_key] = self._latex_table_string(table_cfg, self.dataitem.info_row)
+                self.receipt_vars[var_key] = self._latex_table_string(table_cfg, self.dataitem.info)
             else:
                 self.custom_fill_vars_func(**custom_kwargs)
 

@@ -50,7 +50,7 @@ def processing_function(function: Callable[[DataItem], DataItem]):
 @processing_function
 def store_initial_indices(dataitem):
     df = dataitem.data
-    dataitem.info_row['raw data indices'] = (0, len(df))
+    dataitem.info['raw data indices'] = (0, len(df))
     dataitem.data = df[:].reset_index(drop=False)
     return dataitem
 
@@ -59,8 +59,8 @@ def store_initial_indices(dataitem):
 def calculate_force_disp_from_eng_curve(dataitem: DataItem) -> DataItem:
     e = dataitem.data['eng strain']
     s = dataitem.data['eng stress']
-    L_0 = dataitem.info_row['L_0 (mm)']
-    A_0 = dataitem.info_row['A_0 (mm^2)']
+    L_0 = dataitem.info['L_0 (mm)']
+    A_0 = dataitem.info['A_0 (mm^2)']
     dataitem.data['Jaw(mm)'] = e.values * L_0
     dataitem.data['Force(kN)'] = s.values * A_0 * 0.001
     return dataitem
@@ -71,7 +71,7 @@ def trim_using_max_force(dataitem):
     df = dataitem.data
     maxdex = df['Force(kN)'].idxmax()
     dataitem.data = df[:maxdex].reset_index(drop=True)
-    dataitem.info_row['max force trim indices'] = (df['index'][0], df['index'][maxdex])
+    dataitem.info['max force trim indices'] = (df['index'][0], df['index'][maxdex])
     return dataitem
 
 
@@ -86,7 +86,7 @@ def calculate_eng_stress_strain_gradient(dataitem) -> DataItem:
 def calculate_elastic_modulus(dataitem):  # _after_lyp
     gradient = dataitem.data['eng curve gradient']
     max_g_idx = gradient.idxmax()
-    dataitem.info_row['elastic modulus'] = np.average(gradient[max_g_idx + 5:max_g_idx + 15])
+    dataitem.info['elastic modulus'] = np.average(gradient[max_g_idx + 5:max_g_idx + 15])
     return dataitem
 
 
@@ -161,7 +161,7 @@ def select_pois_manually(dataitem):
     plt.show()
 
     # save pois
-    dataitem.info_row = dataitem.info_row.append(d_table['Data point nearest cursor click'])
+    dataitem.info = dataitem.info.append(d_table['Data point nearest cursor click'])
 
     return dataitem
 
@@ -178,8 +178,8 @@ def trim_using_considere_criterion(dataitem: DataItem) -> DataItem:
     maxdex = np.argmin(slope)
     try:
         dataitem.data = df[:maxdex].reset_index(drop=True)
-        dataitem.info_row['considere trim indices'] = (df['index'][0], df['index'][maxdex])
+        dataitem.info['considere trim indices'] = (df['index'][0], df['index'][maxdex])
     except KeyError:
         dataitem.data = df[:maxdex].reset_index(drop=False)
-        dataitem.info_row['considere trim indices'] = (df['index'][0], df['index'][maxdex])
+        dataitem.info['considere trim indices'] = (df['index'][0], df['index'][maxdex])
     return dataitem

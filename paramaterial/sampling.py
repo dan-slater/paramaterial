@@ -5,7 +5,7 @@ from paramaterial.plug import DataItem
 
 
 def sample(dataitem: DataItem, sample_size: int, delete_neg_strain: bool = True):
-    dataitem.info_row['nr of points sampled'] = sample_size
+    dataitem.info['nr of points sampled'] = sample_size
     df = dataitem.data
 
     x_data = df['Strain'].values
