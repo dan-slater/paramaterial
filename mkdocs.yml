@@ -1,0 +1,6 @@
+site_name: ParaMaterial Documentation
+site_url: https://paramaterialdocs.com/
+nav:
+  - Home: index.md
+  - About: about.md
+theme: readthedocs
