@@ -1,3 +1,4 @@
+import os
 from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
@@ -8,31 +9,8 @@ import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 
 from paramaterial.plug import DataItem, DataSet
+from matplotlib.lines import Line2D
 
-STRAIN_KEY = 'Strain'
-STRESS_KEY = 'Stress(MPa)'
-
-SMALL_SIZE = 8
-MEDIUM_SIZE = 10
-BIGGER_SIZE = 12
-FONT = 11
-
-# plt.style.use('pastel')
-
-# sns.set_theme()
-font = {'family': 'sans-serif',
-        'size': MEDIUM_SIZE}
-plt.rc('font', **font)
-# plt.rc('font', size=FONT)  # controls default text sizes
-plt.rc('axes', titlesize=FONT)  # fontsize of the axes title
-plt.rc('axes', labelsize=FONT)  # fontsize of the x and y labels
-plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc('legend', fontsize=MEDIUM_SIZE)  # legend fontsize
-plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-
-mpl.rcParams['text.usetex'] = True
-mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
 
 
 def make_plots(cfg: Dict):
@@ -41,7 +19,8 @@ def make_plots(cfg: Dict):
         fitted_curves,
         report_plots,
         eng_curve_gradients_overview,
-        # easy_view_receipts
+        # easy_view_receipts,
+        temperature_grouped_plots,
     ]
 
     for plot in plots:
@@ -50,23 +29,97 @@ def make_plots(cfg: Dict):
             plot(**cfg[plot.__name__])
 
 
+def temperature_grouped_plots(cfgs: List):
+    for cfg in cfgs:
+        overview_subfig_plot(**cfg)
+
+
+def overview_subfig_plot(
+        data_dir: str,
+        info_path: str,
+        plot_dir: str,
+        pdf_name: str,
+        colors: Dict,
+        marker_category: str = None,
+        markers: Dict = None,
+        linestyles: Dict = None,
+        figsize: Tuple[float, float] = (6., 3.5),
+        nr_of_markers: int = 20,
+        x_label: str = 'Strain',
+        y_label: str = 'Stress (MPa)',
+        temp_key: str = 'temperature (C)',
+        dpi: float = 100,
+        filters: Dict = None,
+        x_lims: Dict = None,
+        y_lims: Dict = None
+):
+    dataset = DataSet()
+    if filters is not None:
+        dataset.load(data_dir, info_path, config=filters)
+    else:
+        dataset.load(data_dir, info_path)
+
+    doublefigsize = 0.475 * np.array(figsize)
+    fig, ax = plt.subplots(1, 1, figsize=doublefigsize)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+
+    for dataitem in dataset.datamap:
+        data, info = dataitem.data, dataitem.info
+        temp = info[temp_key]
+        ax.plot(data['Strain'], data['Stress(MPa)'], color=colors[temp], alpha=0.8)
+        if marker_category is None:
+            continue
+        marker = markers[info[marker_category]]
+        ls = linestyles[info[marker_category]]
+        data = data[::len(data) // nr_of_markers]
+        ax.plot(data['Strain'], data['Stress(MPa)'], color=colors[temp], lw=0, marker=marker, ls=ls, mfc='None',
+                markersize=2)
+    # make legend
+    legend_elements = []
+    # make marker-linestyle entries
+    for key, marker in markers.items():
+        if marker_category == 'rate (s^-1)':
+            label = f'$\\dot{{\\varepsilon}}$ = {key} (s$^{{-1}}$)'
+        elif marker_category == 'material':
+            label = f'{key[-1]}'
+        else:
+            label = None
+        legend_elements.append(
+            Line2D([0], [0], color='k', alpha=0.5, label=label, marker=marker, linestyle=linestyles[key]))
+    # make line color entries
+    for key, color in colors.items():
+        legend_elements.append(Line2D([0], [0], color=color, label=f'$T$ = {key}$^{{\circ}}$C'))
+
+    ax.legend(handles=legend_elements)
+    plt.savefig(f'{plot_dir}/{pdf_name}.pdf', dpi=dpi, bbox_inches='tight')
+
+
+'''ax.legend(
+    loc="lower center", # "upper center" puts it below the line
+    ncol=3,
+    bbox_to_anchor=(0.5, 1.0),
+    bbox_transform=fig.transFigure 
+);'''
+
+
 def eng_curve_gradients_overview(
         data_dir: str = 'data/03 processed data',
         info_path: str = 'info/03 processed info.xlsx',
-        plot_dir: str = 'paramaterial/plots/overviews',
+        plot_dir: str = 'src/plots/overviews',
         pdf_name: str = 'eng_curve_gradients.pdf',
         figsize: Tuple[float, float] = (6., 3.5),
         x_label: str = 'Engineering Strain',
         y_label: str = 'Engineering Stress (MPa)'
 ):
     dataset = DataSet()
-    dataset.load(input_data_path=data_dir, input_info_path=info_path)
+    dataset.load(data_dir=data_dir, info_path=info_path)
 
     with PdfPages(f'{plot_dir}/{pdf_name}') as pdf:
         for dataitem in dataset.datamap:
             test_id = dataitem.test_id
             data = dataitem.data
-            info = dataitem.info_row
+            info = dataitem.info
 
             fig, (ax) = plt.subplots(1, 1, figsize=figsize)  # super-plot setup
             plt.title(f'{" ".join(test_id.split("_"))}', loc='left')
@@ -77,7 +130,7 @@ def eng_curve_gradients_overview(
 
             E = info['elastic modulus']
             x = np.linspace(0, 0.001, 2)
-            ax.plot(x, E*x, color='r', linestyle='--')
+            ax.plot(x, E * x, color='r', linestyle='--')
 
             ax1 = ax.twinx()
             ax1.set_ylabel('Gradient (MPa)')
@@ -114,6 +167,7 @@ def poi_plot(
     # pois.identify_pois(mode=mode)
     # pois.plot_pois(ax=ax)
     pass
+
 
 def three_spine_plot(
         ax,
@@ -212,11 +266,12 @@ def before_after_processing(
 ):
     before_set = DataSet()
     after_set = DataSet()
+    cwd= os.getcwd()
     before_set.load(before_dir, before_info, filters)
     after_set.load(after_dir, after_info, filters)
     # assert (before_set.info_table.index == after_set.info_table.index).all() ?
 
-    with PdfPages(f'{plot_dir}/{pdf_name}') as pdf:
+    with PdfPages(f'{plot_dir}/{pdf_name}.pdf') as pdf:
         for test_id in before_set.info_table.index:
             fig, (ax) = plt.subplots(1, 1, figsize=(6, 4))  # super-plot setup
             plt.title(f'{" ".join(test_id.split("_"))}', loc='left')
@@ -234,7 +289,7 @@ def before_after_processing(
             except TypeError or KeyError as e:
                 add_stamp_to(ax, f"{type(e)}\n{e.__str__()}")
             ax.legend()
-            pdf.savefig(dpi=100)
+            pdf.savefig(dpi=100, bbox_inches='tight')
             plt.close()
 
 
@@ -254,7 +309,7 @@ def fitted_curves(
         for dataitem in fitted_set.datamap:
             fig, (ax) = plt.subplots(1, 1, figsize=(10, 4))  # super-plot setup
             id = " ".join(dataitem.test_id.split("_"))
-            info = dataitem.info_row
+            info = dataitem.info
 
             title_string = ''
             for key in title_keys:
@@ -289,19 +344,20 @@ def add_stamp_to(ax: plt.Axes, stamp: str) -> plt.Axes:
     return ax
 
 
-def make_combined_subplot_of(data_list: List[DataItem],
-                             save_path: str,
-                             unit_width: float = 3.,
-                             unit_height: float = 3.,
-                             cols: int = 3,
-                             xmin: float = None,
-                             xmax: float = None,
-                             ymin: float = None,
-                             ymax: float = None,
-                             trimmed: bool = False,
-                             sharex: str = 'all',
-                             sharey: str = 'all'
-                             ) -> None:
+def make_combined_subplot_of(
+        data_list: List[DataItem],
+        save_path: str,
+        unit_width: float = 3.,
+        unit_height: float = 3.,
+        cols: int = 3,
+        xmin: float = None,
+        xmax: float = None,
+        ymin: float = None,
+        ymax: float = None,
+        trimmed: bool = False,
+        sharex: str = 'all',
+        sharey: str = 'all'
+) -> None:
     """Unpacks list of data and makes subplot of all data."""
     nr_units = len(data_list)
     rows = int(np.ceil(nr_units / cols))
@@ -370,7 +426,7 @@ def make_processing_plot(ax: plt.Axes, dataitem: DataItem, name: str, mode='stra
 def make_fitted_plot(ax: plt.Axes, dataitem: DataItem, name: str, mode: str):
     df = dataitem.data
     id = dataitem.test_id
-    info = dataitem.info_row
+    info = dataitem.info
 
     if mode == 'data':
         z = 0
@@ -411,7 +467,7 @@ def make_error_histogram(ax: plt.Axes, dataitem: DataItem, name: str):
     max_error = 10
     import matplotlib.patches as mpatches
     id = dataitem.test_id
-    info = dataitem.info_row
+    info = dataitem.info
     model_names = ['perfect', 'linear', 'voce', 'ramberg']
     errors_mpa = [info[f'{s} error'] for s in model_names]
     max_stress = np.max(dataitem.data['Stress(MPa)'].values)

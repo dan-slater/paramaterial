@@ -20,8 +20,8 @@ class Model(ABC):
     param_names: List[str] = None
     bounds: List[Tuple[float, float]] = None
     constraints: Dict = None
-    x_data: np.ndarray = None
-    y_data: np.ndarray = None
+    strain_vec: np.ndarray = None
+    stress_vec: np.ndarray = None
     opt_res: OptimizeResult = None
 
     @abstractmethod
@@ -36,22 +36,21 @@ class Model(ABC):
 @dataclass
 class IsoReturnMapModel(Model):
     def fit(self):
+        print(f'{".": <10}Fitting "{self.name}".')
         if self.constraints is not None:
             self.opt_res = op.differential_evolution(
-                lambda params: np.linalg.norm(self.y_data - self.func(self.x_data, *params, vec='stress')) / np.sqrt(
-                    len(self.y_data)),
+                lambda params: np.linalg.norm(self.stress_vec - self.func(self.strain_vec, *params, vec='stress'))/np.sqrt(
+                    len(self.stress_vec)),
                 bounds=self.bounds,
                 constraints=op.LinearConstraint(**self.constraints)
             )
         else:
-            # a = 0
-            # b = self.x_data
-            # c = self.y_data
             self.opt_res = op.differential_evolution(
-                lambda params: np.linalg.norm(self.y_data - self.func(self.x_data, *params, vec='stress')) / np.sqrt(
-                    len(self.y_data)),
+                lambda params: np.linalg.norm(self.stress_vec - self.func(self.strain_vec, *params, vec='stress'))/np.sqrt(
+                    len(self.stress_vec)),
                 bounds=self.bounds
             )
+        return self
 
     def predict(self, x_lin: np.ndarray) -> np.ndarray:
         return self.func(x_lin, *self.opt_res.x, vec='stress')

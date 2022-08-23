@@ -11,7 +11,7 @@ TEST_TYPES = ('tensile test', 'uniaxial compression test', 'plane strain compres
 
 def calculate_engineering_stress_strain(dataitem: DataItem):
     """ Calculates engineering stress and strain from force and deformation. """
-    info: pd.Series = dataitem.info_row
+    info: pd.Series = dataitem.info
     data: pd.Dataframe = dataitem.data
     if info['test_type'] in TEST_TYPES:
         A_0, L_0 = info['A_0'], info['L_0']
@@ -28,7 +28,7 @@ def calculate_engineering_stress_strain(dataitem: DataItem):
 
 def calculate_true_stress_strain(dataitem: DataItem):
     """ Calculates true stress and strain from force and deformation. """
-    info: pd.Series = dataitem.info_row
+    info: pd.Series = dataitem.info
     data: pd.Dataframe = dataitem.data  # todo: check if this provides a pointer or a copy
 
     if info['test_type'] == 'tensile test':
