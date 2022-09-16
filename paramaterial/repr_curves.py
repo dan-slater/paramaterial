@@ -51,7 +51,7 @@ def make_representative_data(data_path, info_path, subset_filters, out_data_path
         repr_df = pd.DataFrame()
         dataset = DataSet()
         dataitem: DataItem  # type hint for dataitem objects returned by iterating through dataset
-        dataset.load(data_path, info_path, fltr)
+        dataset.input(data_path, info_path, fltr)
         # find max_strain and make monotonically increasing strain vector
         # max_strain = max([dataitem.data['Strain'].max() for dataitem in dataset])
         # max_strain = max([dataitem.data['model strain'].max() for dataitem in dataset])
