@@ -63,7 +63,7 @@ def copy_screened_data(dataset: DataSet, screening_pdf: str, new_data: str, new_
             keep_list.append(test_id)
     # keep tests if checkboxes not ticked
     dataset.get_subset({'test id': keep_list})
-    dataset.dump(new_data, new_info)
+    dataset.output(new_data, new_info)
 
 
 

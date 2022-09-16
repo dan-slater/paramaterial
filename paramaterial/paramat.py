@@ -6,7 +6,7 @@ from paramaterial import proc_ops
 
 def load_dataset(data_dir: str, info_path: str):
     dataset = DataSet()
-    dataset.load(data_dir=data_dir, info_path=info_path)
+    dataset.input(data_dir=data_dir, info_path=info_path)
     return dataset
 
 

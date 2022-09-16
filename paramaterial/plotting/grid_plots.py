@@ -152,7 +152,7 @@ def _add_test_data_curves(
 ):
     # find max and min temperatures
     dataset = DataSet()
-    dataset.load(**dataset_paths, subset_config=dataset_config)
+    dataset.input(**dataset_paths, subset_config=dataset_config)
     info = dataset.info_table
     if min_T is None:
         min_T = info['temperature'].min()
@@ -168,7 +168,7 @@ def _add_test_data_curves(
             sub_config = dataset_config.copy()
             sub_config.update({rows_key: [row_name], cols_key: [col_name]})
             dataset = DataSet()
-            dataset.load(dataset_paths['data_dir'], dataset_paths['info_path'], sub_config)
+            dataset.input(dataset_paths['data_dir'], dataset_paths['info_path'], sub_config)
             for dataitem in dataset:
                 T = dataitem.info['temperature']
                 color = plt.get_cmap(DATA_CMAP)((T - min_T)/(max_T - min_T))
@@ -205,7 +205,7 @@ def _add_params_scatter_fits(
                 else:
                     sub_config.update({lines_key: [line_val], cols_key: [col_val]})
                 dataset = DataSet()
-                dataset.load(**dataset_paths, subset_config=sub_config)
+                dataset.input(**dataset_paths, subset_config=sub_config)
                 # plot params and regression line
                 for dataitem in dataset:  # (should only be one dataitem)
                     data = dataitem.data

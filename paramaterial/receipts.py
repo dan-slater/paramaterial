@@ -36,7 +36,7 @@ def make_receipts(cfg: Dict):
     # loop through datasets and make output folders, plots and filled tex files
     for dataset_cfg in cfg['dataset_cfgs']:
         dataset = DataSet()
-        dataset.load(**dataset_cfg['load_args'])
+        dataset.input(**dataset_cfg['load_args'])
         for dataitem in dataset.datamap:
             receipt = TestReceipt(test_id=dataitem.test_id, dataitem=dataitem, template_path=cfg['template_path'],
                                   receipts_dir=cfg['receipts_dir'], receipt_vars=template.template_vars)
@@ -183,4 +183,4 @@ def make_plot_from_config(ax: plt.Axes, dataitem: DataItem, plot_cfg: Dict, plot
 
 
 if __name__ == '__main__':
-    make_receipts(yaml.load(open(r'../CONFIG.yaml'), Loader=yaml.Loader)['make_receipts'])
+    make_receipts(yaml.input(open(r'../CONFIG.yaml'), Loader=yaml.Loader)['make_receipts'])
