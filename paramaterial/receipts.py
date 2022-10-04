@@ -1,9 +1,11 @@
+import copy
 import os
 import shutil
 import subprocess
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Callable
 
+from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import yaml
 from PyPDF2 import PdfFileMerger

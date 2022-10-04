@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 DESCRIPTION = 'Post-processing toolkit for materials testing data.'
 
 with open("README.md", "r", encoding="utf-8") as fh:
