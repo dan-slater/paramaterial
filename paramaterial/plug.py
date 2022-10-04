@@ -65,7 +65,7 @@ class DataSet:
     def output(self, data_dir: str, info_path: str) -> None:
         tot = len(self.info_table)
         out_info_table = pd.DataFrame()
-        for i, dataitem in enumerate(self.datamap):
+        for i, dataitem in enumerate(copy.deepcopy(self.datamap)):
             print(f'{dataitem.test_id} [{i}/{tot}]:')
             dataitem.write_to_csv(data_dir)
             info_row = pd.concat([pd.Series({'test id': dataitem.test_id}), dataitem.info])

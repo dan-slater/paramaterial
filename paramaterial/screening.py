@@ -1,7 +1,9 @@
+import copy
 import os
 import shutil
-from typing import Dict
+from typing import Dict, Callable
 
+from matplotlib.backends.backend_pdf import PdfPages
 from reportlab.lib.colors import magenta, pink, blue
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -10,7 +12,21 @@ from reportlab.graphics import renderPDF
 from svglib.svglib import svg2rlg
 from PyPDF2 import PdfFileReader
 
-from paramaterial.plug import DataSet
+from paramaterial.plug import DataSet, DataItem
+
+
+def make_dataset_plots_pdf(
+        dataset: DataSet,
+        plot_func: Callable[[DataItem, Dict], None],
+        plot_path: str = 'dataset_plots.pdf',
+        plot_cfg: Dict = None,
+        pdf_kwargs: Dict = None
+) -> None:
+    with PdfPages(plot_path) as pdf:
+        for dataitem in copy.deepcopy(dataset.datamap):
+            plot_func(dataitem, plot_cfg)
+            pdf.savefig(**pdf_kwargs)
+            plt.close()
 
 
 def make_screening_pdf(dataset: DataSet, pdf_path: str = 'screening.pdf', x: str = 'Strain', y: str = 'Stress(MPa)',
