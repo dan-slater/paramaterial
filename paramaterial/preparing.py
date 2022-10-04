@@ -11,6 +11,24 @@ OUT_INFO_PATH = r'../info/02 prepared info.xlsx'
 CFG = {'io': [IN_DIR, IN_INFO_PATH, OUT_DIR, OUT_INFO_PATH]}
 
 
+def convert_files_in_directory_to_csv(directory_path: str):
+    # loop through files in directory
+    # if a file is not a .csv file read it into a pandas dataframe and combine the first two rows as header if second column not unnamed
+    # remove the suffix from the original name and save as a .csv file
+
+    for file in os.listdir(directory_path):
+        if not file.endswith('.csv'):
+            df = pd.read_csv(f'{directory_path}/{file}', header=[0,1], delimiter='\t')
+            df.columns = \
+                [col[0] if str(col[1]).startswith('Unnamed') else ' '.join(col).strip() for col in df.columns]
+            df.to_csv(f'{directory_path}/{file[:-4]}.csv', index=False)
+
+
+def print_file_names_in_directory(directory_path: str):
+    for file in os.listdir(directory_path):
+        print(file)
+
+
 def extract_info(in_dir, info_path):
     info_df = pd.DataFrame(columns=['filename', 'test type', 'temperature', 'material'])
     for filename in os.listdir(in_dir):
@@ -60,4 +78,5 @@ def prepare_data(cfg):
 
 if __name__ == '__main__':
     # extract_info(IN_DIR, INFO_PATH)
-    prepare_data(CFG)
+    # prepare_data(CFG)
+    convert_files_in_directory_to_csv(r"C:\Users\DS\paramaterial\examples\uniaxial case study\data\00 backup data")
