@@ -11,6 +11,7 @@ OUT_INFO_PATH = r'../info/02 prepared info.xlsx'
 CFG = {'io': [IN_DIR, IN_INFO_PATH, OUT_DIR, OUT_INFO_PATH]}
 
 
+
 def convert_files_in_directory_to_csv(directory_path: str):
     # loop through files in directory
     # if a file is not a .csv file read it into a pandas dataframe and combine the first two rows as header if second column not unnamed
