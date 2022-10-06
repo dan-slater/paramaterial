@@ -15,7 +15,7 @@ CONFIG = 'CONFIG.yaml'
 
 
 def main() -> None:
-    config = yaml.input(open(CONFIG), Loader=yaml.Loader)
+    config = yaml.load_data(open(CONFIG), Loader=yaml.Loader)
     active_functions = config['active functions']
     for mode in active_functions:
         function = eval(mode)
@@ -30,7 +30,7 @@ def run(func: Callable, cfg: Dict) -> None:
     io = IO_Paths(*cfg['io'])
     dataset = DataSet()
     subset_filters = cfg['filters']
-    dataset.input(io.input_data, io.input_info, subset_filters)  # map input
+    dataset.load_data(io.input_data, io.input_info, subset_filters)  # map input
     dataset.datamap = map(lambda o: func(o, cfg), dataset.datamap)  # map function
     dataset.output(io.output_data, io.output_info)  # execute function and write output
 

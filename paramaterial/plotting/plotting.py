@@ -55,9 +55,9 @@ def overview_subfig_plot(
 ):
     dataset = DataSet()
     if filters is not None:
-        dataset.input(data_dir, info_path, config=filters)
+        dataset.load_data(data_dir, info_path, config=filters)
     else:
-        dataset.input(data_dir, info_path)
+        dataset.load_data(data_dir, info_path)
 
     doublefigsize = 0.475 * np.array(figsize)
     fig, ax = plt.subplots(1, 1, figsize=doublefigsize)
@@ -113,7 +113,7 @@ def eng_curve_gradients_overview(
         y_label: str = 'Engineering Stress (MPa)'
 ):
     dataset = DataSet()
-    dataset.input(data_dir=data_dir, info_path=info_path)
+    dataset.load_data(data_dir=data_dir, info_path=info_path)
 
     with PdfPages(f'{plot_dir}/{pdf_name}') as pdf:
         for dataitem in dataset.datamap:
@@ -233,7 +233,7 @@ def report_plots(
         filters: Dict[str, List[str]],
 ) -> None:
     dataset = DataSet()
-    dataset.input(data_path, info_path, filters)
+    dataset.load_data(data_path, info_path, filters)
     with PdfPages(f'{plot_dir}/{pdf_name}') as pdf:
         for dataitem in dataset.datamap:
             test_id = dataitem.test_id
@@ -267,8 +267,8 @@ def before_after_processing(
     before_set = DataSet()
     after_set = DataSet()
     cwd= os.getcwd()
-    before_set.input(before_dir, before_info, filters)
-    after_set.input(after_dir, after_info, filters)
+    before_set.load_data(before_dir, before_info, filters)
+    after_set.load_data(after_dir, after_info, filters)
     # assert (before_set.info_table.index == after_set.info_table.index).all() ?
 
     with PdfPages(f'{plot_dir}/{pdf_name}.pdf') as pdf:
@@ -304,7 +304,7 @@ def fitted_curves(
         title_keys: List[str]
 ):
     fitted_set = DataSet()
-    fitted_set.input(fitted_data, fitted_info, filters)
+    fitted_set.load_data(fitted_data, fitted_info, filters)
     with PdfPages(f'{plot_dir}/{pdf_name}') as pdf:
         for dataitem in fitted_set.datamap:
             fig, (ax) = plt.subplots(1, 1, figsize=(10, 4))  # super-plot setup

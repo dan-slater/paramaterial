@@ -29,7 +29,17 @@ def make_dataset_plots_pdf(
             plt.close()
 
 
-def make_screening_pdf(dataset: DataSet, pdf_path: str = 'screening.pdf', x: str = 'Strain', y: str = 'Stress(MPa)',
+def make_screening_pdf(dataset:DataSet, df_plot_kwargs: Dict, pdf_kwargs: Dict, screening_pdf: str):
+    with PdfPages(screening_pdf) as pdf:
+        for dataitem in copy.deepcopy(dataset.datamap):
+            fig, ax = plt.subplots()
+            dataitem.data.plot(**df_plot_kwargs)
+            ax.set_title(dataitem.test_id)
+            pdf.savefig(**pdf_kwargs)
+            plt.close()
+
+
+def make_screening_pdf_old(dataset: DataSet, pdf_path: str = 'screening.pdf', x: str = 'Strain', y: str = 'Stress(MPa)',
                        x_lims: Dict = None):
     # make page
     pdf_canvas = canvas.Canvas(pdf_path, pagesize=(820, 600))

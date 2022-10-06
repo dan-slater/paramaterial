@@ -48,7 +48,7 @@ class DataSet:
     # def __iter__(self):
     #     return copy.deepcopy(self.datamap)
 
-    def input(self, data_dir: str, info_path: str, subset_config: Dict = None) -> None:
+    def load_data(self, data_dir: str, info_path: str, subset_config: Dict = None) -> None:
         df = pd.read_excel(info_path, index_col='test id')
         if subset_config is not None:
             for col_name, vals in subset_config.items():
