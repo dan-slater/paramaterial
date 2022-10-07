@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 import pandas as pd
@@ -7,43 +7,42 @@ import pandas as pd
 from paramaterial.plug import DataSet
 from screening import make_screening_pdf
 
+
 def make_info_table(in_dir: str, info_path: str):
     """Make a table of information about the tests in the directory."""
     info_df = pd.DataFrame(columns=['test id', 'filename', 'test type', 'material', 'temperature', 'rate'])
     for filename in os.listdir(in_dir):
         info_row = pd.Series(dtype=str)
         info_row['filename'] = filename
-        # info_df = info_df.append(info_row, ignore_index=True)
         info_df = pd.concat([info_df, info_row.to_frame().T], ignore_index=True)
     info_df.to_excel(info_path, index=False)
     return info_df
 
 
-if __name__ == '__main__':
-    make_info_table(r'../examples/baron study/data/00 backup data', r'../examples/baron study/info/00 backup info.xlsx')
-
-
-def screen_raw_data(data_dir: str, info_path: str, screening_x: str, screening_y: str, check_headers: bool = True,
-                    screening_pdf: bool = True):
+def screen_data(data_dir: str, pdf_path: str, df_plt_kwargs: Dict,
+                check_headers: bool = True, screening_pdf: bool = True):
     # check if column headers are the same, if not throw error
     if check_headers:
         check_column_headers(data_dir)
     # make screening pdf for data
-    if make_screening_pdf:
-        dataset = DataSet()
-        dataset.load_data(data_dir, info_path)
-        make_screening_pdf(dataset, screening_x, screening_y)
+    if screening_pdf:
+        make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
+
 
 def check_column_headers(data_dir: str):
     file_list = os.listdir(data_dir)
     first_file = pd.read_csv(f'{data_dir}/{file_list[0]}')
     print("Checking column headers...")
-    print(f'All headers should be:\n\t{first_file.columns}')
+    print(f'All headers should be:\n\t{list(first_file.columns)}')
     for file in file_list[1:]:
         df = pd.read_csv(f'{data_dir}/{file}')
         if not np.all(first_file.columns == df.columns):
             raise ValueError('Column headers are not the same in all files.')
 
+if __name__ == '__main__':
+    screen_data('../examples/baron study/data/01 raw data',
+                '../examples/baron study/info/01 raw screening.pdf',
+                df_plt_kwargs={'x': 'Jaw(mm)', 'y': 'Force(kN)'})
 
 def make_prepared_data():
     ...

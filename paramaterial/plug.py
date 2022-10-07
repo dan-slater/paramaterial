@@ -45,8 +45,8 @@ class DataSet:
     datamap: map = None
     info_table: pd.DataFrame = None
 
-    # def __iter__(self):
-    #     return copy.deepcopy(self.datamap)
+    def __iter__(self):
+        return copy.deepcopy(self.datamap)
 
     def load_data(self, data_dir: str, info_path: str, subset_config: Dict = None) -> None:
         df = pd.read_excel(info_path, index_col='test id')
