@@ -3,6 +3,7 @@ import os
 import shutil
 from typing import Dict, Callable
 
+import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 from reportlab.lib.colors import magenta, pink, blue
 import matplotlib.pyplot as plt
@@ -29,14 +30,33 @@ def make_dataset_plots_pdf(
             plt.close()
 
 
-def make_screening_pdf(dataset:DataSet, df_plot_kwargs: Dict, pdf_kwargs: Dict, screening_pdf: str):
-    with PdfPages(screening_pdf) as pdf:
-        for dataitem in copy.deepcopy(dataset.datamap):
-            fig, ax = plt.subplots()
-            dataitem.data.plot(**df_plot_kwargs)
-            ax.set_title(dataitem.test_id)
-            pdf.savefig(**pdf_kwargs)
-            plt.close()
+def make_screening_pdf(data_dir: str, pdf_path: str, df_plot_kwargs: Dict):
+    # make page
+    pdf_canvas = canvas.Canvas(pdf_path, pagesize=(820, 600))
+    # loop through files to screen
+    for filename in os.listdir(data_dir):
+        # plot data
+        fig = plt.figure()
+        pd.read_csv(filename).plot(**df_plot_kwargs)
+        plt.suptitle(filename)
+        # add plot to page
+        imgdata = BytesIO()
+        fig.savefig(imgdata, format='svg')
+        imgdata.seek(0)  # rewind the data
+        drawing = svg2rlg(imgdata)
+        renderPDF.draw(drawing, pdf_canvas, 5, 5)
+        # make check box
+        form = pdf_canvas.acroForm
+        pdf_canvas.setFont("Courier", 22)
+        pdf_canvas.drawString(20, 555, 'SELECT TO REJECT:')
+        form.checkbox(name=f'reject_box_{filename}', x=252, y=552, buttonStyle='check',
+                      borderColor=magenta, fillColor=pink, textColor=blue, forceBorder=True)
+        # end page
+        pdf_canvas.showPage()
+        plt.close()
+        # save pdf
+    pdf_canvas.save()
+    print(f'Screening pdf saved to {pdf_path}.')
 
 
 def make_screening_pdf_old(dataset: DataSet, pdf_path: str = 'screening.pdf', x: str = 'Strain', y: str = 'Stress(MPa)',
