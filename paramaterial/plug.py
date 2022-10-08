@@ -1,15 +1,17 @@
 """ In charge of handling data and executing I/O. [danslater, 1march2022] """
+import copy
 import os
 import shutil
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import List, Dict, Callable
+from typing import Dict, Callable, Optional
 
+import matplotlib.pyplot as plt
 import pandas as pd
-import copy
+
+from paramaterial.plotting.dataset_plot import dataset_plot
 
 IO_Paths = namedtuple('IO_Paths', ['input_data', 'input_info', 'output_data', 'output_info'])
-
 
 
 @dataclass
@@ -25,7 +27,7 @@ class DataItem:
         return DataItem(test_id, data)
 
     def get_row_from_info_table(self, info_table: pd.DataFrame):
-        self.info = info_table.loc[self.test_id].rename(self.test_id)
+        self.info = info_table.loc[info_table['test id'] == self.test_id]
         return self
 
     def write_to_csv(self, output_dir: str):
@@ -37,7 +39,6 @@ class DataItem:
 def empty_folder_at(dir_path: str) -> None:
     shutil.rmtree(dir_path)
     os.makedirs(dir_path)
-
 
 
 @dataclass
@@ -56,10 +57,19 @@ class DataSet:
     def __iter__(self):
         return copy.deepcopy(self.datamap)
 
-    def get_subset(self, subset_cfg: Dict) -> 'DataSet':
+    def __len__(self):
+        return len(self.info_table)
+
+    def plot(self, ax: plt.Axes, colourby: Optional[str]=None, **df_plot_kwargs):
+        # raise error if ax in df_plot_kwargs
+        if 'ax' in df_plot_kwargs:
+            raise ValueError('Cannot specify "ax" in df_plot_kwargs.')
+        dataset_plot(self, ax, colourby, **df_plot_kwargs)
+
+    def get_subset(self, subset_keys: Dict) -> 'DataSet':
         subset = copy.deepcopy(self)
         info = self.info_table
-        for col_name, vals in subset_cfg.items():
+        for col_name, vals in subset_keys.items():
             if col_name not in self.info_table.columns:
                 raise ValueError(f'Column {col_name} not found in info table.')
             if not all([val in self.info_table[col_name].values for val in vals]):
@@ -83,3 +93,11 @@ class DataSet:
             info_row = pd.concat([pd.Series({'test id': dataitem.test_id}), dataitem.info])
             out_info_table = out_info_table.append(info_row, ignore_index=True)
             out_info_table.to_excel(info_path, index=False)
+
+
+if __name__ == '__main__':
+    fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+    raw_dataset = DataSet('../examples/aakash tensile study/data/01 raw data',
+                          '../examples/aakash tensile study/info/01 raw info.xlsx')
+    raw_dataset.plot(ax=ax, x='Strain', y='Stress_MPa')
+    plt.show()

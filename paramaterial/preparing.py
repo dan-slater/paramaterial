@@ -8,14 +8,13 @@ from paramaterial.plug import DataSet
 from paramaterial.screening import make_screening_pdf
 
 
-def make_info_table(data_dir: str, output_info_path: str):
+def make_info_table(data_dir: str):
     """Make a table of information about the tests in the directory."""
     info_df = pd.DataFrame(columns=['test id', 'old filename', 'test type', 'material', 'temperature', 'rate'])
     for filename in os.listdir(data_dir):
         info_row = pd.Series(dtype=str)
         info_row['old filename'] = filename
         info_df = pd.concat([info_df, info_row.to_frame().T], ignore_index=True)
-    info_df.to_excel(output_info_path, index=False)
     return info_df
 
 
@@ -27,6 +26,13 @@ def screen_data(data_dir: str, pdf_path: str, df_plt_kwargs: Dict,
     # make screening pdf for data
     if screening_pdf:
         make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
+
+# copy folder and files in folder to new folder
+def copy_folder_and_files(in_dir, out_dir):
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
+    for filename in os.listdir(in_dir):
+        shutil.copy(f'{in_dir}/{filename}', f'{out_dir}/{filename}')
 
 
 def rename_by_test_id(data_dir, info_path):
@@ -42,7 +48,7 @@ def rename_by_test_id(data_dir, info_path):
         raise ValueError(f'There are duplicate old filenames in {info_path}.')
     for filename, test_id in zip(info_df['old filename'], info_df['test id']):
         os.rename(f'{data_dir}/{filename}', f'{data_dir}/{test_id}.csv')
-    print(f'Renamed {len(info_df)} files in {data_dir}')
+    print(f'Renamed {len(info_df)} files in {data_dir}.')
 
 
 def check_column_headers(data_dir: str):
