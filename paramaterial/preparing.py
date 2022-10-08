@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from paramaterial.plug import DataSet
-from screening import make_screening_pdf
+from paramaterial.screening import make_screening_pdf
 
 
 def make_info_table(in_dir: str, info_path: str):
@@ -33,14 +33,21 @@ def check_column_headers(data_dir: str):
     file_list = os.listdir(data_dir)
     first_file = pd.read_csv(f'{data_dir}/{file_list[0]}')
     print("Checking column headers...")
-    print(f'All headers should be:\n\t{list(first_file.columns)}')
+    print(f'First file headers:\n\t{list(first_file.columns)}')
     for file in file_list[1:]:
         df = pd.read_csv(f'{data_dir}/{file}')
         if not np.all(first_file.columns == df.columns):
             raise ValueError('Column headers are not the same in all files.')
+    print(f'Headers in all files are the same as in the first file.')
+
+
+def make_preparing_screening_pdf(data_dir: str, pdf_path: str, df_plt_kwargs: Dict):
+    print(os.getcwd())
+    make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
+
 
 if __name__ == '__main__':
-    screen_data('../examples/baron study/data/01 raw data',
+    make_preparing_screening_pdf('../examples/baron study/data/01 raw data',
                 '../examples/baron study/info/01 raw screening.pdf',
                 df_plt_kwargs={'x': 'Jaw(mm)', 'y': 'Force(kN)'})
 

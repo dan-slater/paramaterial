@@ -36,8 +36,9 @@ def make_screening_pdf(data_dir: str, pdf_path: str, df_plot_kwargs: Dict):
     # loop through files to screen
     for filename in os.listdir(data_dir):
         # plot data
-        fig = plt.figure()
-        pd.read_csv(filename).plot(**df_plot_kwargs)
+        fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+        df = pd.read_csv(f'{data_dir}/{filename}')
+        df.plot(ax=ax, **df_plot_kwargs)
         plt.suptitle(filename)
         # add plot to page
         imgdata = BytesIO()
@@ -59,8 +60,29 @@ def make_screening_pdf(data_dir: str, pdf_path: str, df_plot_kwargs: Dict):
     print(f'Screening pdf saved to {pdf_path}.')
 
 
+def copy_with_screening(data_dir: str, info_path: str, screening_pdf: str, new_data: str, new_info: str):
+    pdf_reader = PdfFileReader(open(screening_pdf, 'rb'))
+    keep_list = []
+    # read checkboxes
+    for key, value in pdf_reader.get_fields().items():
+        test_id = key[11:]
+        check_box = value['/V']
+        if check_box == '/Off':
+            keep_list.append(test_id)
+    # keep tests if checkboxes not ticked
+    dataset = DataSet(data_dir, info_path)
+    dataset.get_subset({'test id': keep_list})
+    dataset.output(new_data, new_info)
+
+
+if __name__ == '__main__':
+    copy_with_screening('../examples/baron study/data/01 raw data', '../examples/baron study/info/01 raw info.xlsx',
+                        '../examples/baron study/data/01 raw data screening.pdf',
+                        '../examples/baron study/data/02 prepared data', '../examples/baron study/info/03 prepared info.xlsx', )
+
+
 def make_screening_pdf_old(dataset: DataSet, pdf_path: str = 'screening.pdf', x: str = 'Strain', y: str = 'Stress(MPa)',
-                       x_lims: Dict = None):
+                           x_lims: Dict = None):
     # make page
     pdf_canvas = canvas.Canvas(pdf_path, pagesize=(820, 600))
     # loop through files to screen
@@ -110,6 +132,3 @@ def copy_screened_data(dataset: DataSet, screening_pdf: str, new_data: str, new_
     # keep tests if checkboxes not ticked
     dataset.get_subset({'test id': keep_list})
     dataset.output(new_data, new_info)
-
-
-

@@ -1,4 +1,4 @@
-site_name: ParaMaterial Documentation
+site_name: Paramaterial Documentation
 site_url: https://paramaterialdocs.com/
 nav:
   - Home: index.md

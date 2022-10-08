@@ -42,22 +42,37 @@ def empty_folder_at(dir_path: str) -> None:
 
 @dataclass
 class DataSet:
-    datamap: map = None
-    info_table: pd.DataFrame = None
+
+    def __init__(self, data_dir: str, info_path: str):
+        self.datamap: map = None
+        self.info_table: pd.DataFrame = None
+        self.load_data(data_dir, info_path)
 
     def __iter__(self):
         return copy.deepcopy(self.datamap)
 
-    def load_data(self, data_dir: str, info_path: str, subset_config: Dict = None) -> None:
-        df = pd.read_excel(info_path, index_col='test id')
-        if subset_config is not None:
-            for col_name, vals in subset_config.items():
-                if len(vals) > 0:
-                    df = df.loc[df[col_name].isin(vals)]
-        self.info_table = df
+    def load_data(self, data_dir: str, info_path: str) -> None:
+        self.info_table = pd.read_excel(info_path, index_col='test id')
         file_paths = [data_dir + f'/{test_id}.csv' for test_id in self.info_table.index]
         self.datamap = map(lambda path: DataItem.read_from_csv(path), file_paths)
         self.datamap = map(lambda obj: DataItem.get_row_from_info_table(obj, self.info_table), self.datamap)
+
+    def get_subset(self, subset_cfg: Dict) -> 'DataSet':
+        subset = copy.deepcopy(self)
+        info = self.info_table
+        for col_name, vals in subset_cfg.items():
+            if col_name not in self.info_table.columns:
+                raise ValueError(f'Column {col_name} not found in info table.')
+            if not all([val in self.info_table[col_name].values for val in vals]):
+                raise ValueError(f'Value not found in column {col_name}.')
+            if not isinstance(vals, list):
+                vals = [vals]
+            if col_name == 'test id':
+                info = info.loc[vals]
+            elif len(vals) > 0:
+                info = info.loc[info[col_name].isin(vals)]
+        subset.info_table = info
+        return subset
 
     def add_proc_op(self, func: Callable[[DataItem, Dict], DataItem], func_cfg: Dict):
         self.datamap = map(lambda dataitem: func(dataitem, func_cfg), self.datamap)
