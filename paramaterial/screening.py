@@ -63,15 +63,17 @@ def make_screening_pdf(data_dir: str, pdf_path: str, df_plot_kwargs: Dict):
 def copy_with_screening(data_dir: str, info_path: str, screening_pdf: str, new_data: str, new_info: str):
     pdf_reader = PdfFileReader(open(screening_pdf, 'rb'))
     keep_list = []
+    if 'test id' not in pd.read_excel(info_path).columns:
+        raise ValueError(f'No column called "test id" in {info_path}.')
     # read checkboxes
     for key, value in pdf_reader.get_fields().items():
-        test_id = key[11:]
+        filename = key[11:]
         check_box = value['/V']
         if check_box == '/Off':
-            keep_list.append(test_id)
+            keep_list.append(filename)
     # keep tests if checkboxes not ticked
     dataset = DataSet(data_dir, info_path)
-    dataset.get_subset({'test id': keep_list})
+    dataset.get_subset({'filename': keep_list})
     dataset.output(new_data, new_info)
 
 
