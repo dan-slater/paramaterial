@@ -62,6 +62,7 @@ def make_preparing_screening_pdf(data_dir: str, pdf_path: str, df_plt_kwargs: Di
     make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
 
 
+
 if __name__ == '__main__':
     make_preparing_screening_pdf('../examples/baron study/data/01 raw data',
                 '../examples/baron study/info/01 raw screening.pdf',
