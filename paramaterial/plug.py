@@ -42,20 +42,19 @@ def empty_folder_at(dir_path: str) -> None:
 
 @dataclass
 class DataSet:
+    info_table: pd.DataFrame = None
+    datamap: map = None
 
     def __init__(self, data_dir: str, info_path: str):
-        self.datamap: map = None
-        self.info_table: pd.DataFrame = None
-        self.load_data(data_dir, info_path)
+        self.info_table = pd.read_excel(info_path)
+        if 'test id' not in self.info_table.columns:
+            raise ValueError('No column called "test id" found in info table.')
+        file_paths = [data_dir + f'/{test_id}.csv' for test_id in self.info_table['test id']]
+        self.datamap = map(lambda path: DataItem.read_from_csv(path), file_paths)
+        self.datamap = map(lambda obj: DataItem.get_row_from_info_table(obj, self.info_table), self.datamap)
 
     def __iter__(self):
         return copy.deepcopy(self.datamap)
-
-    def load_data(self, data_dir: str, info_path: str) -> None:
-        self.info_table = pd.read_excel(info_path, index_col='test id')
-        file_paths = [data_dir + f'/{test_id}.csv' for test_id in self.info_table.index]
-        self.datamap = map(lambda path: DataItem.read_from_csv(path), file_paths)
-        self.datamap = map(lambda obj: DataItem.get_row_from_info_table(obj, self.info_table), self.datamap)
 
     def get_subset(self, subset_cfg: Dict) -> 'DataSet':
         subset = copy.deepcopy(self)
@@ -64,13 +63,11 @@ class DataSet:
             if col_name not in self.info_table.columns:
                 raise ValueError(f'Column {col_name} not found in info table.')
             if not all([val in self.info_table[col_name].values for val in vals]):
-                raise ValueError(f'Value not found in column {col_name}.')
+                raise ValueError(f'Values not found in "{col_name}" column:\n'
+                                 f'\t{[val for val in vals if val not in self.info_table[col_name].values]}.')
             if not isinstance(vals, list):
                 vals = [vals]
-            if col_name == 'test id':
-                info = info.loc[vals]
-            elif len(vals) > 0:
-                info = info.loc[info[col_name].isin(vals)]
+            info = info.loc[info[col_name].isin(vals)]
         subset.info_table = info
         return subset
 

@@ -8,14 +8,14 @@ from paramaterial.plug import DataSet
 from paramaterial.screening import make_screening_pdf
 
 
-def make_info_table(in_dir: str, info_path: str):
+def make_info_table(data_dir: str, output_info_path: str):
     """Make a table of information about the tests in the directory."""
-    info_df = pd.DataFrame(columns=['test id', 'filename', 'test type', 'material', 'temperature', 'rate'])
-    for filename in os.listdir(in_dir):
+    info_df = pd.DataFrame(columns=['test id', 'old filename', 'test type', 'material', 'temperature', 'rate'])
+    for filename in os.listdir(data_dir):
         info_row = pd.Series(dtype=str)
-        info_row['filename'] = filename
+        info_row['old filename'] = filename
         info_df = pd.concat([info_df, info_row.to_frame().T], ignore_index=True)
-    info_df.to_excel(info_path, index=False)
+    info_df.to_excel(output_info_path, index=False)
     return info_df
 
 
@@ -27,6 +27,22 @@ def screen_data(data_dir: str, pdf_path: str, df_plt_kwargs: Dict,
     # make screening pdf for data
     if screening_pdf:
         make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
+
+
+def rename_by_test_id(data_dir, info_path):
+    info_df = pd.read_excel(info_path)
+    if 'old filename' not in info_df.columns:
+        raise ValueError(f'There is no "old filename" column in {info_path}. Please add it.'
+                         f'\nExisting columns are: {list(info_df.columns)}')
+    if 'test id' not in info_df.columns:
+        raise ValueError(f'There is no "test id" column in {info_path}.')
+    if info_df['test id'].duplicated().any():
+        raise ValueError(f'There are duplicate test ids {info_path}.')
+    if info_df['old filename'].duplicated().any():
+        raise ValueError(f'There are duplicate old filenames in {info_path}.')
+    for filename, test_id in zip(info_df['old filename'], info_df['test id']):
+        os.rename(f'{data_dir}/{filename}', f'{data_dir}/{test_id}.csv')
+    print(f'Renamed {len(info_df)} files in {data_dir}')
 
 
 def check_column_headers(data_dir: str):
