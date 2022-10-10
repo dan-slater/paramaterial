@@ -6,6 +6,11 @@ from collections import namedtuple
 from dataclasses import dataclass
 from typing import Dict, Callable, Optional
 
+import matplotlib
+
+from tqdm import tqdm
+
+# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -27,7 +32,7 @@ class DataItem:
         return DataItem(test_id, data)
 
     def get_row_from_info_table(self, info_table: pd.DataFrame):
-        self.info = info_table.loc[info_table['test id'] == self.test_id]
+        self.info = info_table.loc[info_table['test id'] == self.test_id].squeeze()
         return self
 
     def write_to_csv(self, output_dir: str):
@@ -60,7 +65,7 @@ class DataSet:
     def __len__(self):
         return len(self.info_table)
 
-    def plot(self, ax: plt.Axes, colourby: Optional[str]=None, **df_plot_kwargs):
+    def plot(self, ax: plt.Axes, colourby: Optional[str] = None, **df_plot_kwargs):
         # raise error if ax in df_plot_kwargs
         if 'ax' in df_plot_kwargs:
             raise ValueError('Cannot specify "ax" in df_plot_kwargs.')
@@ -81,23 +86,39 @@ class DataSet:
         subset.info_table = info
         return subset
 
-    def add_proc_op(self, func: Callable[[DataItem, Dict], DataItem], func_cfg: Dict):
-        self.datamap = map(lambda dataitem: func(dataitem, func_cfg), self.datamap)
+    def add_proc_op(self, func: Callable[[DataItem, ...], DataItem], func_cfg: Optional[Dict] = None):
+        if func_cfg is not None:
+            self.datamap = map(lambda dataitem: func(dataitem, func_cfg), self.datamap)
+        else:
+            self.datamap = map(lambda dataitem: func(dataitem), self.datamap)
 
     def output(self, data_dir: str, info_path: str) -> None:
-        tot = len(self.info_table)
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+        loading_bar = tqdm(range(len(self.info_table)))
         out_info_table = pd.DataFrame()
         for i, dataitem in enumerate(copy.deepcopy(self.datamap)):
-            print(f'{dataitem.test_id} [{i}/{tot}]:')
+            loading_bar.update()
             dataitem.write_to_csv(data_dir)
-            info_row = pd.concat([pd.Series({'test id': dataitem.test_id}), dataitem.info])
-            out_info_table = out_info_table.append(info_row, ignore_index=True)
+            out_info_table = pd.concat([out_info_table, dataitem.info.to_frame().T], ignore_index=True)
             out_info_table.to_excel(info_path, index=False)
 
 
 if __name__ == '__main__':
+    dataset = DataSet('../examples/vos ringing study/data/01 prepared data',
+                      '../examples/vos ringing study/info/01 prepared info.xlsx')
     fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-    raw_dataset = DataSet('../examples/aakash tensile study/data/01 raw data',
-                          '../examples/aakash tensile study/info/01 raw info.xlsx')
-    raw_dataset.plot(ax=ax, x='Strain', y='Stress_MPa')
+    dataset.plot(ax, x='Strain', y='Stress (MPa)', ylabel='Stress (MPa)', legend=False)
+    plt.show()
+    fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+    def neg_stress(dataitem):
+        dataitem.data['Stress (MPa)'] = -dataitem.data['Stress (MPa)']
+        dataitem.data['Strain'] = -dataitem.data['Strain']
+        return dataitem
+    dataset.add_proc_op(neg_stress)
+    dataset.output('../examples/vos ringing study/data/02 processed data',
+                   '../examples/vos ringing study/info/02 processed info.xlsx')
+    dataset = DataSet('../examples/vos ringing study/data/02 processed data',
+                      '../examples/vos ringing study/info/02 processed info.xlsx')
+    dataset.plot(ax, x='Strain', y='Stress (MPa)', ylabel='Stress (MPa)', legend=False, colourby='rate')
     plt.show()
