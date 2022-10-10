@@ -1,6 +1,10 @@
 site_name: Paramaterial Documentation
-site_url: https://paramaterialdocs.com/
+url: https://paramaterial.github.io
+site_url: https://dan-slater.github.io/paramaterial/
+theme:
+  name: null
+  custom_dir: 'cinder'
 nav:
   - Home: index.md
   - About: about.md
-theme: readthedocs
+

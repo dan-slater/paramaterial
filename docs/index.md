@@ -13,9 +13,13 @@ Use Paramaterial to:
 - Produce publication-quality plots and test reports to document raw data, processed data and analysis.
 - Improve efficiency and traceability of processing to increase data quality.
 
+> **Note**: Paramaterial is currently in alpha development. The API is subject to change.
+
 ## Installation
 
-> **Note**: Paramaterial is currently in alpha development. The API is subject to change.
+```bash
+pip install paramaterial
+```
 
 
 
