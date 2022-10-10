@@ -5,18 +5,21 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-
-def dataset_plot(dataset, ax: plt.Axes, colourby: str, **df_plot_kwargs):
+def dataset_plot(dataset, ax: plt.Axes, colourby: Optional[str] = None, **df_plot_kwargs):
     """Plot the dataset using the given parameters.
 
     Args:
+        dataset: The dataset to plot.
         ax: The axes to plot on.
         colourby: The info column to use for coloring.
-        styleby: The info column to use for styling.
         **df_plot_kwargs: Keyword arguments to pass to the pandas.DataFrame.plot() function.
     """
     _configure_plt_formatting()
-    _add_colourbar_curves(ax, dataset, colourby, **df_plot_kwargs)
+    if colourby is None:
+        for dataitem in dataset:
+            dataitem.data.plot(ax=ax, **df_plot_kwargs)
+    else:
+        _add_colourbar_curves(ax, dataset, colourby, **df_plot_kwargs)
 
 
 def _configure_plt_formatting():

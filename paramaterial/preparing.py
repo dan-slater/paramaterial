@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import List, Dict
 
 import numpy as np
@@ -12,9 +13,10 @@ def make_info_table(data_dir: str):
     """Make a table of information about the tests in the directory."""
     info_df = pd.DataFrame(columns=['test id', 'old filename', 'test type', 'material', 'temperature', 'rate'])
     for filename in os.listdir(data_dir):
-        info_row = pd.Series(dtype=str)
-        info_row['old filename'] = filename
-        info_df = pd.concat([info_df, info_row.to_frame().T], ignore_index=True)
+        if filename.endswith('.csv'):
+            info_row = pd.Series(dtype=str)
+            info_row['old filename'] = filename
+            info_df = pd.concat([info_df, info_row.to_frame().T], ignore_index=True)
     return info_df
 
 
@@ -27,12 +29,13 @@ def screen_data(data_dir: str, pdf_path: str, df_plt_kwargs: Dict,
     if screening_pdf:
         make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
 
-# copy folder and files in folder to new folder
+
 def copy_folder_and_files(in_dir, out_dir):
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
     for filename in os.listdir(in_dir):
         shutil.copy(f'{in_dir}/{filename}', f'{out_dir}/{filename}')
+    print(f'Copied {len(os.listdir(in_dir))} files from {in_dir} to {out_dir}.')
 
 
 def rename_by_test_id(data_dir, info_path):
@@ -58,8 +61,11 @@ def check_column_headers(data_dir: str):
     print(f'First file headers:\n\t{list(first_file.columns)}')
     for file in file_list[1:]:
         df = pd.read_csv(f'{data_dir}/{file}')
-        if not np.all(first_file.columns == df.columns):
-            raise ValueError('Column headers are not the same in all files.')
+        try:
+            assert set(first_file.columns) == set(df.columns)
+        except AssertionError:
+            raise ValueError(f'Column headers in {file} don\'t match column headers of first file.'
+                             f'{file} headers:\n\t{list(df.columns)}')
     print(f'Headers in all files are the same as in the first file.')
 
 
@@ -68,11 +74,11 @@ def make_preparing_screening_pdf(data_dir: str, pdf_path: str, df_plt_kwargs: Di
     make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
 
 
-
 if __name__ == '__main__':
     make_preparing_screening_pdf('../examples/baron study/data/01 raw data',
-                '../examples/baron study/info/01 raw screening.pdf',
-                df_plt_kwargs={'x': 'Jaw(mm)', 'y': 'Force(kN)'})
+                                 '../examples/baron study/info/01 raw screening.pdf',
+                                 df_plt_kwargs={'x': 'Jaw(mm)', 'y': 'Force(kN)'})
+
 
 def make_prepared_data():
     ...
