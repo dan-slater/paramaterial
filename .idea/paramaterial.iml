@@ -6,10 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/examples/baron study" />
       <excludeFolder url="file://$MODULE_DIR$/examples/hyde study" />
       <excludeFolder url="file://$MODULE_DIR$/examples/vos psc study" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/aakash tensile study" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/aakash tensile study/data" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/aakash tensile study/info" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/aakash tensile study/receipts" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/vos ringing study" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

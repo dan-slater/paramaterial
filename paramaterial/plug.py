@@ -41,11 +41,6 @@ class DataItem:
         return self
 
 
-def empty_folder_at(dir_path: str) -> None:
-    shutil.rmtree(dir_path)
-    os.makedirs(dir_path)
-
-
 @dataclass
 class DataSet:
     info_table: pd.DataFrame = None
@@ -60,16 +55,23 @@ class DataSet:
         self.datamap = map(lambda obj: DataItem.get_row_from_info_table(obj, self.info_table), self.datamap)
 
     def __iter__(self):
-        return copy.deepcopy(self.datamap)
+        for dataitem in copy.deepcopy(self.datamap):
+            if dataitem.test_id in self.info_table['test id'].values:
+                yield dataitem
 
     def __len__(self):
         return len(self.info_table)
 
-    def plot(self, ax: plt.Axes, colourby: Optional[str] = None, **df_plot_kwargs):
+    def plot(self, ax: plt.Axes,
+             colorby: Optional[str] = None,
+             styleby: Optional[str] = None,
+             markerby: Optional[str] = None,
+             widthby: Optional[str] = None,
+             **df_plot_kwargs):
         # raise error if ax in df_plot_kwargs
         if 'ax' in df_plot_kwargs:
             raise ValueError('Cannot specify "ax" in df_plot_kwargs.')
-        dataset_plot(self, ax, colourby, **df_plot_kwargs)
+        dataset_plot(self, ax, colorby, styleby, markerby, widthby, **df_plot_kwargs)
 
     def get_subset(self, subset_keys: Dict) -> 'DataSet':
         subset = copy.deepcopy(self)
@@ -120,5 +122,5 @@ if __name__ == '__main__':
                    '../examples/vos ringing study/info/02 processed info.xlsx')
     dataset = DataSet('../examples/vos ringing study/data/02 processed data',
                       '../examples/vos ringing study/info/02 processed info.xlsx')
-    dataset.plot(ax, x='Strain', y='Stress (MPa)', ylabel='Stress (MPa)', legend=False, colourby='rate')
+    dataset.plot(ax, x='Strain', y='Stress (MPa)', ylabel='Stress (MPa)', legend=False, colorby='rate')
     plt.show()

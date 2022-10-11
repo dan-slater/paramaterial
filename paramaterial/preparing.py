@@ -2,16 +2,14 @@ import os
 import shutil
 from typing import List, Dict
 
-import numpy as np
 import pandas as pd
 
-from paramaterial.plug import DataSet
 from paramaterial.screening import make_screening_pdf
 
 
-def make_info_table(data_dir: str):
+def make_info_table(data_dir: str, columns: List[str]) -> pd.DataFrame:
     """Make a table of information about the tests in the directory."""
-    info_df = pd.DataFrame(columns=['test id', 'old filename', 'test type', 'material', 'temperature', 'rate'])
+    info_df = pd.DataFrame(columns=columns)
     for filename in os.listdir(data_dir):
         if filename.endswith('.csv'):
             info_row = pd.Series(dtype=str)
