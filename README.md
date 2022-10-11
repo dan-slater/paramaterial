@@ -26,25 +26,6 @@ Usage of the toolkit is demonstrated in the [examples](
 ## License
 
 
-
-Have you ever had to process a bunch of csv output from a mechanical test machine, copying and pasting data into a hacky Excel template to calculate things like elastic modulus and yield strength?
-
-Only to then have to make another Excel file where you create a summary table...
-
-And then have to copy and paste that into a report or an email...
-
-And then you have to plot the data in Excel and spend half an hour tweaking the colours to get it to look at least halfway professional...
-
-And then you discover Excel has formatted your strain column as a date for literally no reason so now your plots have broken...
-
-And then next week you have to do all this again! :angry:
-
-**No more!** :boom:
-
-pymechtest has a very simple goal: to reduce the amount of time engineers spend munging data after a batch of mechanical testing.
-
-Here is a quick taste of how easy it is to go from raw data to a gorgeous stress-strain plot:
-
 The key features are:
 
 * **Versatile**: The code design is sufficiently general so that it should work for a wide range of material tests.

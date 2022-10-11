@@ -472,9 +472,9 @@ def make_error_histogram(ax: plt.Axes, dataitem: DataItem, name: str):
     errors_mpa = [info[f'{s} error'] for s in model_names]
     max_stress = np.max(dataitem.data['Stress(MPa)'].values)
     errors = np.array(errors_mpa) * 100 / max_stress
-    colours = ['grey', 'limegreen', 'darkcyan', 'darkmagenta']
+    colors = ['grey', 'limegreen', 'darkcyan', 'darkmagenta']
     bar_positions = np.arange(4)
-    ax.bar(bar_positions, errors, color=colours, label=model_names, alpha=0.5)
+    ax.bar(bar_positions, errors, color=colors, label=model_names, alpha=0.5)
     ax.set_xticks(bar_positions)
     # ax.set_xticks(bar_positions, labels=[s.title() for s in model_names])
     thresh_line, = ax.plot([-1, 6], [max_error] * 2, lw=2, linestyle='--', color='k', label='Flag threshold',
@@ -482,7 +482,7 @@ def make_error_histogram(ax: plt.Axes, dataitem: DataItem, name: str):
     if not any(x < max_error for x in errors):
         add_stamp_to(ax, 'Max error threshold exceeded for all models!')
     ax.set_xticklabels([s.title() for s in model_names])
-    patches = [mpatches.Patch(color=c, label=f'{m.title()} error', alpha=0.5) for c, m in zip(colours, model_names)]
+    patches = [mpatches.Patch(color=c, label=f'{m.title()} error', alpha=0.5) for c, m in zip(colors, model_names)]
     patches.append(thresh_line)
     ax.legend(handles=patches)
     ax.set_xlabel('Fitted models')
