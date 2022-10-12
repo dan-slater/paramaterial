@@ -4,9 +4,11 @@ import os
 import shutil
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import Dict, Callable, Optional
+from typing import Dict, Callable, Optional, List, Tuple
 
 import matplotlib
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from tqdm import tqdm
 
@@ -14,7 +16,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from paramaterial.plotting.dataset_plot import dataset_plot
+from paramaterial.plotting.dataset_plot import dataset_plot, dataset_subplots
 
 IO_Paths = namedtuple('IO_Paths', ['input_data', 'input_info', 'output_data', 'output_info'])
 
@@ -62,16 +64,65 @@ class DataSet:
     def __len__(self):
         return len(self.info_table)
 
-    def plot(self, ax: plt.Axes,
+    def plot(self,
+             x: str,
+             y: str,
              colorby: Optional[str] = None,
              styleby: Optional[str] = None,
              markerby: Optional[str] = None,
              widthby: Optional[str] = None,
-             **df_plot_kwargs):
-        # raise error if ax in df_plot_kwargs
-        if 'ax' in df_plot_kwargs:
-            raise ValueError('Cannot specify "ax" in df_plot_kwargs.')
-        dataset_plot(self, ax, colorby, styleby, markerby, widthby, **df_plot_kwargs)
+             cbar: bool = False,
+             cbar_label: Optional[str] = None,
+             **kwargs) -> plt.Axes:
+        """ Plot the data in the dataset.
+
+        Args:
+            x: The column name of the x-axis data.
+            y: The column name of the y-axis data.
+            colorby: The info column to use for coloring.
+            styleby: The info column to use for line style.
+            markerby: The info column to use for marker style.
+            widthby: The info column to use for line width.
+            cbar: Whether to add a colorbar.
+            cbar_label: The label for the colorbar.
+         """
+        return dataset_plot(self, x, y,
+                            colorby, styleby, markerby, widthby,
+                            cbar, cbar_label,
+                            **kwargs)
+
+    def subplots(
+            self,
+            x: str,
+            y: str,
+            nrows: int,
+            ncols: int,
+            cols_by: str,
+            rows_by: str,
+            col_keys: List[str],
+            row_keys: List[str],
+            figsize: Tuple[float, float] = (6.4, 4.8),
+            row_titles: Optional[List[str]] = None,
+            col_titles: Optional[List[str]] = None,
+            plot_titles: Optional[List[str]] = None,
+            **kwargs
+    ) -> tuple[Figure, Axes]:
+        """Plot a subplot of the dataset.
+        Args:
+            nrows: The number of rows in the subplot.
+            ncols: The number of columns in the subplot.
+            col_keys: The info column keys to use for the columns.
+            row_keys: The info column keys to use for the rows.
+            figsize: The figure size.
+            row_titles: The titles for the rows.
+            col_titles: The titles for the columns.
+            plot_titles: The titles for the plots.
+            **kwargs: Keyword arguments to pass to the dataset_plot() function.
+        Returns: The figure and axes.
+        """
+        return dataset_subplots(self, x=x, y=y, nrows=nrows, ncols=ncols, cols_by=cols_by, rows_by=rows_by,
+                                col_keys=col_keys, row_keys=row_keys, figsize=figsize, row_titles=row_titles,
+                                col_titles=col_titles, plot_titles=plot_titles, **kwargs)
 
     def get_subset(self, subset_keys: Dict) -> 'DataSet':
         subset = copy.deepcopy(self)
@@ -107,20 +158,16 @@ class DataSet:
 
 
 if __name__ == '__main__':
-    dataset = DataSet('../examples/vos ringing study/data/01 prepared data',
-                      '../examples/vos ringing study/info/01 prepared info.xlsx')
-    fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-    dataset.plot(ax, x='Strain', y='Stress (MPa)', ylabel='Stress (MPa)', legend=False)
-    plt.show()
-    fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-    def neg_stress(dataitem):
-        dataitem.data['Stress (MPa)'] = -dataitem.data['Stress (MPa)']
-        dataitem.data['Strain'] = -dataitem.data['Strain']
-        return dataitem
-    dataset.add_proc_op(neg_stress)
-    dataset.output('../examples/vos ringing study/data/02 processed data',
-                   '../examples/vos ringing study/info/02 processed info.xlsx')
-    dataset = DataSet('../examples/vos ringing study/data/02 processed data',
-                      '../examples/vos ringing study/info/02 processed info.xlsx')
-    dataset.plot(ax, x='Strain', y='Stress (MPa)', ylabel='Stress (MPa)', legend=False, colorby='rate')
+    dataset = DataSet('../examples/aakash study/data/01 raw data', '../examples/aakash study/info/01 raw info.xlsx')
+    dataset.subplots(
+        x='Strain',
+        y='Stress_MPa',
+        ylabel='Stress (MPa)',
+        nrows=2,
+        ncols=2,
+        cols_by='test type',
+        rows_by='material',
+        col_keys=['P', 'T'],
+        row_keys=['G', 'H']
+    )
     plt.show()

@@ -130,3 +130,4 @@ def _add_colorbar(min_val: float, max_val: float, cbar_label: Optional[str] = No
     cbar = plt.colorbar(sm, cax=cax)
     cbar.set_label(cbar_label)
 
+
