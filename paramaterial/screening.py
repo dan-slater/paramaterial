@@ -74,7 +74,7 @@ def copy_with_screening(data_dir: str, info_path: str, screening_pdf: str, new_d
     # keep tests if checkboxes not ticked
     dataset = DataSet(data_dir, info_path)
     dataset.get_subset({'filename': keep_list})
-    dataset.output(new_data, new_info)
+    dataset.write_output(new_data, new_info)
 
 
 if __name__ == '__main__':
@@ -133,4 +133,4 @@ def copy_screened_data(dataset: DataSet, screening_pdf: str, new_data: str, new_
             keep_list.append(test_id)
     # keep tests if checkboxes not ticked
     dataset.get_subset({'test id': keep_list})
-    dataset.output(new_data, new_info)
+    dataset.write_output(new_data, new_info)
