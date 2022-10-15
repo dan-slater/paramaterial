@@ -1,1 +1,1 @@
-from paramaterial import plug, preparing, processing, screening, fitting, models
+from paramaterial import preparing, plug, plotting, processing, screening, fitting, models
