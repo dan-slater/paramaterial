@@ -9,6 +9,7 @@ from paramaterial.screening import make_screening_pdf
 
 def make_info_table(data_dir: str, columns: List[str]) -> pd.DataFrame:
     """Make a table of information about the tests in the directory."""
+    columns = ['test id', 'old filename'] + columns
     info_df = pd.DataFrame(columns=columns)
     for filename in os.listdir(data_dir):
         if filename.endswith('.csv'):
@@ -16,6 +17,32 @@ def make_info_table(data_dir: str, columns: List[str]) -> pd.DataFrame:
             info_row['old filename'] = filename
             info_df = pd.concat([info_df, info_row.to_frame().T], ignore_index=True)
     return info_df
+
+
+def copy_data_and_info(old_data_dir: str, new_data_dir: str, old_info_path: str, new_info_path: str) -> None:
+    """Copy data and info from old directory and path to new directory and path."""
+
+    # checks
+    if not os.path.exists(old_data_dir):
+        raise FileNotFoundError(f'Old data directory {old_data_dir} does not exist.')
+    if not os.path.exists(old_info_path):
+        raise FileNotFoundError(f'Old info file {old_info_path} does not exist.')
+    if not old_info_path.endswith('.xlsx'):
+        raise ValueError(f'Old info file {old_info_path} is not an excel file.')
+    if not new_info_path.endswith('.xlsx'):
+        raise ValueError(f'New info file {new_info_path} is not an excel file.')
+
+    # copy data
+    if not os.path.exists(new_data_dir):
+        os.mkdir(new_data_dir)
+    for file in os.listdir(old_data_dir):
+        shutil.copy(f'{old_data_dir}/{file}', f'{new_data_dir}/{file}')
+
+    # copy info
+    shutil.copy(old_info_path, new_info_path)
+
+    print(f'Copied {len(os.listdir(old_data_dir))} files from {old_data_dir} to {new_data_dir}.')
+    print(f'Copied info table from {old_info_path} to {new_info_path}.')
 
 
 def screen_data(data_dir: str, pdf_path: str, df_plt_kwargs: Dict,
@@ -28,16 +55,16 @@ def screen_data(data_dir: str, pdf_path: str, df_plt_kwargs: Dict,
         make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
 
 
-def copy_folder_and_files(in_dir, out_dir):
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
-    for filename in os.listdir(in_dir):
-        shutil.copy(f'{in_dir}/{filename}', f'{out_dir}/{filename}')
-    print(f'Copied {len(os.listdir(in_dir))} files from {in_dir} to {out_dir}.')
-
-
 def rename_by_test_id(data_dir, info_path):
+    """Rename files in data directory by test id in info table."""
+    # make data directory if it doesn't exist
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
+
+    # read info table
     info_df = pd.read_excel(info_path)
+
+    # check info table
     if 'old filename' not in info_df.columns:
         raise ValueError(f'There is no "old filename" column in {info_path}. Please add it.'
                          f'\nExisting columns are: {list(info_df.columns)}')
@@ -47,8 +74,17 @@ def rename_by_test_id(data_dir, info_path):
         raise ValueError(f'There are duplicate test ids {info_path}.')
     if info_df['old filename'].duplicated().any():
         raise ValueError(f'There are duplicate old filenames in {info_path}.')
+
+    # rename files if they exist and if new name is not already taken
     for filename, test_id in zip(info_df['old filename'], info_df['test id']):
-        os.rename(f'{data_dir}/{filename}', f'{data_dir}/{test_id}.csv')
+        if os.path.exists(f'{data_dir}/{filename}.csv'):
+            if os.path.exists(f'{data_dir}/{test_id}.csv'):
+                raise ValueError(f'File {test_id}.csv already exists in {data_dir}.')
+            os.rename(f'{data_dir}/{filename}.csv', f'{data_dir}/{test_id}.csv')
+            print(f'Renamed {filename}.csv to {test_id}.csv.')
+        else:
+            print(f'File {filename}.csv does not exist in {data_dir}.')
+
     print(f'Renamed {len(info_df)} files in {data_dir}.')
 
 

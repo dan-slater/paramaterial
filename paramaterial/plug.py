@@ -1,23 +1,12 @@
 """ In charge of handling data and executing I/O. [danslater, 1march2022] """
 import copy
 import os
-import shutil
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import Dict, Callable, Optional, List, Tuple, Any
+from typing import Dict, Callable, List, Any
 
-import matplotlib
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-
-from tqdm import tqdm
-
-# matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
 import pandas as pd
-
-from paramaterial.processing import processing_function
-from paramaterial.plotting.dataset_plot import dataset_plot, dataset_subplots
+from tqdm import tqdm
 
 IO_Paths = namedtuple('IO_Paths', ['input_data', 'input_info', 'output_data', 'output_info'])
 
@@ -61,8 +50,6 @@ class DataSet:
     def __init__(self, data_dir: str, info_path: str):
         self.data_dir = data_dir
         self.info_path = info_path
-
-    def __enter__(self):
         self.info_table = pd.read_excel(self.info_path)
         if 'test id' not in self.info_table.columns:
             raise ValueError('No column called "test id" found in info table.')
@@ -118,7 +105,7 @@ class DataSet:
             *args: Arguments to pass to the function.
             **kwargs: Keyword arguments to pass to the function.
         """
-        self.datamap = map(lambda dataitem: func(dataitem, *args, **kwargs), self.datamap)
+        map(lambda dataitem: func(dataitem, *args, **kwargs), self.datamap)
 
     def write_output(self, data_dir: str, info_path: str) -> None:
         """Exectue the processing operations and write the output of the dataset to a directory.
@@ -141,4 +128,4 @@ class DataSet:
             dataitem.write_to_csv(data_dir)
             out_info_table = pd.concat([out_info_table, dataitem.info.to_frame().T], ignore_index=True)
             out_info_table.to_excel(info_path, index=False)
-
+        loading_bar.close()

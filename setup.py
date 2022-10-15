@@ -1,10 +1,18 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
-VERSION = '0.0.4'
+VERSION = '0.0.5'
 DESCRIPTION = 'Post-processing toolkit for materials testing data.'
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+
+def readme():
+    with open('README.md') as f:
+        return f.read()
+
+
+def requirements():
+    with open('requirements.txt') as f:
+        return f.read().splitlines()
+
 
 setup(
     name="paramaterial",
@@ -12,10 +20,11 @@ setup(
     author="Daniel Slater",
     author_email="danielgslater@gmail.com",
     description=DESCRIPTION,
-    long_description=long_description,
+    long_description=readme(),
     long_description_content_type="text/markdown",
     url="https://github.com/dan-slater/paramaterial",
-    packages=find_packages(),
+    install_requires=requirements(),
+    packages=['paramaterial'],
     keywords=['python', 'mechanical testing', 'materials testing', 'post-processing', 'stress-strain', 'flow stress',
               'yield stress', 'tensile test', 'strength', 'elastic modulus', 'strain', 'universal testing machine',
               'fitting constitutive model', 'material model', 'solid mechanics', 'materials science', 'engineering'],
