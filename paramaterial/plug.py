@@ -71,21 +71,11 @@ class DataSet:
         """Check if a dataitem is in the dataset."""
         return item.test_id in self.info_table['test id'].values
 
-    def __getitem__(self, index) -> 'DataSet':
-        """Get a subset of the dataset using pandas filtering syntax."""
-        subset = copy.deepcopy(self)
-        subset.info_table = self.info_table.loc[index]
-        return subset
-
-    def get_subset(self, subset_keys: Dict[str, List[Any]]) -> 'DataSet':
-        """Get a subset of the dataset.
-
-        Args:
-            subset_keys: A dictionary of column names and lists of values to use for the subset.
-        """
+    def __getitem__(self, subset_cfg: Dict[str, List[Any]]) -> 'DataSet':
+        """Get a subset of the dataset using a dictionary of column names and lists of values"""
         subset = copy.deepcopy(self)
         info = self.info_table
-        for col_name, vals in subset_keys.items():
+        for col_name, vals in subset_cfg.items():
             if col_name not in self.info_table.columns:
                 raise ValueError(f'Column {col_name} not found in info table.')
             if not all([val in self.info_table[col_name].values for val in vals]):
@@ -96,6 +86,26 @@ class DataSet:
             info = info.loc[info[col_name].isin(vals)]
         subset.info_table = info
         return subset
+    #
+    # def get_subset(self, subset_keys: Dict[str, List[Any]]) -> 'DataSet':
+    #     """Get a subset of the dataset.
+    #
+    #     Args:
+    #         subset_keys:  to use for the subset.
+    #     """
+    #     subset = copy.deepcopy(self)
+    #     info = self.info_table
+    #     for col_name, vals in subset_keys.items():
+    #         if col_name not in self.info_table.columns:
+    #             raise ValueError(f'Column {col_name} not found in info table.')
+    #         if not all([val in self.info_table[col_name].values for val in vals]):
+    #             raise ValueError(f'Values not found in "{col_name}" column:\n'
+    #                              f'\t{[val for val in vals if val not in self.info_table[col_name].values]}.')
+    #         if not isinstance(vals, list):
+    #             vals = [vals]
+    #         info = info.loc[info[col_name].isin(vals)]
+    #     subset.info_table = info
+    #     return subset
 
     def add_proc_op(self, func: Callable[[DataItem, ...], DataItem], *args, **kwargs) -> None:
         """Add a processing operation to the dataset.

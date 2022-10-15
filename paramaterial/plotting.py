@@ -1,10 +1,10 @@
 """Module containing the plotting functions for the dataset class."""
 from typing import Optional, Tuple, List
 
+import matplotlib.patches as mpatches
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
-import matplotlib.patches as mpatches
 
 
 def configure_plt_formatting():
@@ -25,11 +25,10 @@ def configure_plt_formatting():
 configure_plt_formatting()
 
 
-def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4.8), color_by: Optional[str] = None,
-                 cbar: bool = False, cbar_label: Optional[str] = None, style_by: Optional[str] = None,
-                 marker_by: Optional[str] = None, width_by: Optional[str] = None, style_legend: bool = False,
-                 color_legend: bool = False, marker_legend: bool = False, width_legend: bool = False, **kwargs) -> \
-        Tuple[plt.Figure, plt.Axes]:
+def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4.8),
+                 cbar_by: Optional[str] = None, cbar_label: Optional[str] = None, cmap: str = 'plasma',
+                 color_by: Optional[str] = None, style_by: Optional[str] = None, marker_by: Optional[str] = None,
+                 width_by: Optional[str] = None, **kwargs) -> Tuple[plt.Figure, plt.Axes]:
     """Plot the curves from every item in the dataset using pandas.DataFrame.plot().
     Args:
         dataset: The dataset to plot.
@@ -37,15 +36,12 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
         y: The column to use for the y-axis.
         figsize: The figure size.
         color_by: The info column to use for coloring.
-        cbar: Whether to add a colorbar.
+        cbar_by: The info column to use for the colorbar.
         cbar_label: The label for the colorbar.
+        cmap: The colormap to use for the colorbar.
         style_by: The info column to use for line style.
         marker_by: The info column to use for marker style.
         width_by: The info column to use for line width.
-        style_legend: Whether to add a legend for the line styles.
-        color_legend: Whether to add a legend for the colors.
-        marker_legend: Whether to add a legend for the markers.
-        width_legend: Whether to add a legend for the line widths.
         **kwargs: Keyword arguments to pass to the pandas.DataFrame.plot() function.
     Returns:
         The figure and axes.
@@ -64,12 +60,25 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
     unique_markers = sorted(dataset.info_table[marker_by].unique().tolist()) if marker_by is not None else [None]
     unique_widths = sorted(dataset.info_table[width_by].unique().tolist()) if width_by is not None else [None]
 
-    for dataitem in dataset:
+    # make the colorbar
+    if cbar_by is not None:
+        vmin = dataset.info_table[cbar_by].min()
+        vmax = dataset.info_table[cbar_by].max()
+        cbar_norm = plt.Normalize(vmin=vmin, vmax=vmax)
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=cbar_norm)
+        sm.set_array([])
+        cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
+        if cbar_label is not None:
+            cbar.set_label(cbar_label)
+        cbar.ax.yaxis.set_ticks_position('left')
+        cbar.ax.yaxis.set_label_position('left')
 
+    for dataitem in dataset:
         # get the curve formatters
         linestyle = '-'
         marker = None
         width = 1
+        zorder = 1
         if style_by is not None:
             style_val = dataitem.info[style_by]
             linestyle = linestyles[unique_styles.index(style_val)]
@@ -83,12 +92,15 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
             color = next(plt.gca()._get_lines.prop_cycler)['color']
         else:
             color_val = dataitem.info[color_by]
-            color = plt.get_cmap('plasma')(unique_colors.index(color_val)/len(unique_colors))
+            color = plt.get_cmap(cmap)(unique_colors.index(color_val)/len(unique_colors))
+        if cbar_by is not None:
+            color = plt.get_cmap(cmap)(cbar_norm(dataitem.info[cbar_by]))
+            zorder = dataitem.info[cbar_by]
 
         # plot the curve, catch error from pd.plot() and raise a more informative error
         try:
             dataitem.data.plot(ax=ax, x=x, y=y, linestyle=linestyle, marker=marker, linewidth=width, color=color,
-                               **kwargs)
+                               zorder=zorder, **kwargs)
         except AttributeError as e:
             raise AttributeError(f"Error when calling pandas.DataFrame.plot(): {e}")
 
@@ -96,80 +108,57 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
     handles = []
     if color_by is not None:
         for color_val in unique_colors:
-            handles.append(mpatches.Patch(color=plt.get_cmap('plasma')(unique_colors.index(color_val)/len(unique_colors)),
-                                          label=color_val))
-
+            handles.append(
+                mpatches.Patch(color=plt.get_cmap(cmap)(unique_colors.index(color_val)/len(unique_colors)),
+                               label=color_val))
     if style_by is not None:
-        if style_legend:
-            unique_styles = dataset.info_table[style_by].unique()
-            style_legend_elements = [Line2D([0], [0], linestyle=linestyles[i], color='k', label=unique_styles[i]) for i
-                                     in range(len(unique_styles))]
-            handles += style_legend_elements
-
+        for style_val in unique_styles:
+            handles.append(Line2D([0], [0], color='black', linestyle=linestyles[unique_styles.index(style_val)],
+                                  label=style_val))
     if marker_by is not None:
-        if marker_legend:
-            unique_markers = dataset.info_table[marker_by].unique()
-            marker_legend_elements = [
-                Line2D([0], [0], marker=markers[i], color='k', label=unique_markers[i], linestyle='None') for i in
-                range(len(unique_markers))]
-            handles += marker_legend_elements
-
+        for marker_val in unique_markers:
+            handles.append(Line2D([0], [0], color='black', marker=markers[unique_markers.index(marker_val)],
+                                  linestyle='None', label=marker_val))
     if width_by is not None:
-        if width_legend:
-            unique_widths = dataset.info_table[width_by].unique()
-            width_legend_elements = [Line2D([0], [0], color='k', label=unique_widths[i], linewidth=i*0.1 + 1) for i in
-                                     range(len(unique_widths))]
-            handles += width_legend_elements
-
-
-
-
+        for width_val in unique_widths:
+            handles.append(Line2D([0], [0], color='black', linewidth=unique_widths.index(width_val)*0.1 + 1,
+                                  label=width_val))
     if len(handles) > 0:
-        ax.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper center', borderaxespad=0.)
+        if cbar_by is not None:
+            ax.legend(handles=handles, bbox_to_anchor=(0.5, 1.15), loc='upper center', ncol=6)
+        else:
+            ax.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
         fig.tight_layout()
 
     return fig, ax
 
 
-def dataset_subplots(dataset, x: str, y: str, nrows: int, ncols: int, cols_by: str, rows_by: str,
-                     col_keys: List[List[str]], row_keys: List[List[str]], col_titles: Optional[List[str]] = None,
-                     plot_titles: Optional[List[str]] = None, figsize: Tuple[float, float] = (6.4, 4.8),
-                     color_by: Optional[str] = None, cbar: bool = False, cbar_label: Optional[str] = None,
-                     style_by: Optional[str] = None, marker_by: Optional[str] = None, width_by: Optional[str] = None,
-                     style_legend: bool = False, color_legend: bool = False, marker_legend: bool = False,
-                     width_legend: bool = False, row_titles: Optional[List[str]] = None, **kwargs) -> Tuple[
-    plt.Figure, plt.Axes]:
-    """
-    Plot a dataset in a grid of subplots.
-    Args:
-        dataset: The dataset to plot.
-        x: The column to use for the x-axis.
-        y: The column to use
-        nrows: The number of rows in the subplot grid.
-        ncols: The number of columns in the subplot grid.
-        cols_by: The info column to use for the subplot columns.
-        rows_by: The info column to use for the subplot rows.
-        col_keys: The list of values for the subplot columns.
-        row_keys: The list of values for the subplot rows.
-        col_titles: The list of titles for the subplot columns.
-        plot_titles: The list of titles for the subplots.
-        figsize: The size of the figure.
-        color_by: The info column to use for the colors.
-        cbar: Whether to add a colorbar.
-        cbar_label: The label for the colorbar.
-        style_by: The info column to use for the line styles.
-        marker_by: The info column to use for the markers.
-        width_by: The info column to use for the line widths.
-        style_legend: Whether to add a legend for the line styles.
-        color_legend: Whether to add a legend for the colors.
-        marker_legend: Whether to add a legend for the markers.
-        width_legend: Whether to add a legend for the line widths.
-        row_titles: The list of titles for the subplot rows.
-        **kwargs: Keyword arguments to pass to the pandas.DataFrame.plot() function.
-    Returns:
-        The figure and axes.
-    """
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize, sharex=True, sharey=True)
+def dataset_subplots(
+        dataset,
+        x: str,
+        y: str,
+        nrows: int,
+        ncols: int,
+        cols_by: str,
+        rows_by: str,
+        col_keys: List[List[str]],
+        row_keys: List[List[str]],
+        col_titles: Optional[List[str]] = None,
+        row_titles: Optional[List[str]] = None,
+        plot_titles: Optional[List[str]] = None,
+        figsize: Tuple[float, float] = (6.4, 4.8),
+        cbar_by: Optional[str] = None,
+        cbar_label: Optional[str] = None,
+        cmap: str = 'plasma',
+        color_by: Optional[str] = None,
+        style_by: Optional[str] = None,
+        marker_by: Optional[str] = None,
+        width_by: Optional[str] = None,
+        sharex: str = 'col',
+        sharey: str = 'row',
+        **kwargs
+) -> Tuple[plt.Figure, plt.Axes]:
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize, sharex=sharex, sharey=sharey)
 
     # plot the data
     for row, row_key in enumerate(row_keys):
@@ -177,12 +166,13 @@ def dataset_subplots(dataset, x: str, y: str, nrows: int, ncols: int, cols_by: s
             ax = axes[row, col]
             if plot_titles is not None:
                 ax.set_title(plot_titles[row*ncols + col])
-            subset = dataset.get_subset({rows_by: row_key, cols_by: col_key})
+            subset = dataset[{rows_by: row_key, cols_by: col_key}]
             if subset is not None:
-                fig, ax = dataset_plot(subset, x, y, ax=ax, color_by=color_by, cbar=cbar, cbar_label=cbar_label,
+                fig, ax = dataset_plot(subset, x, y, ax=ax,
+                                        cbar=cbar, cbar_label=cbar_label,
+                                       color_by=color_by,
                                        style_by=style_by, marker_by=marker_by, width_by=width_by,
-                                       style_legend=style_legend, color_legend=color_legend,
-                                       marker_legend=marker_legend, width_legend=width_legend, **kwargs)
+                                       **kwargs)
 
     # add the legend
     _add_legend(dataset, color_by, cbar, cbar_label, style_by, marker_by, width_by, style_legend, color_legend,
