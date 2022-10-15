@@ -1,4 +1,5 @@
 """Functions for post-processing material test data. (Stress-strain)"""
+import copy
 from functools import wraps
 from typing import Callable, Dict
 
@@ -14,16 +15,11 @@ from paramaterial.plug import DataItem
 
 def process_data(dataitem: DataItem, cfg: Dict):
     """ Apply processing functions to a datafile object. """
-    processing_operations = [
-        calculate_force_disp_from_eng_curve,
-        trim_using_max_force,
-        calculate_eng_stress_strain_gradient,
-        calculate_elastic_modulus,
-        calculate_offset_yield_point,
-        select_pois_manually,
-    ]
+    processing_operations = [calculate_force_disp_from_eng_curve, trim_using_max_force,
+        calculate_eng_stress_strain_gradient, calculate_elastic_modulus, calculate_offset_yield_point,
+        select_pois_manually, ]
     dataitem = store_initial_indices(dataitem)
-    for proc_op in processing_operations: # todo: change order of error check
+    for proc_op in processing_operations:  # todo: change order of error check
         if proc_op.__name__ in cfg['operations']:
             print(f'{".": <10}Running {proc_op.__name__}.')
             dataitem = proc_op(dataitem)
@@ -32,17 +28,27 @@ def process_data(dataitem: DataItem, cfg: Dict):
     return dataitem
 
 
-def processing_function(function: Callable[[DataItem], DataItem]):
+def processing_function(function: Callable[[DataItem, ...], DataItem]):
     """ Applies function to dataitem then returns it. Just returns dataitem if any exception raised. """
 
     @wraps(function)
-    def wrapper(dataitem: DataItem):
+    def wrapper(dataitem: DataItem, *args, **kwargs):
+        input_dataitem = copy.deepcopy(dataitem)
         try:
-            return function(dataitem)
-        except TypeError as e:
+            dataitem = function(dataitem, *args, **kwargs)
+        except Exception as e:
+            print(f'!! Processing function error. !!')
+            print(f'!! {function.__name__} failed for {dataitem.test_id}. !!')
             print(e)
-            # log_error(e)
-            return dataitem
+        try:
+            assert input_dataitem in dataitem
+        except AssertionError as e:
+            print(f'!! Processing function error. !!')
+            print(f'!! {function.__name__} failed for {dataitem.test_id}. !!')
+            print('!! Input data and info was not in output DataItem. !!')
+            print(e)
+            dataitem = input_dataitem
+        return dataitem
 
     return wrapper
 
@@ -61,8 +67,8 @@ def calculate_force_disp_from_eng_curve(dataitem: DataItem) -> DataItem:
     s = dataitem.data['eng stress']
     L_0 = dataitem.info['L_0 (mm)']
     A_0 = dataitem.info['A_0 (mm^2)']
-    dataitem.data['Jaw(mm)'] = e.values * L_0
-    dataitem.data['Force(kN)'] = s.values * A_0 * 0.001
+    dataitem.data['Jaw(mm)'] = e.values*L_0
+    dataitem.data['Force(kN)'] = s.values*A_0*0.001
     return dataitem
 
 

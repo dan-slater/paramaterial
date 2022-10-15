@@ -4,7 +4,7 @@ import os
 import shutil
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import Dict, Callable, Optional, List, Tuple
+from typing import Dict, Callable, Optional, List, Tuple, Any
 
 import matplotlib
 from matplotlib.axes import Axes
@@ -16,6 +16,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from paramaterial.processing import processing_function
 from paramaterial.plotting.dataset_plot import dataset_plot, dataset_subplots
 
 IO_Paths = namedtuple('IO_Paths', ['input_data', 'input_info', 'output_data', 'output_info'])
@@ -42,89 +43,59 @@ class DataItem:
         self.data.to_csv(output_path, index=False)
         return self
 
+    def __contains__(self, other: 'DataItem'):
+        if self.test_id != other.test_id:
+            return False
+        if other.data is not None and other.data not in self.data:
+            return False
+        if other.info is not None and other.info not in self.info:
+            return False
+        return True
+
 
 @dataclass
 class DataSet:
-    info_table: pd.DataFrame = None
-    datamap: map = None
+    data_dir: str = None
+    info_path: str = None
 
     def __init__(self, data_dir: str, info_path: str):
-        self.info_table = pd.read_excel(info_path)
+        self.data_dir = data_dir
+        self.info_path = info_path
+
+    def __enter__(self):
+        self.info_table = pd.read_excel(self.info_path)
         if 'test id' not in self.info_table.columns:
             raise ValueError('No column called "test id" found in info table.')
-        file_paths = [data_dir + f'/{test_id}.csv' for test_id in self.info_table['test id']]
+        file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self.info_table['test id']]
         self.datamap = map(lambda path: DataItem.read_from_csv(path), file_paths)
         self.datamap = map(lambda obj: DataItem.get_row_from_info_table(obj, self.info_table), self.datamap)
 
     def __iter__(self):
+        """Iterate over the dataset."""
         for dataitem in copy.deepcopy(self.datamap):
             if dataitem.test_id in self.info_table['test id'].values:
                 yield dataitem
 
     def __len__(self):
+        """Get the number of dataitems in the dataset."""
         return len(self.info_table)
 
-    def plot(self,
-             x: str,
-             y: str,
-             colorby: Optional[str] = None,
-             styleby: Optional[str] = None,
-             markerby: Optional[str] = None,
-             widthby: Optional[str] = None,
-             cbar: bool = False,
-             cbar_label: Optional[str] = None,
-             **kwargs) -> plt.Axes:
-        """ Plot the data in the dataset.
+    def __contains__(self, item: DataItem):
+        """Check if a dataitem is in the dataset."""
+        return item.test_id in self.info_table['test id'].values
+
+    def __getitem__(self, index) -> 'DataSet':
+        """Get a subset of the dataset using pandas filtering syntax."""
+        subset = copy.deepcopy(self)
+        subset.info_table = self.info_table.loc[index]
+        return subset
+
+    def get_subset(self, subset_keys: Dict[str, List[Any]]) -> 'DataSet':
+        """Get a subset of the dataset.
 
         Args:
-            x: The column name of the x-axis data.
-            y: The column name of the y-axis data.
-            colorby: The info column to use for coloring.
-            styleby: The info column to use for line style.
-            markerby: The info column to use for marker style.
-            widthby: The info column to use for line width.
-            cbar: Whether to add a colorbar.
-            cbar_label: The label for the colorbar.
-         """
-        return dataset_plot(self, x, y,
-                            colorby, styleby, markerby, widthby,
-                            cbar, cbar_label,
-                            **kwargs)
-
-    def subplots(
-            self,
-            x: str,
-            y: str,
-            nrows: int,
-            ncols: int,
-            cols_by: str,
-            rows_by: str,
-            col_keys: List[str],
-            row_keys: List[str],
-            figsize: Tuple[float, float] = (6.4, 4.8),
-            row_titles: Optional[List[str]] = None,
-            col_titles: Optional[List[str]] = None,
-            plot_titles: Optional[List[str]] = None,
-            **kwargs
-    ) -> tuple[Figure, Axes]:
-        """Plot a subplot of the dataset.
-        Args:
-            nrows: The number of rows in the subplot.
-            ncols: The number of columns in the subplot.
-            col_keys: The info column keys to use for the columns.
-            row_keys: The info column keys to use for the rows.
-            figsize: The figure size.
-            row_titles: The titles for the rows.
-            col_titles: The titles for the columns.
-            plot_titles: The titles for the plots.
-            **kwargs: Keyword arguments to pass to the dataset_plot() function.
-        Returns: The figure and axes.
+            subset_keys: A dictionary of column names and lists of values to use for the subset.
         """
-        return dataset_subplots(self, x=x, y=y, nrows=nrows, ncols=ncols, cols_by=cols_by, rows_by=rows_by,
-                                col_keys=col_keys, row_keys=row_keys, figsize=figsize, row_titles=row_titles,
-                                col_titles=col_titles, plot_titles=plot_titles, **kwargs)
-
-    def get_subset(self, subset_keys: Dict) -> 'DataSet':
         subset = copy.deepcopy(self)
         info = self.info_table
         for col_name, vals in subset_keys.items():
@@ -139,13 +110,28 @@ class DataSet:
         subset.info_table = info
         return subset
 
-    def add_proc_op(self, func: Callable[[DataItem, ...], DataItem], func_cfg: Optional[Dict] = None):
-        if func_cfg is not None:
-            self.datamap = map(lambda dataitem: func(dataitem, func_cfg), self.datamap)
-        else:
-            self.datamap = map(lambda dataitem: func(dataitem), self.datamap)
+    def add_proc_op(self, func: Callable[[DataItem, ...], DataItem], *args, **kwargs) -> None:
+        """Add a processing operation to the dataset.
 
-    def output(self, data_dir: str, info_path: str) -> None:
+        Args:
+            func: The function to apply to the dataset.
+            *args: Arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+        """
+        self.datamap = map(lambda dataitem: func(dataitem, *args, **kwargs), self.datamap)
+
+    def write_output(self, data_dir: str, info_path: str) -> None:
+        """Exectue the processing operations and write the output of the dataset to a directory.
+
+        Args:
+            data_dir: The directory to write the data to.
+            info_path: The path to write the info table to.
+        """
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+        for dataitem in self:
+            dataitem.write_to_csv(data_dir)
+        self.info_table.to_excel(info_path, index=False)
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
         loading_bar = tqdm(range(len(self.info_table)))
@@ -156,18 +142,3 @@ class DataSet:
             out_info_table = pd.concat([out_info_table, dataitem.info.to_frame().T], ignore_index=True)
             out_info_table.to_excel(info_path, index=False)
 
-
-if __name__ == '__main__':
-    dataset = DataSet('../examples/aakash study/data/01 raw data', '../examples/aakash study/info/01 raw info.xlsx')
-    dataset.subplots(
-        x='Strain',
-        y='Stress_MPa',
-        ylabel='Stress (MPa)',
-        nrows=2,
-        ncols=2,
-        cols_by='test type',
-        rows_by='material',
-        col_keys=['P', 'T'],
-        row_keys=['G', 'H']
-    )
-    plt.show()
