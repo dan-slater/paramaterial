@@ -1,4 +1,4 @@
-![Paramaterial logo](docs/img/paramaterial-logo.png)
+![Paramaterial logo](https://github.com/dan-slater/paramaterial/blob/main/docs/img/paramaterial-logo.png?raw=true)
 [![PyPI version](https://badge.fury.io/py/paramaterial.svg)](https://badge.fury.io/py/paramaterial)
 
 # Paramaterial

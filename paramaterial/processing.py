@@ -1,6 +1,7 @@
 """Functions for post-processing material test data. (Stress-strain)"""
 import copy
 from functools import wraps
+
 from typing import Callable, Dict
 
 import numpy as np
@@ -16,8 +17,9 @@ from paramaterial.plug import DataItem
 def process_data(dataitem: DataItem, cfg: Dict):
     """ Apply processing functions to a datafile object. """
     processing_operations = [calculate_force_disp_from_eng_curve, trim_using_max_force,
-        calculate_eng_stress_strain_gradient, calculate_elastic_modulus, calculate_offset_yield_point,
-        select_pois_manually, ]
+                             calculate_eng_stress_strain_gradient, calculate_elastic_modulus,
+                             calculate_offset_yield_point,
+                             select_pois_manually, ]
     dataitem = store_initial_indices(dataitem)
     for proc_op in processing_operations:  # todo: change order of error check
         if proc_op.__name__ in cfg['operations']:
@@ -188,4 +190,55 @@ def trim_using_considere_criterion(dataitem: DataItem) -> DataItem:
     except KeyError:
         dataitem.data = df[:maxdex].reset_index(drop=False)
         dataitem.info['considere trim indices'] = (df['index'][0], df['index'][maxdex])
+    return dataitem
+
+
+def calculate_engineering_stress_strain(dataitem: DataItem):
+    """ Calculates engineering stress and strain from force and deformation. """
+    info: pd.Series = dataitem.info
+    data: pd.Dataframe = dataitem.data
+    A_0, L_0 = info['A_0'], info['L_0']
+    force, disp = data["Force(kN)"], data["Jaw(kN)"]
+    eng_stress = force/A_0
+    eng_strain = disp/L_0
+    data['eng_stress'] = eng_stress
+    data['eng_strain'] = eng_strain
+    return dataitem
+
+
+def calculate_true_stress_strain(dataitem: DataItem):
+    """ Calculates true stress and strain from force and deformation. """
+    info: pd.Series = dataitem.info
+    data: pd.Dataframe = dataitem.data  # todo: check if this provides a pointer or a copy
+
+    if info['test_type'] == 'tensile test':
+        A_0, L_0 = info['A_0'], info['L_0']
+        force, disp = data["Force(kN)"], data["Jaw(kN)"]
+        eng_stress = force/A_0
+        eng_strain = disp/L_0
+        true_stress = eng_stress*(1 + eng_strain)
+        true_strain = np.log(1 + eng_strain)
+
+    elif info['test_type'] == 'uniaxial compression test':
+        A_0, L_0 = info['A_0'], info['L_0']
+        force, disp = data["Force(kN)"], data["Jaw(kN)"]
+        eng_stress = force/A_0
+        eng_strain = disp/L_0
+        true_stress = eng_stress*(1 - eng_strain)
+        true_strain = -np.log(1 - eng_strain)
+
+    elif info['test_type'] == 'plane strain compression test':
+        A_0, L_0 = info['A_0'], info['L_0']
+        force, disp = data["Force(kN)"], data["Jaw(kN)"]
+        eng_stress = force/A_0
+        eng_strain = disp/L_0
+        true_stress = eng_stress*(1 - eng_strain)
+        true_strain = -np.log(1 - eng_strain)
+
+    else:
+        print(f'Invalid test type "{info["test_type"]}" for dataitem "{dataitem.test_id}"')
+        true_stress = true_strain = None
+
+    data['true_stress'] = true_stress
+    data['true_strain'] = true_strain
     return dataitem

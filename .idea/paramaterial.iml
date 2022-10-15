@@ -3,12 +3,16 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/baron study" />
       <excludeFolder url="file://$MODULE_DIR$/examples/hyde study" />
       <excludeFolder url="file://$MODULE_DIR$/examples/vos psc study" />
       <excludeFolder url="file://$MODULE_DIR$/examples/vos ringing study" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/aakash tensile study" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/baron study/data" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.10 (paramaterial) (3)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PackageRequirementsSettings">
+    <option name="removeUnused" value="true" />
   </component>
 </module>
