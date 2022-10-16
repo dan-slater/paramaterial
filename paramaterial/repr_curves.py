@@ -20,6 +20,7 @@ def main():
     make_representative_data(data_path, info_path, subset_filters, out_data_path, out_info_path)
 
 
+# todo: find a way to make this more general
 def create_filter_permutations(info_path):
     filters = []
     info = pd.read_excel(info_path)
@@ -49,7 +50,7 @@ def make_representative_data(data_path, info_path, subset_filters, out_data_path
     for i, fltr in enumerate(subset_filters):
         # setup data storage objects
         repr_df = pd.DataFrame()
-        dataset = DataSet()
+        dataset = DataSet() # todo: update to use data_path and info_path
         dataitem: DataItem  # type hint for dataitem objects returned by iterating through dataset
         dataset.load_data(data_path, info_path, fltr)
         # find max_strain and make monotonically increasing strain vector
