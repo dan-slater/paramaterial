@@ -86,40 +86,18 @@ class DataSet:
             info = info.loc[info[col_name].isin(vals)]
         subset.info_table = info
         return subset
-    #
-    # def get_subset(self, subset_keys: Dict[str, List[Any]]) -> 'DataSet':
-    #     """Get a subset of the dataset.
-    #
-    #     Args:
-    #         subset_keys:  to use for the subset.
-    #     """
-    #     subset = copy.deepcopy(self)
-    #     info = self.info_table
-    #     for col_name, vals in subset_keys.items():
-    #         if col_name not in self.info_table.columns:
-    #             raise ValueError(f'Column {col_name} not found in info table.')
-    #         if not all([val in self.info_table[col_name].values for val in vals]):
-    #             raise ValueError(f'Values not found in "{col_name}" column:\n'
-    #                              f'\t{[val for val in vals if val not in self.info_table[col_name].values]}.')
-    #         if not isinstance(vals, list):
-    #             vals = [vals]
-    #         info = info.loc[info[col_name].isin(vals)]
-    #     subset.info_table = info
-    #     return subset
 
     def add_proc_op(self, func: Callable[[DataItem, ...], DataItem], *args, **kwargs) -> None:
         """Add a processing operation to the dataset.
-
         Args:
-            func: The function to apply to the dataset.
-            *args: Arguments to pass to the function.
-            **kwargs: Keyword arguments to pass to the function.
+            func: The processing operation (function) to apply to the dataset.
+            *args: Arguments to pass to the processing function.
+            **kwargs: Keyword arguments to pass to the processing function.
         """
         map(lambda dataitem: func(dataitem, *args, **kwargs), self.datamap)
 
     def write_output(self, data_dir: str, info_path: str) -> None:
-        """Exectue the processing operations and write the output of the dataset to a directory.
-
+        """Execute the processing operations and write the output of the dataset to a directory.
         Args:
             data_dir: The directory to write the data to.
             info_path: The path to write the info table to.
