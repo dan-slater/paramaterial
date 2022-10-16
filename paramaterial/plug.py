@@ -8,8 +8,6 @@ from typing import Dict, Callable, List, Any
 import pandas as pd
 from tqdm import tqdm
 
-IO_Paths = namedtuple('IO_Paths', ['input_data', 'input_info', 'output_data', 'output_info'])
-
 
 @dataclass
 class DataItem:
