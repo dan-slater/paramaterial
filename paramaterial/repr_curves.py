@@ -42,6 +42,10 @@ def create_filter_permutations(info_path):
                                         'temperature': [temp]})
     return filters
 
+# make permutations out of list of column headers and create a list of dataset filters
+def make_dataset_permutations():
+
+
 
 def make_representative_data(data_path, info_path, subset_filters, out_data_path, out_info_path, strain_res: int = 500):
     # make info dataframe for output

@@ -77,11 +77,11 @@ def rename_by_test_id(data_dir, info_path):
 
     # rename files if they exist and if new name is not already taken
     for filename, test_id in zip(info_df['old filename'], info_df['test id']):
-        if os.path.exists(f'{data_dir}/{filename}.csv'):
+        if os.path.exists(f'{data_dir}/{filename}'):
             if os.path.exists(f'{data_dir}/{test_id}.csv'):
                 raise ValueError(f'File {test_id}.csv already exists in {data_dir}.')
-            os.rename(f'{data_dir}/{filename}.csv', f'{data_dir}/{test_id}.csv')
-            print(f'Renamed {filename}.csv to {test_id}.csv.')
+            os.rename(f'{data_dir}/{filename}', f'{data_dir}/{test_id}.csv')
+            print(f'Renamed {filename} to {test_id}.csv.')
         else:
             print(f'File {filename}.csv does not exist in {data_dir}.')
 
