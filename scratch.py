@@ -1,18 +1,11 @@
-"""Module to make simple plot"""
+"""Module to generate a rick roll link."""
 
-# plot a decaying vibration
-import matplotlib.pyplot as plt
-import numpy as np
+import random
+import string
 
-# create data
-x = np.linspace(0, 10, 100)
-y = np.sin(x) * np.exp(-x / 10)
+def generate_rick_roll_link():
+    """Generate a rick roll link."""
+    link = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    return link
 
-# plot
-fig, ax = plt.subplots()
-ax.plot(x, y)
-ax.set(xlabel='time (s)', ylabel='vibration (m/s^2)',
-         title='Decaying Vibration')
-ax.grid()
 
-plt.show()
