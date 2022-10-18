@@ -1,8 +1,7 @@
 """Module containing the plotting functions for the dataset class."""
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Any
 
 import matplotlib.patches as mpatches
-import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -34,6 +33,7 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
         dataset: The dataset to plot.
         x: The column to use for the x-axis.
         y: The column to use for the y-axis.
+        ax: The matplotlib axes to plot on.
         figsize: The figure size.
         color_by: The info column to use for coloring.
         cbar_by: The info column to use for the colorbar.
@@ -46,12 +46,13 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
     Returns:
         The figure and axes.
     """
-    if plt.gcf() is None or plt.gca() is None:
-        fig, ax = plt.subplots(figsize=figsize)
-    else:
-        fig = plt.gcf()
-        ax = plt.gca()
 
+    # make figure and ax if they don't exist
+    if 'ax' not in kwargs:
+        fig, ax = plt.subplots(figsize=figsize)
+        kwargs['ax'] = ax
+
+    # setup curve formatters
     linestyles = ['-', '--', '-.', ':']
     markers = ['o', 's', 'v', '^', 'd', 'p', 'h', '8', '>', '<', 'x', 'D', 'P', 'H', 'X']
 
@@ -70,8 +71,10 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
         cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
         if cbar_label is not None:
             cbar.set_label(cbar_label)
-        cbar.ax.yaxis.set_ticks_position('left')
-        cbar.ax.yaxis.set_label_position('left')
+        cbar.ax.yaxis.set_ticks_position('right')
+        cbar.ax.yaxis.set_label_position('right')
+        # add colorbar artist to ax collections
+
 
     for dataitem in dataset:
         # get the curve formatters
@@ -97,10 +100,10 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
             color = plt.get_cmap(cmap)(cbar_norm(dataitem.info[cbar_by]))
             zorder = dataitem.info[cbar_by]
 
-        # plot the curve, catch error from pd.plot() and raise a more informative error
+        # plot the curve
         try:
-            dataitem.data.plot(ax=ax, x=x, y=y, linestyle=linestyle, marker=marker, linewidth=width, color=color,
-                               zorder=zorder, **kwargs)
+            dataitem.data.plot(x=x, y=y, linestyle=linestyle, marker=marker, linewidth=width, color=color,
+                                    zorder=zorder, legend=False, **kwargs)
         except AttributeError as e:
             raise AttributeError(f"Error when calling pandas.DataFrame.plot(): {e}")
 
@@ -128,8 +131,8 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
             ax.legend(handles=handles, bbox_to_anchor=(0.5, 1.15), loc='upper center', ncol=6)
         else:
             ax.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-        fig.tight_layout()
 
+    fig.tight_layout()
     return fig, ax
 
 
@@ -141,12 +144,12 @@ def dataset_subplots(
         ncols: int,
         cols_by: str,
         rows_by: str,
-        col_keys: List[List[str]],
-        row_keys: List[List[str]],
+        col_keys: List[List[Any]],
+        row_keys: List[List[Any]],
         col_titles: Optional[List[str]] = None,
         row_titles: Optional[List[str]] = None,
         plot_titles: Optional[List[str]] = None,
-        figsize: Tuple[float, float] = (6.4, 4.8),
+        figsize: Tuple[float, float] = (12, 8),
         cbar_by: Optional[str] = None,
         cbar_label: Optional[str] = None,
         cmap: str = 'plasma',
@@ -156,38 +159,25 @@ def dataset_subplots(
         width_by: Optional[str] = None,
         sharex: str = 'col',
         sharey: str = 'row',
+        wspace: float = 0.2,
+        hspace: float = 0.2,
         **kwargs
 ) -> Tuple[plt.Figure, plt.Axes]:
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize, sharex=sharex, sharey=sharey)
 
-    # plot the data
-    for row, row_key in enumerate(row_keys):
-        for col, col_key in enumerate(col_keys):
-            ax = axes[row, col]
-            if plot_titles is not None:
-                ax.set_title(plot_titles[row*ncols + col])
-            subset = dataset[{rows_by: row_key, cols_by: col_key}]
-            if subset is not None:
-                fig, ax = dataset_plot(subset, x, y, ax=ax,
-                                        cbar=cbar, cbar_label=cbar_label,
-                                       color_by=color_by,
-                                       style_by=style_by, marker_by=marker_by, width_by=width_by,
-                                       **kwargs)
+    # curve formatters
+    linestyles = ['-', '--', '-.', ':']
+    markers = ['o', 's', 'v', '^', 'd', 'p', 'h', '8', '>', '<', 'x', 'D', 'P', 'H', 'X']
 
-    # add the legend
-    _add_legend(dataset, color_by, cbar, cbar_label, style_by, marker_by, width_by, style_legend, color_legend,
-                marker_legend, width_legend)
+    unique_colors = sorted(dataset.info_table[color_by].unique().tolist()) if color_by is not None else [None]
+    unique_styles = sorted(dataset.info_table[style_by].unique().tolist()) if style_by is not None else [None]
+    unique_markers = sorted(dataset.info_table[marker_by].unique().tolist()) if marker_by is not None else [None]
+    unique_widths = sorted(dataset.info_table[width_by].unique().tolist()) if width_by is not None else [None]
 
-    return fig, axes
-
-
-def _setup_grid(nrows: int, ncols: int, figsize: Tuple[float, float] = (6.4, 4.8), row_titles=None, col_titles=None,
-                subplot_titles=None, wspace: float = 0.3, hspace: float = 0.3, sharex: str = 'col',
-                sharey: str = 'row', ) -> np.ndarray:
     # setup grid
     fig = plt.figure(figsize=figsize)
     gs = fig.add_gridspec(nrows, ncols, wspace=wspace, hspace=hspace)
     axs = gs.subplots(sharex=sharex, sharey=sharey)
+
     # add row titles
     if row_titles is not None:
         for ax, row_title in zip(axs[:, 0], row_titles):
@@ -198,7 +188,83 @@ def _setup_grid(nrows: int, ncols: int, figsize: Tuple[float, float] = (6.4, 4.8
         for ax, column_title in zip(axs[0, :], col_titles):
             ax.set_title(column_title)
     # add subplot titles
-    if subplot_titles is not None:
-        for ax, subplot_title in zip(axs.flat, subplot_titles):
+    if plot_titles is not None:
+        for ax, subplot_title in zip(axs.flat, plot_titles):
             ax.set_title(subplot_title)
-    return axs
+    # add colorbar
+    if cbar_by is not None:
+        plt.subplots_adjust(right=0.875)
+        cax = plt.axes([0.9, 0.3, 0.014, 0.4])
+        vmin = dataset.info_table[cbar_by].min()
+        vmax = dataset.info_table[cbar_by].max()
+        cbar_norm = plt.Normalize(vmin=vmin, vmax=vmax)
+        cbar = fig.colorbar(plt.cm.ScalarMappable(norm=cbar_norm, cmap=cmap), cax=cax)
+        if cbar_label is not None:
+            cbar.set_label(cbar_label)
+        cbar.ax.yaxis.set_ticks_position('right')
+        cbar.ax.yaxis.set_label_position('right')
+    # add curves to axes
+    for row, row_key in enumerate(row_keys):
+        for col, col_key in enumerate(col_keys):
+            ax = axs[row, col]
+            dataset_subset = dataset[{cols_by: col_key, rows_by: row_key}]
+            for dataitem in dataset_subset:
+                # get the curve formatters
+                linestyle = '-'
+                marker = None
+                width = 1
+                zorder = 1
+                if style_by is not None:
+                    style_val = dataitem.info[style_by]
+                    linestyle = linestyles[unique_styles.index(style_val)]
+                if marker_by is not None:
+                    marker_val = dataitem.info[marker_by]
+                    marker = markers[unique_markers.index(marker_val)]
+                if width_by is not None:
+                    width_val = dataitem.info[width_by]
+                    width = unique_widths.index(width_val)*0.1 + 1
+                if color_by is None:
+                    color = next(plt.gca()._get_lines.prop_cycler)['color']
+                else:
+                    color_val = dataitem.info[color_by]
+                    color = plt.get_cmap(cmap)(unique_colors.index(color_val)/len(unique_colors))
+                if cbar_by is not None:
+                    color = plt.get_cmap(cmap)(cbar_norm(dataitem.info[cbar_by]))
+                    zorder = dataitem.info[cbar_by]
+
+                # plot the curve
+                try:
+                    ax = dataitem.data.plot(ax=ax, x=x, y=y, linestyle=linestyle, marker=marker, linewidth=width,
+                                            color=color,
+                                            zorder=zorder, legend=False, **kwargs)
+                    fig = ax.get_figure()
+                except AttributeError as e:
+                    raise AttributeError(f"Error when calling pandas.DataFrame.plot(): {e}")
+
+    # add the legend
+    handles = []
+    if color_by is not None:
+        for color_val in unique_colors:
+            handles.append(
+                mpatches.Patch(color=plt.get_cmap(cmap)(unique_colors.index(color_val)/len(unique_colors)),
+                               label=color_val))
+    if style_by is not None:
+        for style_val in unique_styles:
+            handles.append(Line2D([0], [0], color='black', linestyle=linestyles[unique_styles.index(style_val)],
+                                  label=style_val))
+    if marker_by is not None:
+        for marker_val in unique_markers:
+            handles.append(Line2D([0], [0], color='black', marker=markers[unique_markers.index(marker_val)],
+                                  linestyle='None', label=marker_val))
+    if width_by is not None:
+        for width_val in unique_widths:
+            handles.append(Line2D([0], [0], color='black', linewidth=unique_widths.index(width_val)*0.1 + 1,
+                                  label=width_val))
+    if len(handles) > 0:
+        if cbar_by is not None:
+            fig.legend(handles=handles, bbox_to_anchor=(0.5, 1.15), loc='upper center', ncol=6)
+        else:
+            fig.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+
+    return fig, axs
+
