@@ -2,6 +2,7 @@
 from typing import Optional, Tuple, List, Any
 
 import matplotlib.patches as mpatches
+import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -74,7 +75,7 @@ def dataset_plot(dataset, x: str, y: str, figsize: Tuple[float, float] = (6.4, 4
         cbar_norm = plt.Normalize(vmin=vmin, vmax=vmax)
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=cbar_norm)
         sm.set_array([])
-        cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
+        cbar = plt.colorbar(sm, ax=kwargs['ax'], fraction=0.046, pad=0.04)
         if cbar_label is not None:
             cbar.set_label(cbar_label)
         cbar.ax.yaxis.set_ticks_position('right')
@@ -173,6 +174,8 @@ def dataset_subplots(dataset, x: str, y: str, nrows: int, ncols: int, cols_by: s
     fig = plt.figure(figsize=figsize)
     gs = fig.add_gridspec(nrows, ncols, wspace=wspace, hspace=hspace)
     axs = gs.subplots(sharex=sharex, sharey=sharey)
+    if axs.ndim == 1:
+        axs = np.array([axs])
 
     # add row titles
     if row_titles is not None:

@@ -43,7 +43,14 @@ def create_filter_permutations(info_path):
     return filters
 
 # make permutations out of list of column headers and create a list of dataset filters
-def make_dataset_permutations():
+def make_dataset_permutations(dataset: DataSet, columns: List[str]):
+    filters = []
+    for column in columns:
+        values = dataset.info_table[column].unique()
+        for value in values:
+            filters.append({column: [value]})
+    return filters
+
 
 
 
