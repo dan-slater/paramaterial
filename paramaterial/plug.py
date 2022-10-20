@@ -77,30 +77,6 @@ class DataSet:
         new_dataset.datamap = map(wrapped_func, new_dataset.datamap)
         return new_dataset
 
-    # group the dataset by a column in the info table or by a list of columns in the info table
-    # make representative curves for each group (mean, median, etc.)
-    # remake the info table so that it describes the grouping information about the representative curves
-    # turn the datamap into a datamap of the representative curves
-    def group_by(self, info_cols: Union[str, List[str]]) -> 'DataSet':
-        """Group the dataset by a column in the info table or by a list of columns in the info table.
-        Args:
-            info_cols: The column(s) to group by.
-        Returns:
-            A new dataset with the dataitems grouped by the specified column(s).
-        """
-        if isinstance(info_cols, str):
-            info_cols = [info_cols]
-        if not isinstance(info_cols, list):
-            raise TypeError('Columns must be a string or a list of strings.')
-        for column in info_cols:
-            if column not in self.info_table.columns:
-                raise ValueError(f'Column "{column}" not found in info table.')
-        new_dataset = self.copy()
-        # todo
-
-
-
-
     def write_output(self, data_dir: str, info_path: str) -> None:
         """Execute the processing operations and write the output of the dataset to a directory.
         Args:
