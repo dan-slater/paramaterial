@@ -20,6 +20,10 @@ def main():
     make_representative_data(data_path, info_path, subset_filters, out_data_path, out_info_path)
 
 
+
+
+
+
 # todo: find a way to make this more general
 def create_filter_permutations(info_path):
     filters = []
@@ -42,7 +46,7 @@ def create_filter_permutations(info_path):
                                         'temperature': [temp]})
     return filters
 
-# make permutations out of list of column headers and create a list of dataset filters
+
 def make_dataset_permutations(dataset: DataSet, columns: List[str]):
     filters = []
     for column in columns:
@@ -50,8 +54,6 @@ def make_dataset_permutations(dataset: DataSet, columns: List[str]):
         for value in values:
             filters.append({column: [value]})
     return filters
-
-
 
 
 def make_representative_data(data_path, info_path, subset_filters, out_data_path, out_info_path, strain_res: int = 500):

@@ -77,30 +77,29 @@ class DataSet:
         new_dataset.datamap = map(wrapped_func, new_dataset.datamap)
         return new_dataset
 
-    def make_representative_curves(self, data_dir: str, info_path: str, filter_keys: List[str], interp_by: str, interp_res: int = 200):
-        """Make representative curves of the dataset and save them to a directory.
+    # group the dataset by a column in the info table or by a list of columns in the info table
+    # make representative curves for each group (mean, median, etc.)
+    # remake the info table so that it describes the grouping information about the representative curves
+    # turn the datamap into a datamap of the representative curves
+    def group_by(self, info_cols: Union[str, List[str]]) -> 'DataSet':
+        """Group the dataset by a column in the info table or by a list of columns in the info table.
         Args:
-
+            info_cols: The column(s) to group by.
+        Returns:
+            A new dataset with the dataitems grouped by the specified column(s).
         """
-        subset_filters = []
-        for col in filter_keys:
-            values = self.info_table[col].unique()
-            for value in values:
-                subset_filters.append({col: [value]})
-        repr_ids = [f'repr_id_{i:0>4}' for i in range(len(subset_filters))]
-        for repr_id, subset_filter in zip(repr_ids, subset_filters):
-            repr_df = pd.DataFrame()
-            repr_subset = self[subset_filter]
-            for di in repr_subset:
-                interp_vec = np.linspace(di.data[interp_by].min(), di.data[interp_by].max(), interp_res)
-                interp_df = pd.DataFrame({f'interp_vec_{interp_by}': interp_vec})
-                for col in di.data.columns:
-                    if col != interp_by:
-                        interp_col = np.interp(interp_vec, di.data[interp_by], di.data[col])
-                        interp_df[f'interp_{col}'] = interp_col
-                repr_df = pd.concat([repr_df, interp_df])
-            repr_df = repr_df.groupby(f'interp_vec_{interp_by}').mean().reset_index()
-            repr_df.to_csv(data_dir + '/' + repr_id + '.csv', index=False)
+        if isinstance(info_cols, str):
+            info_cols = [info_cols]
+        if not isinstance(info_cols, list):
+            raise TypeError('Columns must be a string or a list of strings.')
+        for column in info_cols:
+            if column not in self.info_table.columns:
+                raise ValueError(f'Column "{column}" not found in info table.')
+        new_dataset = self.copy()
+        # todo
+
+
+
 
     def write_output(self, data_dir: str, info_path: str) -> None:
         """Execute the processing operations and write the output of the dataset to a directory.
@@ -113,14 +112,11 @@ class DataSet:
         for dataitem in self:
             dataitem.write_data_to_csv(data_dir)
         self.info_table.to_excel(info_path, index=False)
-        loading_bar = tqdm(range(len(self.info_table)))
         out_info_table = pd.DataFrame()
         for i, dataitem in enumerate(copy.deepcopy(self.datamap)):
-            loading_bar.update()
             dataitem.write_data_to_csv(data_dir)
             out_info_table = pd.concat([out_info_table, dataitem.info.to_frame().T], ignore_index=True)
             out_info_table.to_excel(info_path, index=False)
-        loading_bar.close()
 
     def copy(self) -> 'DataSet':
         """Return a copy of the dataset."""
@@ -176,6 +172,8 @@ class DataSet:
                 if not isinstance(vals, list):
                     vals = [vals]
                 info = info.loc[info[col_name].isin(vals)]
+            # update the datamap
+            subset.datamap = [list(copy.deepcopy(self.datamap))[i] for i in info.index]
             subset.info_table = info
             return subset
         else:
