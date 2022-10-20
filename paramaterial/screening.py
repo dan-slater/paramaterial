@@ -30,6 +30,30 @@ def make_dataset_plots_pdf(
             plt.close()
 
 
+def make_dataset_plots_screening_pdf(
+        dataset: DataSet,
+        plot_func: Callable[[DataItem], None],
+        pdf_path: str = 'dataset_plots.pdf'
+) -> None:
+    pdf_canvas = canvas.Canvas(pdf_path, pagesize=(820, 600))
+    for dataitem in dataset:
+        plot_func(dataitem)
+        imgdata = BytesIO()
+        plt.savefig(imgdata, format='svg')
+        imgdata.seek(0)
+        drawing = svg2rlg(imgdata)
+        renderPDF.draw(drawing, pdf_canvas, 5, 5)
+        form = pdf_canvas.acroForm
+        pdf_canvas.setFont("Courier", 22)
+        pdf_canvas.drawString(20, 555, 'SELECT TO REJECT:')
+        form.checkbox(name=f'reject_box_{dataitem.test_id}', x=252, y=552, buttonStyle='check',
+                        borderColor=magenta, fillColor=pink, textColor=blue, forceBorder=True)
+        pdf_canvas.showPage()
+        plt.close()
+    pdf_canvas.save()
+    print(f'Screening pdf saved to {pdf_path}.')
+
+
 def make_screening_pdf(data_dir: str, pdf_path: str, df_plot_kwargs: Dict):
     # make page
     pdf_canvas = canvas.Canvas(pdf_path, pagesize=(820, 600))

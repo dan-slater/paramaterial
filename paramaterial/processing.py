@@ -1,20 +1,49 @@
 """Functions for post-processing material test data. (Stress-strain)"""
 import os
+from io import BytesIO
+from typing import Callable
 from typing import List
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from reportlab.graphics import renderPDF
+from reportlab.lib.colors import magenta, pink, blue
+from reportlab.pdfgen import canvas
+from svglib.svglib import svg2rlg
 
-from paramaterial.plug import DataSet
+from paramaterial.plug import DataSet, DataItem
 
 
-# from mpl_interactions import zoom_factory, panhandler
-# from mpl_point_clicker import clicker
+def make_screening_pdf(
+        dataset: DataSet,
+        plot_func: Callable[[DataItem], None],
+        pdf_path: str = 'dataset_plots.pdf'
+) -> None:
+    pdf_canvas = canvas.Canvas(pdf_path, pagesize=(820, 600))
+    for dataitem in dataset:
+        plot_func(dataitem)
+        imgdata = BytesIO()
+        plt.savefig(imgdata, format='svg')
+        imgdata.seek(0)
+        drawing = svg2rlg(imgdata)
+        renderPDF.draw(drawing, pdf_canvas, 5, 5)
+        form = pdf_canvas.acroForm
+        pdf_canvas.setFont("Courier", 22)
+        pdf_canvas.drawString(20, 555, 'SELECT TO REJECT:')
+        form.checkbox(name=f'reject_box_{dataitem.test_id}', x=252, y=552, buttonStyle='check',
+                      borderColor=magenta, fillColor=pink, textColor=blue, forceBorder=True)
+        pdf_canvas.showPage()
+        plt.close()
+    pdf_canvas.save()
+    print(f'Screening pdf saved to {pdf_path}.')
 
 
-def make_representative_curves(dataset: DataSet, data_dir: str, info_path: str,
-                               repr_col: str, repr_by_cols: List[str],
-                               interp_by: str, interp_res: int = 200, min_interp_val: float = 0.):
+def make_representative_curves(
+        dataset: DataSet, data_dir: str, info_path: str,
+        repr_col: str, repr_by_cols: List[str],
+        interp_by: str, interp_res: int = 200, min_interp_val: float = 0., interp_end: str = 'max'
+):
     """Make representative curves of the dataset and save them to a directory.
     Args:
 
@@ -23,6 +52,7 @@ def make_representative_curves(dataset: DataSet, data_dir: str, info_path: str,
         os.makedirs(data_dir)
 
     # make subset filters from combinations of unique values in repr_by_cols
+    # todo: replace with value counts
     subset_filters = []
     value_lists = [dataset.info_table[col].unique() for col in repr_by_cols]
     for i in range(len(value_lists[0])):
@@ -51,7 +81,12 @@ def make_representative_curves(dataset: DataSet, data_dir: str, info_path: str,
             [repr_info_table, pd.DataFrame({'repr id': [repr_id], **subset_filter, 'nr averaged': [len(repr_subset)]})])
 
         # find minimum of maximum interp_by vals in subset
-        max_interp_val = min([max(dataitem.data[interp_by]) for dataitem in repr_subset])
+        if interp_end == 'max_all':
+            max_interp_val = max([max(subset[interp_by]) for subset in repr_subset])
+        elif interp_end == 'min_of_max':
+            max_interp_val = min([max(dataitem.data[interp_by]) for dataitem in repr_subset])
+        else:
+            raise ValueError(f'interp_end must be "max_all" or "min_of_max", not {interp_end}')
         # make monotonically increasing vector to interpolate by
         interp_vec = np.linspace(min_interp_val, max_interp_val, interp_res)
 
@@ -77,12 +112,3 @@ def make_representative_curves(dataset: DataSet, data_dir: str, info_path: str,
         # write the representative data and info
         repr_data.to_csv(os.path.join(data_dir, f'{repr_id}.csv'), index=False)
         repr_info_table.to_excel(info_path, index=False)
-
-        if __name__ == '__main__':
-            dataset = DataSet('../examples/baron study/data/02 processed data',
-                              '../examples/baron study/info/02 processed info.xlsx')
-
-        make_representative_curves(dataset, '../examples/baron study/data/03 repr data',
-                                   '../examples/baron study/info/03 repr info.xlsx',
-                                   repr_col='Stress(MPa)', repr_by_cols=['material', 'rate', 'temperature'],
-                                   interp_by='Strain', interp_res=200)
