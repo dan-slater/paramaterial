@@ -14,6 +14,7 @@ from svglib.svglib import svg2rlg
 
 from paramaterial.plug import DataSet, DataItem
 
+
 # todo: resample data using time series.
 # todo: separate resampling and interpolation.
 
@@ -29,7 +30,6 @@ def make_screening_pdf(
 
     # loop through dataitems
     for di in dataset:
-
         # make plot for dataitem
         plot_func(di)
 
@@ -56,7 +56,7 @@ def make_screening_pdf(
         # add text field
         pdf_canvas.drawString(50, 45, 'COMMENT:')
         form.textfield(name=f'comment_box_{di.test_id}', x=140, y=20, width=600, height=40, maxlen=10000,
-                     borderColor=magenta, fillColor=pink, textColor=black, forceBorder=True, fieldFlags='multiline')
+                       borderColor=magenta, fillColor=pink, textColor=black, forceBorder=True, fieldFlags='multiline')
 
         # add page to canvas and close plot
         pdf_canvas.showPage()
@@ -134,10 +134,10 @@ def make_representative_curves(
         repr_data[f'std_{repr_col}'] = interp_data.std(axis=1)
         repr_data[f'up_std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + repr_data[f'std_{repr_col}']
         repr_data[f'down_std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - repr_data[f'std_{repr_col}']
-        repr_data[f'up_2std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + 2 * repr_data[f'std_{repr_col}']
-        repr_data[f'down_2std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - 2 * repr_data[f'std_{repr_col}']
-        repr_data[f'up_3std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + 3 * repr_data[f'std_{repr_col}']
-        repr_data[f'down_3std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - 3 * repr_data[f'std_{repr_col}']
+        repr_data[f'up_2std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + 2*repr_data[f'std_{repr_col}']
+        repr_data[f'down_2std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - 2*repr_data[f'std_{repr_col}']
+        repr_data[f'up_3std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + 3*repr_data[f'std_{repr_col}']
+        repr_data[f'down_3std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - 3*repr_data[f'std_{repr_col}']
         repr_data[f'min_{repr_col}'] = interp_data.min(axis=1)
         repr_data[f'max_{repr_col}'] = interp_data.max(axis=1)
         repr_data[f'q1_{repr_col}'] = interp_data.quantile(0.25, axis=1)

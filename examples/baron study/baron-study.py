@@ -23,38 +23,39 @@ def main():
     repr_set = DataSet('data/03 representative curves', 'info/03 representative info.xlsx', 'repr id')
 
     # setup screening plot
-    cbar_norm = pam.plotting.dataset_colorbar_norm(proc_set, 'temperature')
+    color_by = 'temperature'
+    color_norm = plt.Normalize(vmin=proc_set.info_table[color_by].min(), vmax=proc_set.info_table[color_by].max())
 
     def screening_plot(di: DataItem) -> None:
         """Screening plot function."""
 
-        # get representative data corresponding to dataitem
-        repr_filter = {'material': di.info.material,
-                       'temperature': di.info.temperature,
-                       'rate': di.info.rate}
-        repr_item_set = repr_set[repr_filter]
+        # get other similar data items
+        subset_filter = {'material': di.info['material'], 'temperature': di.info['temperature'],
+                         'rate': di.info['rate']}
+        similar_set = proc_set[subset_filter]
+
+        # get associated representative data
+        repr_item_set = repr_set[subset_filter]
         assert len(repr_item_set) == 1  # should be only one repr item
 
         # plot dataitem
-        ax = di.data.plot(x='Strain', y='Stress(MPa)', color='k')
+        ax = di.data.plot(x='Strain', y='Stress(MPa)', color='k', legend=False)
 
         # plot representative curve
-        pam.plotting.dataset_plot(
+        ax = pam.plotting.dataset_plot(
             repr_item_set, x='interp_Strain', y='mean_Stress(MPa)', ylabel='Stress (MPa)', ax=ax,
-            color_by='temperature', cbar_norm=cbar_norm,
-            style_by='material', style_by_label='Material', width_by='rate', width_by_label='Rate (s$^{-1}$)',
+            color_by='temperature', color_by_label=r'Temp (${^\circ}$C):', color_norm=color_norm,
+            style_by='material', style_by_label='Material:', width_by='rate', width_by_label='Rate (s$^{-1}$):',
             xlim=(-0.2, 1.5), grid=True, fill_between=('down_std_Stress(MPa)', 'up_std_Stress(MPa)'), alpha=0.5,
         )
-
-
 
     # todo: screening plot formatting
     # todo: comment box
     # todo: run screening
     # make screening plot
-    screening_plot(proc_set[0])
-    plt.show()
-    # pam.processing.make_screening_pdf(proc_set[0:1], screening_plot, 'data/04 screening.pdf')
+    # screening_plot(proc_set[0])
+    # plt.show()
+    pam.processing.make_screening_pdf(proc_set[0:1], screening_plot, 'data/04 screening.pdf')
 
     # repr_set.fit_model()
 
