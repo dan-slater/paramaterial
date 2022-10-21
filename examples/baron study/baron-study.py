@@ -3,44 +3,60 @@
 from matplotlib import pyplot as plt
 
 import paramaterial as pam
-from paramaterial.plug import DataSet
+from paramaterial.plug import DataSet, DataItem
 
 
 def main():
     """Main function."""
 
-    dataset = DataSet('data/02 processed data', 'info/02 processed info.xlsx')
+    # load processed data
+    proc_set = DataSet('data/02 processed data', 'info/02 processed info.xlsx')
 
-    ds_cbar_norm = pam.plotting.dataset_colorbar_norm(dataset, 'temperature')
-    ds_plot = lambda ds, **kwargs: pam.plotting.dataset_plot(
-        ds, x='Strain', y='Stress(MPa)', ylabel='Stress (MPa)',
-        color_by='temperature', cbar_norm=ds_cbar_norm,
-        xlim=(-0.2, 1.5), grid=True, **kwargs
-    )
+    # make representative data from processed data
+    # pam.processing.make_representative_curves(
+    #     proc_set, 'data/03 representative curves', 'info/03 representative info.xlsx',
+    #     repr_col='Stress(MPa)', repr_by_cols=['material', 'temperature', 'rate'],
+    #     interp_by='Strain'
+    # )
 
-    pam.processing.make_representative_curves(
-        dataset, 'data/03 representative curves', 'info/03 representative info.xlsx',
-        repr_col='Stress(MPa)', repr_by_cols=['material', 'temperature', 'rate'],
-        interp_by='Strain'
-    )
-
+    # load representative data
     repr_set = DataSet('data/03 representative curves', 'info/03 representative info.xlsx', 'repr id')
 
-    # for the dataitem in the dataset
-    # find the corresponding dataitem in the representative dataset based on temperature, material and rate
-    # plot the dataitem and the corresponding dataitem in the representative dataset
-    def screening_plot(dataitem):
-        repr_filter = {'material': dataitem.info.material, 'temperature': dataitem.info.temperature,
-                       'rate': dataitem.info.rate}
-        repr_dataitem_set = repr_set[repr_filter]
-        assert len(repr_dataitem_set) == 1
-        repr_dataitem = repr_dataitem_set[0]
+    # setup screening plot
+    cbar_norm = pam.plotting.dataset_colorbar_norm(proc_set, 'temperature')
 
-        ax = ds_plot()
+    def screening_plot(di: DataItem) -> None:
+        """Screening plot function."""
 
-    pam.processing.make_screening_pdf(dataset, screening_plot, 'data/04 screening.pdf')
+        # get representative data corresponding to dataitem
+        repr_filter = {'material': di.info.material,
+                       'temperature': di.info.temperature,
+                       'rate': di.info.rate}
+        repr_item_set = repr_set[repr_filter]
+        assert len(repr_item_set) == 1  # should be only one repr item
 
+        # plot dataitem
+        ax = di.data.plot(x='Strain', y='Stress(MPa)', color='k')
+
+        # plot representative curve
+        pam.plotting.dataset_plot(
+            repr_item_set, x='interp_Strain', y='mean_Stress(MPa)', ylabel='Stress (MPa)', ax=ax,
+            color_by='temperature', cbar_norm=cbar_norm,
+            style_by='material', style_by_label='Material', width_by='rate', width_by_label='Rate (s$^{-1}$)',
+            xlim=(-0.2, 1.5), grid=True, fill_between=('down_std_Stress(MPa)', 'up_std_Stress(MPa)'), alpha=0.5,
+        )
+
+
+
+    # todo: screening plot formatting
+    # todo: comment box
+    # todo: run screening
+    # make screening plot
+    screening_plot(proc_set[0])
     plt.show()
+    # pam.processing.make_screening_pdf(proc_set[0:1], screening_plot, 'data/04 screening.pdf')
+
+    # repr_set.fit_model()
 
 
 if __name__ == '__main__':

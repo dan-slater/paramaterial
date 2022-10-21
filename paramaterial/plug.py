@@ -145,7 +145,9 @@ class DataSet:
         elif isinstance(item, dict):
             subset = copy.deepcopy(self)
             info_table = subset.info_table
-            for col_name, vals in subset_filter.items():
+            for col_name, vals in item.items():
+                if not isinstance(vals, list):
+                    vals = [vals]
                 info_table = info_table.loc[info_table[col_name].isin(vals)]
             subset.datamap = map(lambda path: DataItem.read_from_csv(path),
                                  [self.data_dir + f'/{test_id}.csv' for test_id in info_table[self.test_id_key]])
