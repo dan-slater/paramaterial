@@ -1,10 +1,12 @@
 """Module containing the plotting functions for the dataset class."""
-from typing import Optional, Tuple, List, Any, Union
+from typing import Optional, Tuple, List, Any, Union, Dict
 
 import matplotlib.patches as mpatches
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
+
+from paramaterial.plug import DataItem
 
 
 def configure_plt_formatting():
@@ -25,53 +27,42 @@ def configure_plt_formatting():
 configure_plt_formatting()
 
 
-def dataset_colorbar_norm(dataset, cbar_by: str, cmap: str = 'plasma') -> plt.Normalize:
-    vmin = dataset.info_table[cbar_by].min()
-    vmax = dataset.info_table[cbar_by].max()
-    return plt.Normalize(vmin=vmin, vmax=vmax)
+def dataset_plot(
+        dataset,
+        x: str,
+        y: str,
+        ax: Optional[plt.Axes] = None,
+        color_by: Optional[str] = None,
+        style_by: Optional[str] = None,
+        marker_by: Optional[str] = None,
+        width_by: Optional[str] = None,
+        color_by_label: Optional[str] = None,
+        style_by_label: Optional[str] = None,
+        marker_by_label: Optional[str] = None,
+        width_by_label: Optional[str] = None,
+        cbar: bool = False,
+        color_norm: Optional[plt.Normalize] = None,
+        cbar_label: Optional[str] = None,
+        cmap: str = 'plasma',
+        width_by_scale: float = 1.0,
+        fill_between: Optional[Tuple[str, str]] = None,
+        auto_legend_on: bool = False,
+        **kwargs
+) -> Tuple[plt.Figure, plt.Axes]:
+    """Make a single plot from the dataframe of every item in the dataset."""
+    if ax is None:
+        fig, ax = plt.subplots(kwargs.get('figsize', (10, 6)))
+    kwargs['ax'] = ax
 
+    # clear legend if ax has one
+    if ax.get_legend() is not None:
+        ax.get_legend().remove()
 
-def dataset_plot(dataset, x: str, y: str,
-                 cbar_by: Optional[str] = None, cbar_label: Optional[str] = None, cmap: str = 'plasma',
-                 color_by: Optional[str] = None, color_by_label: Optional[str] = None,
-                 style_by: Optional[str] = None, style_by_label: Optional[str] = None,
-                 marker_by: Optional[str] = None, marker_by_label: Optional[str] = None,
-                 width_by: Optional[str] = None, width_by_label: Optional[str] = None, width_by_scale: float = 0.2,
-                 fill_between: Optional[Tuple[str, str]] = None, cbar_norm: Optional[plt.Normalize] = None,
-                 **kwargs) -> Tuple[plt.Figure, plt.Axes]:
-    """Plot the curves from every item in the dataset using pandas.DataFrame.plot().
-    Args:
-        dataset: The dataset to plot.
-        x: The column to use for the x-axis.
-        y: The column to use for the y-axis.
-        cbar_by: The info column to use for the colorbar.
-        cbar_label: The label for the colorbar.
-        cmap: The colormap to use for the colorbar.
-        color_by: The info column to use for coloring.
-        color_by_label: The label for the color_by column.
-        style_by: The info column to use for line style.
-        style_by_label: The label for the line style.
-        marker_by: The info column to use for marker style.
-        marker_by_label: The label for the marker style.
-        width_by: The info column to use for line width.
-        width_by_label: The label for the line width.
-        width_by_scale: The scale factor for the line width.
-        fill_between: The columns to use for fill_between.
-        **kwargs: Keyword arguments to pass to the pandas.DataFrame.plot() function.
-    Returns:
-        The plt.Axes object.
-    """
+    handles = []  # list of legend entries
 
-    if 'ax' not in kwargs:  # ax can be given or created
-        fig, ax = plt.subplots(figsize=kwargs['figsize'])
-        kwargs['ax'] = ax
-    else:
-        ax = kwargs['ax']
-    if 'figsize' not in kwargs:  # figsize can be given or created
-        kwargs['figsize'] = (10, 6)
-
-    # setup color function
+    # color function
     unique_color_vals = dataset.info_table[color_by].unique() if color_by else None
+
     colormap = plt.get_cmap(cmap)
     color_norm = plt.Normalize(vmin=unique_color_vals.min(), vmax=unique_color_vals.max())
 
@@ -81,121 +72,102 @@ def dataset_plot(dataset, x: str, y: str,
         else:
             return ax._get_lines.get_next_color()
 
-    # setup style function
-    unique_style_vals = dataset.info_table[style_by].unique() if style_by else None
-    linestyles = ['-', '--', ':', '-.']
-
-    def style(val: float) -> str:
-        if style_by is not None:
-            while len(linestyles) < len(unique_style_vals):
-                linestyles.extend(linestyles)
-            return linestyles[unique_style_vals.tolist().index(val)]
-        else:
-            return '-'
-
-    # setup marker function
-    unique_marker_vals = dataset.info_table[marker_by].unique() if marker_by else None
-    markers = ['o', 's', 'v', '^', 'd', 'p', 'h', '8', '>', '<', 'x', 'D', 'P', 'H', 'X']
-
-    def marker(val: float) -> Union[str, None]:
-        if marker_by is not None:
-            while len(markers) < len(unique_marker_vals):
-                markers.extend(markers)
-            return markers[unique_marker_vals.tolist().index(val)]
-        else:
-            return None
-
-    # setup width function
-    unique_vals = dataset.info_table[width_by].unique()
-    width_norm = plt.Normalize(vmin=unique_vals.min(), vmax=unique_vals.max())  # todo: check if need +1
-
-    def width(val: float) -> float:
-        if width_by is not None:
-            return width_by_scale*width_norm(val)
-        else:
-            return 1.0
-
-    # make the legend # todo: check if works when color_by etc is None
-    handles = []
+    # color legend
+    if color_by_label is not None:
+        handles.append(mpatches.Patch(label=color_by_label, alpha=0))
     if color_by is not None:
+        for color_val in unique_color_vals:
+            handles.append(Line2D([], [], color=colormap(color_norm(color_val)), label=color_val,
+                                  marker='o', linestyle=''))
 
-    colors = [color(val) for val in dataset.info_table[color_by].unique()]
-    styles = [style(val) for val in dataset.info_table[style_by].unique()]
-    markers = [marker(val) for val in dataset.info_table[marker_by].unique()]
-    widths = [width(val) for val in dataset.info_table[width_by].unique()]
-
-    if color_by is not None:
-        for color in unique_color_vals:
-            handles.append(Line2D([], [], color=colormap(color_norm(color)), label=color_by_label))
-    if style_by is not None:
-        for style in unique_styles:
-            handles.append(Line2D([], [], linestyle=style, label=style_by_label))
-    if marker_by is not None:
-        for marker in unique_markers:
-            handles.append(Line2D([], [], marker=marker, label=marker_by_label))
-    if width_by is not None:
-        for width in unique_widths:
-            handles.append(Line2D([], [], linewidth=width*width_by_scale, label=width_by_label))
-
-    if color_by is not None:
-        color_norm = plt.Normalize(vmin=dataset.info_table[color_by].min(), vmax=dataset.info_table[color_by].max())
-    else:
-        color_norm = plt.Normalize(vmin=0, vmax=1)
-    colormap = plt.get_cmap(cmap)
-
-    for dataitem in dataset:
-        # get the curve formatters
-        linestyle = linestyles[unique_styles.index(dataitem.info[style_by])] if style_by is not None else '-'
-        marker = markers[unique_markers.index(dataitem.info[marker_by])] if marker_by is not None else None
-        width = unique_widths.index(dataitem.info[width_by])*width_by_scale if width_by is not None else 1
-        color = colormap(color_norm(dataitem.info[color_by])) if color_by is not None else 'k'
-        zorder = dataitem.info[color_by] if color_by is not None else 0
-
-        # PLOT THE CURVE
-        try:
-            ax = dataitem.data.plot(x=x, y=y, linestyle=linestyle, marker=marker, linewidth=width, color=color,
-                                    zorder=zorder, legend=False, **kwargs)
-        except Exception as e:
-            raise Exception(f"Error when calling pandas.DataFrame.plot(): {e}")
-
-        # fill between
-        if fill_between is not None:
-            ax.fill_between(dataitem.data[x], dataitem.data[fill_between[0]], dataitem.data[fill_between[1]],
-                            color=color, alpha=0.2)
-
-    # make the colorbar
-    if cbar_by is not None:
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=cbar_norm).set_array([])
+    # colorbar
+    if cbar:
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=color_norm).set_array([])
         # sm.set_array([])
         cbar = plt.colorbar(sm, ax=kwargs['ax'], fraction=0.046, pad=0.04)
         cbar.set_label(cbar_label) if cbar_label is not None else None
         cbar.ax.yaxis.set_ticks_position('right').set_label_position('right')
         # cbar.ax.yaxis.set_label_position('right')
 
-    # if color_by is not None and cbar_norm is None:
-    #     if color_by_label is not None:
-    #         handles.append(mpatches.Patch(label=color_by_label, alpha=0))
-    #     for color_val in unique_colors:
-    #         color = plt.get_cmap(cmap)(cbar_norm(color_val))
-    #         handles.append(Line2D([0], [0], color=color, marker='o', linestyle='None', label=color_val))
+    # linestyle function
+    unique_style_vals = dataset.info_table[style_by].unique() if style_by else None
+
+    linestyles = ['-', '--', ':', '-.']
+    while len(linestyles) < len(unique_style_vals):
+        linestyles.extend(linestyles)
+
+    def style(val: float) -> str:
+        if style_by is not None:
+            return linestyles[unique_style_vals.tolist().index(val)]
+        else:
+            return '-'
+
+    # linestyle legend
+    if style_by_label is not None:
+        handles.append(mpatches.Patch(label=style_by_label, alpha=0))
     if style_by is not None:
-        if style_by_label is not None:
-            handles.append(mpatches.Patch(label=style_by_label, alpha=0))
-        for style_val in unique_styles:
-            linestyle = linestyles[unique_styles.index(style_val)]
-            handles.append(Line2D([0], [0], color='black', linestyle=linestyle, label=style_val))
+        for style_val in unique_style_vals:
+            handles.append(Line2D([], [], color='black', linestyle=linestyles[unique_style_vals.tolist().index(style_val)],
+                                  label=style_val))
+
+    # marker function
+    unique_marker_vals = dataset.info_table[marker_by].unique() if marker_by is not None else None
+    markers = ['o', 's', 'v', '^', 'd', 'p', 'h', '8', '>', '<', 'x', 'D', 'P', 'H', 'X']
     if marker_by is not None:
-        if marker_by_label is not None:
-            handles.append(mpatches.Patch(label=marker_by_label, alpha=0))
-        for marker_val in unique_markers:
-            handles.append(
-                Line2D([0], [0], color='black', marker=markers[unique_markers.index(marker_val)], linestyle='None'))
+        while len(markers) < len(unique_marker_vals):
+            markers.extend(markers)
+
+    def marker(val: float) -> Union[str, None]:
+        if marker_by is not None:
+            return markers[unique_marker_vals.tolist().index(val)]
+        else:
+            return None
+
+    # marker legend
+    if marker_by_label is not None:
+        handles.append(mpatches.Patch(label=marker_by_label, alpha=0))
+    if marker_by is not None:
+        for marker_val in unique_marker_vals:
+            handles.append(Line2D([], [], color='black', marker=markers[unique_marker_vals.tolist().index(marker_val)],
+                                  label=marker_val, linestyle='None'))
+
+    # width function
+    unique_vals = dataset.info_table[width_by].unique()
+    width_norm = plt.Normalize(vmin=unique_vals.min(), vmax=unique_vals.max())
+
+    def width(val: float) -> float:
+        if width_by is not None:
+            return width_by_scale*width_norm(val) + 1
+        else:
+            return 1.0
+
+    # width legend
+    if width_by_label is not None:
+        handles.append(mpatches.Patch(label=width_by_label, alpha=0))
     if width_by is not None:
-        if width_by_label is not None:
-            handles.append(mpatches.Patch(label=width_by_label, alpha=0))
-        for width_val in unique_widths:
+        for width_val in unique_vals:
             handles.append(
-                Line2D([0], [0], color='black', linewidth=unique_widths.index(width_val)*width_by_scale + 1))
+                Line2D([], [], color='black', linewidth=width_by_scale*width_norm(width_val) + 1,
+                       label=width_val, linestyle='-'))
+
+    def curve_formatters(dataitem: DataItem) -> Dict[str, Any]:
+        formatters = {
+            'color': color(dataitem.info[color_by]) if color_by is not None else None,
+            'linestyle': style(dataitem.info[style_by]) if style_by is not None else None,
+            'marker': marker(dataitem.info[marker_by]) if marker_by is not None else None,
+            'linewidth': width(dataitem.info[width_by]) if width_by is not None else None,
+            'zorder': dataitem.info[color_by] if color_by is not None else None
+        }
+        return {k: v for k, v in formatters.items() if v is not None}
+
+    # plot the curve for each dataitem
+    for di in dataset:
+        # plot the curve
+        ax = di.data.plot(x=x, y=y, legend=auto_legend_on, **curve_formatters(di), **kwargs)
+        # fill between curves
+        if fill_between is not None:
+            ax.fill_between(di.data[x], di.data[fill_between[0]], di.data[fill_between[1]], alpha=0.2,
+                            **curve_formatters(di))
 
     # add the legend
     if len(handles) > 0:
@@ -204,21 +176,63 @@ def dataset_plot(dataset, x: str, y: str,
     return ax
 
 
-def dataset_subplots(dataset, x: str, y: str, nrows: int, ncols: int, cols_by: str, rows_by: str,
-                     col_keys: List[List[Any]], row_keys: List[List[Any]], col_titles: Optional[List[str]] = None,
-                     row_titles: Optional[List[str]] = None, plot_titles: Optional[List[str]] = None,
-                     figsize: Tuple[float, float] = (12, 8),
-                     cbar_by: Optional[str] = None, cbar_label: Optional[str] = None,
-                     cmap: str = 'plasma',
-                     sharex: str = 'col', sharey: str = 'row',
-                     wspace: float = 0.1, hspace: float = 0.1, **kwargs) -> Tuple[plt.Figure, plt.Axes]:
-    """"""
+def dataset_subplots(
+        dataset,
+        x: str,
+        y: str,
+        shape: Tuple[int, int],
+        rows_by: str,
+        cols_by: str,
+        row_vals: List[List[Any]],
+        col_vals: List[List[Any]],
+        figsize: Tuple[float, float] = (12, 8),
+        sharex: str = 'col',
+        sharey: str = 'row',
+        wspace: float = 0.1,
+        hspace: float = 0.1,
+        row_titles: Optional[List[str]] = None,
+        col_titles: Optional[List[str]] = None,
+        plot_titles: Optional[List[str]] = None,
+        color_by: Optional[str] = None,
+        cbar: bool = False,
+        cbar_label: Optional[str] = None,
+        color_norm: Optional[plt.Normalize] = None,
+        cmap: str = 'plasma',
+        **kwargs
+) -> Tuple[plt.Figure, plt.Axes]:
+    """Plot a dataset as a grid of subplots, split by the 'rows_by' and 'cols_by' columns in the info_table."""
+
     # setup grid
     fig = plt.figure(figsize=figsize)
-    gs = fig.add_gridspec(nrows, ncols, wspace=wspace, hspace=hspace)
+    gs = fig.add_gridspec(shape[0], shape[1], wspace=wspace, hspace=hspace)
     axs = gs.subplots(sharex=sharex, sharey=sharey)
     if axs.ndim == 1:
         axs = np.array([axs])
+
+    # color normaliser
+    if color_norm is None and color_by is not None:
+        color_norm = plt.Normalize(vmin=dataset.info_table[color_by].min(), vmax=dataset.info_table[color_by].max())
+    elif color_norm is not None and color_by is None:
+        raise ValueError('color_norm is set but color_by is not')
+
+    # loop through the grid of axes and plot the subsets
+    for row, row_val in enumerate(row_vals):
+        for col, col_val in enumerate(col_vals):
+            ax = axs[row, col]
+            subset = dataset[{cols_by: col_val, rows_by: row_val}]
+            dataset_plot(subset, x=x, y=y, ax=ax, color_by=color_by, color_norm=color_norm, **kwargs)
+
+    # add colorbar
+    if cbar:
+        plt.subplots_adjust(right=0.875)
+        cax = plt.axes([0.9, 0.2, 0.014, 0.6])
+        cbar = fig.colorbar(plt.cm.ScalarMappable(norm=color_norm, cmap=cmap), cax=cax)
+
+        cbar.ax.yaxis.set_ticks_position('right')
+        cbar.ax.yaxis.set_label_position('right')
+
+        if cbar_label is not None:
+            cbar.set_label(cbar_label)
 
     # add row titles
     if row_titles is not None:
@@ -226,7 +240,7 @@ def dataset_subplots(dataset, x: str, y: str, nrows: int, ncols: int, cols_by: s
             ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
                         textcoords='offset points', ha='right', va='center', rotation=90)
 
-    # add grid column titles
+    # add column titles
     if col_titles is not None:
         for ax, column_title in zip(axs[0, :], col_titles):
             ax.set_title(column_title)
@@ -235,30 +249,5 @@ def dataset_subplots(dataset, x: str, y: str, nrows: int, ncols: int, cols_by: s
     if plot_titles is not None:
         for ax, subplot_title in zip(axs.flat, plot_titles):
             ax.set_title(subplot_title)
-
-    # add colorbar
-    if cbar_by is not None:
-        plt.subplots_adjust(right=0.875)
-        cax = plt.axes([0.9, 0.2, 0.014, 0.6])
-        vmin = dataset.info_table[cbar_by].min()
-        vmax = dataset.info_table[cbar_by].max()
-        cbar_norm = plt.Normalize(vmin=vmin, vmax=vmax)
-        cbar = fig.colorbar(plt.cm.ScalarMappable(norm=cbar_norm, cmap=cmap), cax=cax)
-        if cbar_label is not None:
-            cbar.set_label(cbar_label)
-        cbar.ax.yaxis.set_ticks_position('right')
-        cbar.ax.yaxis.set_label_position('right')
-    else:
-        cbar_norm = None
-
-    # add curves to axes
-    for row, row_key in enumerate(row_keys):
-        for col, col_key in enumerate(col_keys):
-            ax = axs[row, col]
-            dataset_subset = dataset.get_subset({cols_by: col_key, rows_by: row_key})
-            # if cbar_by is not None: add it to kwargs
-            if cbar_by is not None:
-                kwargs['color_by'] = cbar_by
-            dataset_plot(dataset_subset, x=x, y=y, cbar_norm=cbar_norm, ax=ax, **kwargs)
 
     return fig, axs
