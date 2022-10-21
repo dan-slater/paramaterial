@@ -46,12 +46,12 @@ def dataset_plot(
         cmap: str = 'plasma',
         width_by_scale: float = 1.0,
         fill_between: Optional[Tuple[str, str]] = None,
-        auto_legend_on: bool = False,
+        auto_legend_on: bool = True,
         **kwargs
-) -> Tuple[plt.Figure, plt.Axes]:
+) -> plt.Axes:
     """Make a single plot from the dataframe of every item in the dataset."""
     if ax is None:
-        fig, ax = plt.subplots(kwargs.get('figsize', (10, 6)))
+        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (10, 6)))
     kwargs['ax'] = ax
 
     # clear legend if ax has one
@@ -82,19 +82,20 @@ def dataset_plot(
 
     # colorbar
     if cbar:
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=color_norm).set_array([])
-        # sm.set_array([])
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=color_norm)
+        sm.set_array([])
         cbar = plt.colorbar(sm, ax=kwargs['ax'], fraction=0.046, pad=0.04)
         cbar.set_label(cbar_label) if cbar_label is not None else None
-        cbar.ax.yaxis.set_ticks_position('right').set_label_position('right')
-        # cbar.ax.yaxis.set_label_position('right')
+        cbar.ax.yaxis.set_ticks_position('right')
+        cbar.ax.yaxis.set_label_position('right')
 
     # linestyle function
     unique_style_vals = dataset.info_table[style_by].unique() if style_by else None
 
     linestyles = ['-', '--', ':', '-.']
-    while len(linestyles) < len(unique_style_vals):
-        linestyles.extend(linestyles)
+    if style_by is not None:
+        while len(linestyles) < len(unique_style_vals):
+            linestyles.extend(linestyles)
 
     def style(val: float) -> str:
         if style_by is not None:
@@ -107,8 +108,9 @@ def dataset_plot(
         handles.append(mpatches.Patch(label=style_by_label, alpha=0))
     if style_by is not None:
         for style_val in unique_style_vals:
-            handles.append(Line2D([], [], color='black', linestyle=linestyles[unique_style_vals.tolist().index(style_val)],
-                                  label=style_val))
+            handles.append(
+                Line2D([], [], color='black', linestyle=linestyles[unique_style_vals.tolist().index(style_val)],
+                       label=style_val))
 
     # marker function
     unique_marker_vals = dataset.info_table[marker_by].unique() if marker_by is not None else None
@@ -132,8 +134,8 @@ def dataset_plot(
                                   label=marker_val, linestyle='None'))
 
     # width function
-    unique_vals = dataset.info_table[width_by].unique()
-    width_norm = plt.Normalize(vmin=unique_vals.min(), vmax=unique_vals.max())
+    unique_width_vals = dataset.info_table[width_by].unique() if width_by is not None else None
+    width_norm = plt.Normalize(vmin=unique_width_vals.min(), vmax=unique_width_vals.max()) if width_by is not None else None
 
     def width(val: float) -> float:
         if width_by is not None:
@@ -145,7 +147,7 @@ def dataset_plot(
     if width_by_label is not None:
         handles.append(mpatches.Patch(label=width_by_label, alpha=0))
     if width_by is not None:
-        for width_val in unique_vals:
+        for width_val in unique_width_vals:
             handles.append(
                 Line2D([], [], color='black', linewidth=width_by_scale*width_norm(width_val) + 1,
                        label=width_val, linestyle='-'))
@@ -163,14 +165,14 @@ def dataset_plot(
     # plot the curve for each dataitem
     for di in dataset:
         # plot the curve
-        ax = di.data.plot(x=x, y=y, legend=auto_legend_on, **curve_formatters(di), **kwargs)
+        ax = di.data.plot(x=x, y=y, **curve_formatters(di), **kwargs)
         # fill between curves
         if fill_between is not None:
             ax.fill_between(di.data[x], di.data[fill_between[0]], di.data[fill_between[1]], alpha=0.2,
                             **curve_formatters(di))
 
     # add the legend
-    if len(handles) > 0:
+    if len(handles) > 0 and auto_legend_on:
         ax.legend(handles=handles, loc='best')
 
     return ax

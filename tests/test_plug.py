@@ -92,7 +92,7 @@ class TestDataSet(unittest.TestCase):
             dataitem.data['datacol1 + datacol2'] = dataitem.data['datacol1'] + dataitem.data['datacol2']
             return dataitem
 
-        dataset.apply_function(function)
+        dataset.map_function(function)
         self.assertEqual(dataset[0].data['datacol1 + datacol2'].iloc[0], 5.1)
         self.assertEqual(dataset[1].data['datacol1 + datacol2'].iloc[1], 7.2)
         self.assertEqual(dataset[2].data['datacol1 + datacol2'].iloc[2], 9.3)

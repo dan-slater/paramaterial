@@ -3,12 +3,12 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/hyde study" />
       <excludeFolder url="file://$MODULE_DIR$/examples/aakash tensile study" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/tensile study/data" />
       <excludeFolder url="file://$MODULE_DIR$/examples/baron study/data" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/vos psc study/data" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/vos ringing study/data" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/aakash study/data" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/hyde study/data" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/geometry study/data" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/ringing study/data" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
