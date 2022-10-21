@@ -38,24 +38,25 @@ def make_screening_pdf(
         plt.savefig(imgdata, format='svg')
         imgdata.seek(0)
         drawing = svg2rlg(imgdata)
-        renderPDF.draw(drawing, pdf_canvas, 5, 80)
+        renderPDF.draw(drawing, pdf_canvas, 0.001*pagesize[0], 0.15*pagesize[1])
 
         # setup form
         form = pdf_canvas.acroForm
-        pdf_canvas.setFont("Courier", 20)
+        pdf_canvas.setFont("Courier", plt.rcParams['font.size']+6)
 
         # add test id
-        pdf_canvas.drawString(50, pagesize[1] - 30, f'TEST ID: {di.test_id}')
+        pdf_canvas.drawString(0.05*pagesize[0], 0.95*pagesize[1], f'TEST ID: {di.test_id}')
 
         # add checkbox
-        pdf_canvas.setFont("Courier", 16)
-        pdf_canvas.drawString(50, 85, 'REJECT?:')
-        form.checkbox(name=f'reject_box_{di.test_id}', x=140, y=80, buttonStyle='check',
+        pdf_canvas.drawString(0.05*pagesize[0], 0.14*pagesize[1], 'REJECT?:')
+        form.checkbox(name=f'reject_box_{di.test_id}', buttonStyle='check',
+                      x=0.15*pagesize[0], y=0.13*pagesize[1],
                       borderColor=magenta, fillColor=pink, textColor=blue, forceBorder=True)
 
         # add text field
-        pdf_canvas.drawString(50, 45, 'COMMENT:')
-        form.textfield(name=f'comment_box_{di.test_id}', x=140, y=20, width=600, height=40, maxlen=10000,
+        pdf_canvas.drawString(0.05*pagesize[0], 0.08*pagesize[1], 'COMMENT:')
+        form.textfield(name=f'comment_box_{di.test_id}', maxlen=10000,
+                       x=0.15*pagesize[0], y=0.05*pagesize[1], width=0.7*pagesize[0], height=0.05*pagesize[1],
                        borderColor=magenta, fillColor=pink, textColor=black, forceBorder=True, fieldFlags='multiline')
 
         # add page to canvas and close plot

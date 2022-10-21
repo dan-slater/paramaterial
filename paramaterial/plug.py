@@ -17,6 +17,12 @@ class DataItem:
     def __len__(self):
         return len(self.data)
 
+    def __repr__(self):
+        repr_string = f'DataItem with test id {self.test_id}.\n'
+        repr_string += f'Info: {self.info.to_dict()}\n'
+        repr_string += f'Data: {self.data.head(2)}'
+        return repr_string
+
     @staticmethod
     def read_from_csv(file_path: str):
         test_id = os.path.split(file_path)[1].split('.')[0]
@@ -63,25 +69,18 @@ class DataSet:
 
     # get subset using a subset filter dictionary
     def get_subset(self, subset_filter: Dict[str, List[Any]]) -> 'DataSet':
-        """Get a subset of the dataset.
+        """Get a subset of the dataset, with the functions applied.
         Args:
             subset_filter: A dictionary of column names and values to filter by.
         Returns:
             A new dataset object with the subset.
         """
-        subset = copy.deepcopy(self)
-        info_table = subset.info_table
-        for col_name, vals in subset_filter.items():
-            info_table = info_table.loc[info_table[col_name].isin(vals)]
-        subset.datamap = map(lambda path: DataItem.read_from_csv(path),
-                             [self.data_dir + f'/{test_id}.csv' for test_id in info_table[self.test_id_key]])
-        subset.datamap = map(
-            lambda obj: DataItem.get_row_from_info_table(obj, info_table, test_id_key=self.test_id_key),
-            subset.datamap)
-        subset.info_table = info_table
-        return subset
+        new_dataset = self.copy()
+        new_dataset.datamap = filter(lambda dataitem: all(
+            [dataitem.info[column] in values for column, values in subset_filter.items()]), new_dataset.datamap)
+        return new_dataset
 
-    def apply_function(self, func: Callable[[DataItem], DataItem]) -> 'DataSet':
+    def map_function(self, func: Callable[[DataItem], DataItem]) -> 'DataSet':
         """Apply a processing function to the dataset."""
 
         def wrapped_func(dataitem: DataItem):
@@ -117,6 +116,12 @@ class DataSet:
     def copy(self) -> 'DataSet':
         """Return a copy of the dataset."""
         return copy.deepcopy(self)
+
+    def __repr__(self):
+        repr_string = f'DataSet with {len(self.info_table)} DataItems.\n'
+        repr_string += f'Columns in info table: {", ".join(self.info_table.columns)}\n'
+        repr_string += f'Columns in data: {", ".join(self[0].data.columns)}'
+        return repr_string
 
     def __eq__(self, other):
         """Check if the datamaps and info tables of the datasets are equal."""
