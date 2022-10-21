@@ -1,40 +1,68 @@
 """Functions for post-processing material test data. (Stress-strain)"""
 import os
 from io import BytesIO
-from typing import Callable
+from typing import Callable, Tuple
 from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from reportlab.graphics import renderPDF
-from reportlab.lib.colors import magenta, pink, blue
+from reportlab.lib.colors import magenta, pink, blue, black
 from reportlab.pdfgen import canvas
 from svglib.svglib import svg2rlg
 
 from paramaterial.plug import DataSet, DataItem
 
+# todo: resample data using time series.
+# todo: separate resampling and interpolation.
+
 
 def make_screening_pdf(
         dataset: DataSet,
         plot_func: Callable[[DataItem], None],
-        pdf_path: str = 'dataset_plots.pdf'
+        pdf_path: str = 'dataset_plots.pdf',
+        pagesize: Tuple[float, float] = (900, 600),
 ) -> None:
-    pdf_canvas = canvas.Canvas(pdf_path, pagesize=(820, 600))
-    for dataitem in dataset:
-        plot_func(dataitem)
+    # setup canvas
+    pdf_canvas = canvas.Canvas(pdf_path, pagesize=(pagesize[0], pagesize[1]))
+
+    # loop through dataitems
+    for di in dataset:
+
+        # make plot for dataitem
+        plot_func(di)
+
+        # add plot to page
         imgdata = BytesIO()
         plt.savefig(imgdata, format='svg')
         imgdata.seek(0)
         drawing = svg2rlg(imgdata)
-        renderPDF.draw(drawing, pdf_canvas, 5, 5)
+        renderPDF.draw(drawing, pdf_canvas, 5, 80)
+
+        # setup form
         form = pdf_canvas.acroForm
-        pdf_canvas.setFont("Courier", 22)
-        pdf_canvas.drawString(20, 555, 'SELECT TO REJECT:')
-        form.checkbox(name=f'reject_box_{dataitem.test_id}', x=252, y=552, buttonStyle='check',
+        pdf_canvas.setFont("Courier", 20)
+
+        # add test id
+        pdf_canvas.drawString(50, pagesize[1] - 30, f'TEST ID: {di.test_id}')
+
+        # add checkbox
+        pdf_canvas.setFont("Courier", 16)
+        pdf_canvas.drawString(50, 85, 'REJECT?:')
+        form.checkbox(name=f'reject_box_{di.test_id}', x=140, y=80, buttonStyle='check',
                       borderColor=magenta, fillColor=pink, textColor=blue, forceBorder=True)
+
+        # add text field
+        pdf_canvas.drawString(50, 45, 'COMMENT:')
+        form.textfield(name=f'comment_box_{di.test_id}', x=140, y=20, width=600, height=40, maxlen=10000,
+                     borderColor=magenta, fillColor=pink, textColor=black, forceBorder=True, fieldFlags='multiline')
+
+        # add page to canvas and close plot
         pdf_canvas.showPage()
         plt.close()
+
+    # save document
     pdf_canvas.save()
     print(f'Screening pdf saved to {pdf_path}.')
 
@@ -42,7 +70,7 @@ def make_screening_pdf(
 def make_representative_curves(
         dataset: DataSet, data_dir: str, info_path: str,
         repr_col: str, repr_by_cols: List[str],
-        interp_by: str, interp_res: int = 200, min_interp_val: float = 0., interp_end: str = 'max'
+        interp_by: str, interp_res: int = 200, min_interp_val: float = 0., interp_end: str = 'max_all'
 ):
     """Make representative curves of the dataset and save them to a directory.
     Args:
@@ -82,11 +110,11 @@ def make_representative_curves(
 
         # find minimum of maximum interp_by vals in subset
         if interp_end == 'max_all':
-            max_interp_val = max([max(subset[interp_by]) for subset in repr_subset])
-        elif interp_end == 'min_of_max':
+            max_interp_val = max([max(dataitem.data[interp_by]) for dataitem in repr_subset])
+        elif interp_end == 'min_of_maxes':
             max_interp_val = min([max(dataitem.data[interp_by]) for dataitem in repr_subset])
         else:
-            raise ValueError(f'interp_end must be "max_all" or "min_of_max", not {interp_end}')
+            raise ValueError(f'interp_end must be "max_all" or "min_of_maxes", not {interp_end}')
         # make monotonically increasing vector to interpolate by
         interp_vec = np.linspace(min_interp_val, max_interp_val, interp_res)
 
@@ -104,6 +132,12 @@ def make_representative_curves(
         repr_data = pd.DataFrame({f'interp_{interp_by}': interp_vec})
         repr_data[f'mean_{repr_col}'] = interp_data.mean(axis=1)
         repr_data[f'std_{repr_col}'] = interp_data.std(axis=1)
+        repr_data[f'up_std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + repr_data[f'std_{repr_col}']
+        repr_data[f'down_std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - repr_data[f'std_{repr_col}']
+        repr_data[f'up_2std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + 2 * repr_data[f'std_{repr_col}']
+        repr_data[f'down_2std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - 2 * repr_data[f'std_{repr_col}']
+        repr_data[f'up_3std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + 3 * repr_data[f'std_{repr_col}']
+        repr_data[f'down_3std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - 3 * repr_data[f'std_{repr_col}']
         repr_data[f'min_{repr_col}'] = interp_data.min(axis=1)
         repr_data[f'max_{repr_col}'] = interp_data.max(axis=1)
         repr_data[f'q1_{repr_col}'] = interp_data.quantile(0.25, axis=1)
