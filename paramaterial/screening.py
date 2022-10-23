@@ -24,7 +24,7 @@ def make_dataset_plots_pdf(
         pdf_kwargs: Dict = None
 ) -> None:
     with PdfPages(plot_path) as pdf:
-        for dataitem in copy.deepcopy(dataset.datamap):
+        for dataitem in copy.deepcopy(dataset.data_map):
             plot_func(dataitem, plot_cfg)
             pdf.savefig(**pdf_kwargs)
             plt.close()
@@ -82,6 +82,20 @@ def make_screening_pdf(data_dir: str, pdf_path: str, df_plot_kwargs: Dict):
         # save pdf
     pdf_canvas.save()
     print(f'Screening pdf saved to {pdf_path}.')
+def delete_screened_data(dataset: DataSet, screening_pdf: str):
+    pdf_reader = PdfFileReader(open(screening_pdf, 'rb'))
+    delete_list = []
+    # read checkboxes
+    for key, value in pdf_reader.get_fields().items():
+        test_id = key[11:]
+        check_box = value['/V']
+        if check_box == '/Yes':
+            delete_list.append(test_id)
+    # delete tests in the dataset dir and remove from info file
+    for test_id in delete_list:
+        os.remove(f'{dataset.data_dir}/{test_id}.csv')
+        dataset.info = dataset.info[dataset.info['test id'] != test_id]
+        dataset.info.to_excel(dataset.info_path, index=False)
 
 
 def copy_with_screening(data_dir: str, info_path: str, screening_pdf: str, new_data: str, new_info: str):

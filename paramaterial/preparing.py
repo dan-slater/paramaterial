@@ -1,9 +1,10 @@
 import os
 import shutil
-from typing import List, Dict
+from typing import List, Dict, Union
 
 import pandas as pd
 
+from paramaterial.plug import DataSet
 from paramaterial.screening import make_screening_pdf
 
 
@@ -45,17 +46,7 @@ def copy_data_and_info(old_data_dir: str, new_data_dir: str, old_info_path: str,
     print(f'Copied info table from {old_info_path} to {new_info_path}.')
 
 
-def screen_data(data_dir: str, pdf_path: str, df_plt_kwargs: Dict,
-                check_headers: bool = True, screening_pdf: bool = True):
-    # check if column headers are the same, if not throw error
-    if check_headers:
-        check_column_headers(data_dir)
-    # make screening pdf for data
-    if screening_pdf:
-        make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
-
-
-def rename_by_test_id(data_dir, info_path):
+def rename_by_test_id(data_dir, info_path, test_id_col='test id'):
     """Rename files in data directory by test id in info table."""
     # make data directory if it doesn't exist
     if not os.path.exists(data_dir):
@@ -68,15 +59,15 @@ def rename_by_test_id(data_dir, info_path):
     if 'old filename' not in info_df.columns:
         raise ValueError(f'There is no "old filename" column in {info_path}. Please add it.'
                          f'\nExisting columns are: {list(info_df.columns)}')
-    if 'test id' not in info_df.columns:
+    if test_id_col not in info_df.columns:
         raise ValueError(f'There is no "test id" column in {info_path}.')
-    if info_df['test id'].duplicated().any():
+    if info_df[test_id_col].duplicated().any():
         raise ValueError(f'There are duplicate test ids {info_path}.')
     if info_df['old filename'].duplicated().any():
         raise ValueError(f'There are duplicate old filenames in {info_path}.')
 
     # rename files if they exist and if new name is not already taken
-    for filename, test_id in zip(info_df['old filename'], info_df['test id']):
+    for filename, test_id in zip(info_df['old filename'], info_df[test_id_col]):
         if os.path.exists(f'{data_dir}/{filename}'):
             if os.path.exists(f'{data_dir}/{test_id}.csv'):
                 raise ValueError(f'File {test_id}.csv already exists in {data_dir}.')
@@ -106,6 +97,14 @@ def check_column_headers(data_dir: str):
 def make_preparing_screening_pdf(data_dir: str, pdf_path: str, df_plt_kwargs: Dict):
     print(os.getcwd())
     make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
+
+
+def make_experimental_matrix(dataset: DataSet, index: Union[str, List[str]], columns: Union[str, List[str]]):
+    if isinstance(index, str):
+        index = [index]
+    if isinstance(columns, str):
+        columns = [columns]
+    return dataset.info_table.groupby(index + columns).size().unstack(columns).fillna(0).astype(int)
 
 
 if __name__ == '__main__':
