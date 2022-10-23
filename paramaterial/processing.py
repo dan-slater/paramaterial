@@ -1,14 +1,17 @@
 """Functions for post-processing material test data. (Stress-strain)"""
 import os
 from io import BytesIO
-from typing import Callable, Tuple
+from typing import Callable
 from typing import List
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from PyPDF2 import PdfFileReader
 from reportlab.graphics import renderPDF
-from reportlab.lib.colors import magenta, pink, blue, black
+from reportlab.lib.colors import black
+from reportlab.lib.colors import magenta, pink, blue
 from reportlab.pdfgen import canvas
 from svglib.svglib import svg2rlg
 
@@ -42,7 +45,7 @@ def make_screening_pdf(
 
         # setup form
         form = pdf_canvas.acroForm
-        pdf_canvas.setFont("Courier", plt.rcParams['font.size']+6)
+        pdf_canvas.setFont("Courier", plt.rcParams['font.size'] + 6)
 
         # add test id
         pdf_canvas.drawString(0.05*pagesize[0], 0.95*pagesize[1], f'TEST ID: {di.test_id}')
@@ -64,8 +67,42 @@ def make_screening_pdf(
         plt.close()
 
     # save document
+    if os.path.exists(pdf_path):
+        pdf_path = pdf_path[:-4] + '_2.pdf'
     pdf_canvas.save()
     print(f'Screening pdf saved to {pdf_path}.')
+
+# todo: rename to read screening pdf
+def screen_data(dataset: DataSet, screening_pdf: str, screened_data_dir: str, screened_info_path: str) -> None:
+    """Screen data using marked pdf file."""
+    pdf_reader = PdfFileReader(open(screening_pdf, 'rb'))
+    test_id_key = dataset.test_id_key
+
+    # read checkboxes
+    for key, value in pdf_reader.get_fields().items():
+        test_id = key[11:]
+        check_box = value['/V']
+        if check_box == '/Yes':
+            dataset.info_table.loc[dataset.info_table[test_id_key] == test_id, 'reject'] = 'y'
+        else:
+            dataset.info_table.loc[dataset.info_table[test_id_key] == test_id, 'reject'] = 'n'
+
+    # read text fields
+    for key, value in pdf_reader.get_fields().items():
+        test_id = key[12:]
+        comment = value['/V']
+        dataset.info_table.loc[dataset.info_table[test_id_key] == test_id, 'comment'] = comment
+
+    # make new dataset with rejected data and write to screened data dir and info file
+    rejected_data = dataset[{'reject': ['y']}]
+    rejected_data.write_output(screened_data_dir, screened_info_path)
+
+    # remove rejected data files from original directory and info file
+    dataset = dataset[{'reject': ['n']}]
+    dataset.write_output(dataset.data_dir, dataset.info_path)
+
+    print(f'Screening complete. {len(rejected_data)} tests rejected.')
+    print(f'Rejected tests saved to {screened_data_dir} with info at {screened_info_path}.')
 
 
 def make_representative_curves(

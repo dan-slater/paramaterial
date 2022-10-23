@@ -28,7 +28,7 @@ class TestDataItem(unittest.TestCase):
     def test_get_row_from_info_table(self):
         info_table = pd.DataFrame({'test id': ['test_id', 'test_id2'], 'a': [1, 2], 'b': [2, 3]})
         dataitem = DataItem(self.test_id, self.data)
-        dataitem.get_row_from_info_table(info_table)
+        dataitem.read_info_row(info_table)
         self.assertTrue(dataitem.info.equals(self.info))
 
     def test_write_to_csv(self):
@@ -92,7 +92,7 @@ class TestDataSet(unittest.TestCase):
             dataitem.data['datacol1 + datacol2'] = dataitem.data['datacol1'] + dataitem.data['datacol2']
             return dataitem
 
-        dataset.map_function(function)
+        dataset.apply_function(function)
         self.assertEqual(dataset[0].data['datacol1 + datacol2'].iloc[0], 5.1)
         self.assertEqual(dataset[1].data['datacol1 + datacol2'].iloc[1], 7.2)
         self.assertEqual(dataset[2].data['datacol1 + datacol2'].iloc[2], 9.3)

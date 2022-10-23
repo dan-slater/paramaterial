@@ -10,6 +10,9 @@ def main():
     make_temperature_rate_table(info_path=info_path, out_path=out_path)
 
 
+
+
+
 def remove_characters_from_text_file(path: str, characters: list):
     """Remove characters from a text file."""
     with open(path, 'r') as file:

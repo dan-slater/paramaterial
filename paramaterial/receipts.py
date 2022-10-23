@@ -39,7 +39,7 @@ def make_receipts(cfg: Dict):
     for dataset_cfg in cfg['dataset_cfgs']:
         dataset = DataSet()
         dataset.load_data(**dataset_cfg['load_args'])
-        for dataitem in dataset.datamap:
+        for dataitem in dataset.data_map:
             receipt = TestReceipt(test_id=dataitem.test_id, dataitem=dataitem, template_path=cfg['template_path'],
                                   receipts_dir=cfg['receipts_dir'], receipt_vars=template.template_vars)
             receipt.make_output_folder()

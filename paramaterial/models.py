@@ -5,12 +5,92 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Any
 
 import numpy as np
+import pandas as pd
 import scipy.optimize as op
 from scipy.optimize import OptimizeResult
 from sklearn.metrics import mean_squared_error
+
+from paramaterial.plug import DataItem, DataSet
+
+
+# @dataclass
+# class ModelItem:
+#     info: pd.Series = None
+#     params: pd.Series = None
+#     model_func: Callable[[pd.Series], pd.DataFrame] = None
+#
+#     def load_model_func(self, model_func: Callable[[pd.Series], pd.DataFrame]):
+#         self.model_func = model_func
+#         return self
+#
+#     def objective_function(self, params: pd.Series, data: pd.DataFrame, x:str, y:str) -> float:
+#         residual = np.linalg.norm(data[y] - self.model_func(data[x], *params))/np.sqrt(
+#             len(self.stress_vec)),
+#         bounds = self.bounds,
+#         constraints = op.LinearConstraint(**self.constraints))
+#
+#     def read_params(self, params_table: pd.DataFrame, model_id_key: str = 'model id'):
+#         self.params = params_table.loc[params_table[model_id_key] == self.model_id].squeeze()
+#         return self
+#
+#     def generate_data(self) -> pd.DataFrame:
+#         return self.model_func(self.params)
+
+
+@dataclass
+class ModelSet:
+    """A class that fits a model to a dataset and stores the results."""
+    params_path: str = None
+    model_map: map = None
+    params_table: pd.DataFrame = None
+    dataset: DataSet = None
+    var_keys: List[str] = None
+    model_func: Callable[[np.ndarray, ...], np.ndarray] = None
+    x: str = None
+    y: str = None
+
+
+    def __init__(self, params_path: str):
+        self.params_path = params_path
+        # self.model_map = map(lambda obj: ModelItem.read_params(obj, self.params_table), self.model_map)
+        self.params_table = pd.read_excel(self.params_path)
+
+    def objective_function(self, params) -> float:
+        residual = 0.
+        for di in self.dataset:
+            var_dict = {var_key: di.info[var_key] for var_key in self.var_keys}
+            residual += np.linalg.norm(di.data[self.y].values - self.model_func(di.data[self.x], *params, **var_dict))\
+                        /np.sqrt(len(di[self.y]))
+        return residual
+
+    def fit_model(self, dataset: DataSet, x: str, y: str, var_keys: List[str],
+                  model_func: Callable[[np.ndarray], np.ndarray],
+                  bounds: List[Tuple[float, float]], constraints: Dict[str, Any],
+                  fitting_method: str = 'minimize'
+                  ) -> OptimizeResult:
+        """Fit a model to a dataset and return the fit results."""
+        self.dataset = dataset
+        self.model_func = model_func
+        self.x = x
+        self.y = y
+        self.var_keys = var_keys
+        if fitting_method == 'minimize':
+            fit_result = op.minimize(self.objective_function, bounds=bounds, constraints=op.LinearConstraint(**constraints))
+        else:
+            raise NotImplementedError
+        return fit_result
+
+
+    # def fit_models(self, dataset: DataSet, model_id_key: str = 'model id'):
+    #     model_ids = self.params_table[model_id_key]
+    #     self.model_map = map(lambda model_id: ModelItem(model_id), model_ids)
+    #     self.model_map = map(lambda obj: ModelItem.read_params(obj, self.params_table), self.model_map)
+    #     self.model_map = map(lambda obj: ModelItem.load_model_func(obj, self.get_model_func(obj.model_id)), self.model_map)
+    #     self.model_map = map(lambda obj: ModelItem.generate_data(obj), self.model_map)
+    #     return self
 
 
 @dataclass
@@ -39,14 +119,16 @@ class IsoReturnMapModel(Model):
         print(f'{".": <10}Fitting "{self.name}".')
         if self.constraints is not None:
             self.opt_res = op.differential_evolution(
-                lambda params: np.linalg.norm(self.stress_vec - self.func(self.strain_vec, *params, vec='stress'))/np.sqrt(
+                lambda params: np.linalg.norm(
+                    self.stress_vec - self.func(self.strain_vec, *params, vec='stress'))/np.sqrt(
                     len(self.stress_vec)),
                 bounds=self.bounds,
                 constraints=op.LinearConstraint(**self.constraints)
             )
         else:
             self.opt_res = op.differential_evolution(
-                lambda params: np.linalg.norm(self.stress_vec - self.func(self.strain_vec, *params, vec='stress'))/np.sqrt(
+                lambda params: np.linalg.norm(
+                    self.stress_vec - self.func(self.strain_vec, *params, vec='stress'))/np.sqrt(
                     len(self.stress_vec)),
                 bounds=self.bounds
             )
@@ -77,7 +159,7 @@ def iso_return_map(yield_stress_func: Callable, vec: str = 'stress'):
         y_yield: callable = yield_stress_func(E, s_y, *mat_params)  # yield stress
 
         for i in range(len(x) - 1):
-            y_trial = E * (x[i + 1] - x_p[i])
+            y_trial = E*(x[i + 1] - x_p[i])
             f_trial = np.abs(y_trial) - y_yield(aps[i])
             if f_trial <= 0:
                 y[i + 1] = y_trial
@@ -85,11 +167,11 @@ def iso_return_map(yield_stress_func: Callable, vec: str = 'stress'):
                 aps[i + 1] = aps[i]
             else:
                 d_aps = op.root(
-                    lambda d: f_trial - d * E - y_yield(aps[i] + d) + y_yield(aps[i]),
+                    lambda d: f_trial - d*E - y_yield(aps[i] + d) + y_yield(aps[i]),
                     aps[i]
                 ).x[0]
-                y[i + 1] = y_trial * (1 - d_aps * E / np.abs(y_trial))
-                x_p[i + 1] = x_p[i] + np.sign(y_trial) * d_aps
+                y[i + 1] = y_trial*(1 - d_aps*E/np.abs(y_trial))
+                x_p[i + 1] = x_p[i] + np.sign(y_trial)*d_aps
                 aps[i + 1] = aps[i] + d_aps
 
         if vec == 'stress':
@@ -113,24 +195,24 @@ def perfect(E, s_y):
 @iso_return_map
 def linear(E, s_y, K):
     """Linear isotropic hardening yield function."""
-    return lambda a: s_y + K * a
+    return lambda a: s_y + K*a
 
 
 @iso_return_map
 def quadratic(E, s_y, Q):
     """Quadratic isotropic hardening yield function."""
-    return lambda a: s_y + E * (a - Q * a ** 2)
+    return lambda a: s_y + E*(a - Q*a ** 2)
 
 
 @iso_return_map
 def voce(E, s_y, s_u, d):
     """Exponential isotropic hardening yield function."""
-    return lambda a: s_y + (s_u - s_y) * (1 - np.exp(-d * a))
+    return lambda a: s_y + (s_u - s_y)*(1 - np.exp(-d*a))
 
 
 @iso_return_map
 def ramberg(E, s_y, C, n):
     """Ramberg-Osgood isotropic hardening yield function."""
-    return lambda a: s_y + C * (a ** n)
+    return lambda a: s_y + C*(a ** n)
 
 # todo: figure out why -ve a being passed in
