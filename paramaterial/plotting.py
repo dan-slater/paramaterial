@@ -72,6 +72,7 @@ class Styler:
 
     def curve_formatters(self, di: DataItem) -> Dict[str, Any]:
         """Return the curve formatters for the data item."""
+        configure_plt_formatting()
         formatters = dict()
 
         if self.color_by is not None:
@@ -136,13 +137,9 @@ class Styler:
 
 def dataset_plot(
         ds: DataSet,
-        x: str,
-        y: str,
         styler: Optional[Styler] = None,
         ax: Optional[plt.Axes] = None,
         fill_between: Optional[Tuple[str, str]] = None,
-        cbar: bool = False,
-        cbar_label: Optional[str] = None,
         styler_legend: bool = True,
         **kwargs
 ) -> plt.Axes:
@@ -160,30 +157,93 @@ def dataset_plot(
     kwargs = {**styler.plot_kwargs, **kwargs}
 
     # plot the dataitems
-    configure_plt_formatting()
     for di in ds:
         # plot the curve
-        ax = di.data.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
+        ax = di.data.plot(**styler.curve_formatters(di), **kwargs)
         # fill between curves
         if fill_between is not None:
-            ax.fill_between(di.data[x], di.data[fill_between[0]], di.data[fill_between[1]], alpha=0.2,
+            ax.fill_between(di.data[kwargs['x']], di.data[fill_between[0]], di.data[fill_between[1]], alpha=0.2,
                             **styler.curve_formatters(di))
 
     # add the legend
-    handles = styler.legend_handles()
+    handles = styler.legend_handles(ds)
     if len(handles) > 0 and styler_legend:
         ax.legend(handles=handles, loc='best', frameon=True)
 
     # colorbar
-    if cbar:
+    if styler.cbar and styler_legend:
         sm = plt.cm.ScalarMappable(cmap=styler.cmap, norm=styler.color_norm)
         sm.set_array([])
         cbar = plt.colorbar(sm, ax=kwargs['ax'], fraction=0.046, pad=0.04)
-        cbar.set_label(cbar_label) if cbar_label is not None else None
+        cbar.set_label(styler.cbar_label) if styler.cbar_label is not None else None
         cbar.ax.yaxis.set_ticks_position('right')
         cbar.ax.yaxis.set_label_position('right')
 
     return ax
+
+
+def dataset_subplots(
+        dataset,
+        shape: Tuple[int, int],
+        rows_by: str,
+        cols_by: str,
+        row_vals: List[List[Any]],
+        col_vals: List[List[Any]],
+        styler: Optional[Styler] = None,
+        axs: Optional[np.ndarray] = None,
+        figsize: Tuple[float, float] = (12, 8),
+        sharex: str = 'col',
+        sharey: str = 'row',
+        wspace: float = 0.05,
+        hspace: float = 0.05,
+        row_titles: Optional[List[str]] = None,
+        col_titles: Optional[List[str]] = None,
+        plot_titles: Optional[List[str]] = None,
+        subplot_legend: bool = True,
+        subplot_cbar: bool = True,
+        **kwargs
+) -> plt.Axes:
+    """Plot a dataset as a grid of subplots, split by the 'rows_by' and 'cols_by' columns in the info_table."""
+    if axs is None:
+        fig, axs = plt.subplots(shape[0], shape[1], figsize=figsize, sharex=sharex, sharey=sharey)
+        fig.subplots_adjust(wspace=wspace, hspace=hspace)
+    if axs.ndim == 1:
+        axs = np.array([axs])
+
+    if row_titles is not None:
+        for ax, row_title in zip(axs[:, 0], row_titles):
+            ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
+                        textcoords='offset points', ha='right', va='center', rotation=90)
+
+    if col_titles is not None:
+        for ax, column_title in zip(axs[0, :], col_titles):
+            ax.set_title(column_title)
+
+    if plot_titles is not None:
+        for ax, subplot_title in zip(axs.flat, plot_titles):
+            ax.set_title(subplot_title)
+
+    # loop through the grid of axes and plot the subsets
+    for row, row_val in enumerate(row_vals):
+        for col, col_val in enumerate(col_vals):
+            ax = axs[row, col]
+            subset = dataset[{cols_by: col_val, rows_by: row_val}]
+            dataset_plot(subset, styler=styler, ax=ax, **kwargs)
+
+    if subplot_cbar:
+        plt.subplots_adjust(right=0.875)
+        cax = plt.axes([0.9, 0.2, 0.014, 0.6])
+        cbar = plt.colorbar(plt.cm.ScalarMappable(norm=styler.color_norm, cmap=styler.cmap), cax=cax)
+        cbar.ax.yaxis.set_ticks_position('right')
+        cbar.ax.yaxis.set_label_position('right')
+        if styler.cbar_label is not None:
+            cbar.set_label(styler.cbar_label)
+
+    if subplot_legend:
+        axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='right', frameon=True)
+
+    return axs
+
 
 
 def subplot_wrapper(
@@ -230,72 +290,6 @@ def subplot_wrapper(
             ax.set_title(column_title)
 
     # add subplot titles
-    if plot_titles is not None:
-        for ax, subplot_title in zip(axs.flat, plot_titles):
-            ax.set_title(subplot_title)
-
-    return axs
-
-
-def dataset_subplots(
-        dataset,
-        x: str,
-        y: str,
-        shape: Tuple[int, int],
-        rows_by: str,
-        cols_by: str,
-        row_vals: List[List[Any]],
-        col_vals: List[List[Any]],
-        styler: Optional[Styler] = None,
-        axs: Optional[np.ndarray] = None,
-        fig: Optional[plt.Figure] = None,
-        figsize: Tuple[float, float] = (12, 8),
-        sharex: str = 'col',
-        sharey: str = 'row',
-        wspace: float = 0.1,
-        hspace: float = 0.1,
-        row_titles: Optional[List[str]] = None,
-        col_titles: Optional[List[str]] = None,
-        plot_titles: Optional[List[str]] = None,
-        color_by: Optional[str] = None,
-        cbar: bool = False,
-        cbar_label: Optional[str] = None,
-        color_norm: Optional[plt.Normalize] = None,
-        cmap: str = 'plasma',
-        **kwargs
-) -> plt.Axes:
-    """Plot a dataset as a grid of subplots, split by the 'rows_by' and 'cols_by' columns in the info_table."""
-    if axs is None and fig is None:
-        fig, axs = plt.subplots(shape[0], shape[1], figsize=figsize, sharex=sharex, sharey=sharey)
-        fig.subplots_adjust(wspace=wspace, hspace=hspace)
-    if axs.ndim == 1:
-        axs = np.array([axs])
-
-    # loop through the grid of axes and plot the subsets
-    for row, row_val in enumerate(row_vals):
-        for col, col_val in enumerate(col_vals):
-            ax = axs[row, col]
-            subset = dataset[{cols_by: col_val, rows_by: row_val}]
-            dataset_plot(subset, x=x, y=y, styler=styler, ax=ax, **kwargs)
-
-    if cbar:
-        plt.subplots_adjust(right=0.875)
-        cax = plt.axes([0.9, 0.2, 0.014, 0.6])
-        cbar = fig.colorbar(plt.cm.ScalarMappable(norm=color_norm, cmap=cmap), cax=cax)
-        cbar.ax.yaxis.set_ticks_position('right')
-        cbar.ax.yaxis.set_label_position('right')
-        if cbar_label is not None:
-            cbar.set_label(cbar_label)
-
-    if row_titles is not None:
-        for ax, row_title in zip(axs[:, 0], row_titles):
-            ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
-                        textcoords='offset points', ha='right', va='center', rotation=90)
-
-    if col_titles is not None:
-        for ax, column_title in zip(axs[0, :], col_titles):
-            ax.set_title(column_title)
-
     if plot_titles is not None:
         for ax, subplot_title in zip(axs.flat, plot_titles):
             ax.set_title(subplot_title)

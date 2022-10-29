@@ -1,191 +1,83 @@
-"""Module for obtaining material parameters from datasets."""
-from matplotlib import pyplot as plt
+from typing import Callable, List, Optional, Tuple
+
+import numpy as np
+import pandas as pd
+import scipy.optimize as op
 
 from paramaterial.plug import DataSet, DataItem
-import paramaterial as pam
 
 
-def main():
-    """Main function."""
+class Model:
+    def __init__(self,
+                 objective_function: Callable[[List[float], DataItem], float],
+                 initial_guess: List[float],
+                 bounds: Optional[List[Tuple[float, float]]] = None,
+                 dataitem_func: Optional[Callable[[pd.Series, List[float]], DataItem]] = None,
+                 opt_result: Optional[op.OptimizeResult] = None):
+        self.objective_function = objective_function
+        self.initial_guess = np.array(initial_guess)
+        self.bounds = bounds
+        self.dataitem_func = dataitem_func
+        self.opt_result = opt_result
+        self.fitted_ds: DataSet | None = None
 
-    # load processed data
-    proc_set = DataSet('data/02 processed data', 'info/02 processed info.xlsx')
+    def fit_item(self, di: DataItem) -> DataItem:
+        def di_obj_func(params) -> float:
+            return self.objective_function(params, di)
 
-    # make representative data from processed data
-    pam.processing.make_representative_curves(
-        proc_set, 'data/03 representative curves', 'info/03 representative info.xlsx',
-        repr_col='Stress(MPa)', repr_by_cols=['material', 'temperature', 'rate'],
-        interp_by='Strain'
-    )
+        self.opt_result = op.minimize(di_obj_func, self.initial_guess, bounds=self.bounds)
+        test_id = di.test_id
 
-    # load representative data
-    repr_set = DataSet('data/03 representative curves', 'info/03 representative info.xlsx', 'repr id')
+        return self.predict_item(di.info)
 
-    # setup screening plot
-    color_by = 'temperature'
-    color_norm = plt.Normalize(vmin=proc_set.info_table[color_by].min(), vmax=proc_set.info_table[color_by].max())
+    def fit_to(self, ds: DataSet, **kwargs) -> None:
+        def ds_obj_func(params) -> float:
+            return sum([self.objective_function(params, di) for di in ds])
 
-    def screening_plot(di: DataItem) -> None:
-        """Plot function for screening."""
-        plt.plot(di.data['Strain'], di.data['Stress(MPa)'], color=plt.cm.viridis(color_norm(di.info[color_by])))
-        plt.xlabel('Strain')
-        plt.ylabel('Stress (MPa)')
-        plt.title(f'{di.info["material"]}, {di.info["temperature"]}$^{{\circ}}$C, {di.info["rate"]} s$^{{-1}}$')
+        self.opt_result = op.minimize(ds_obj_func, self.initial_guess, bounds=self.bounds, **kwargs)
+        self.fitted_ds = ds
 
-    # make screening pdf
-    pam.processing.make_screening_pdf(
+    def predict_item(self, info: pd.Series) -> DataItem:
+        return self.dataitem_func(info, self.opt_result.x)
 
-    # screen representative data
-    pam.processing.screen_data(
-        repr_set, 'data/03 representative curves screening marked 21Oct18h57.pdf',
-        'data/screened/12 screened repr data', 'info/screened/12 screened repr info.xlsx'
-    )
+    def predict_set(self, info_table: Optional[pd.DataFrame]) -> DataSet:
+        new_set = DataSet('model', 'model')
+        # dataset.info_table = info_table
+        #     dataset.data_map = map(self.predict_item, [info for _, info in info_table.iterrows()])
+        #     return dataset
+        # elif dataset is not None:
+        #     dataset.data_map = map(self.predict_item, [info for _, info in info_table.iterrows()])
+        # else:
+        #     new_set.info_table = self.fitted_ds.info_table
+        #     new_set.data_map = map(self.predict_item, [info for _, info in self.fitted_ds.info_table.iterrows()])
 
-    # load screened representative data
-    screened_repr_set = DataSet('data/screened/12 screened repr data', 'info/screened/12 screened repr info.xlsx')
 
-    # make material parameters from screened representative data
-    pam.processing.make_material_parameters(
-        screened_repr_set, 'data/04 material parameters', 'info/04 material parameters info.xlsx',
-        param_by_cols=['material', 'temperature', 'rate'], param_by='repr id',
-        param_func=pam.modelling.hyperelasticity
-    )
 
-    # load material parameters
-    param_set = DataSet('data/04 material parameters', 'info/04 material parameters info.xlsx')
 
-def make_material_parameters(
-        data_set: DataSet, data_dir: str, info_file: str, param_by_cols: List[str], param_by: str,
-        param_func: Callable[[DataItem], Dict[str, float]]
-) -> None:
-    """Make material parameters from data.
+def sample(dataitem: DataItem, sample_size: int, delete_neg_strain: bool = True):
+    dataitem.info['nr of points sampled'] = sample_size
+    df = dataitem.data
 
-    Parameters
-    ----------
-    data_set : DataSet
-        The data set to make material parameters from.
-    data_dir : str
-        The directory to save the material parameter data in.
-    info_file : str
-        The file to save the material parameter info in.
-    param_by_cols : List[str]
-        The columns to group the data by.
-    param_by : str
-        The column to use for the parameter id.
-    param_func : Callable[[DataItem], Dict[str, float]]
-        The function to use to make the material parameters.
+    x_data = df['Strain'].values
+    y_data = df['Stress(MPa)'].values
 
-    """
-    # get the parameter ids
-    param_ids = data_set.info_table.groupby(param_by_cols)[param_by].unique().apply(lambda x: x[0])
+    if delete_neg_strain:
+        for i, x_val in enumerate(x_data):
+            if x_val < 0:
+                x_data = np.delete(x_data, [i])
+                y_data = np.delete(y_data, [i])
 
-    # make the data and info tables
-    data_table = pd.DataFrame(index=param_ids, columns=param_func(data_set.data_table.iloc[0]).keys())
-    info_table = data_set.info_table.groupby(param_by_cols).first().loc[param_ids]
+    sampling_stride = int(len(x_data) / sample_size)
+    if sampling_stride < 1:
+        sampling_stride = 1
 
-    # make the material parameters
-    for param_id in param_ids:
-        data_table.loc[param_id] = param_func(data_set.data_table.loc[param_id])
+    x_data = x_data[::sampling_stride]
+    y_data = y_data[::sampling_stride]
 
-    # save the material parameters
-    data_table.to_csv(os.path.join(data_dir, 'data.csv'))
-    info_table.to_excel(info_file)
+    return x_data, y_data
 
-def hyperelasticity(data_item: DataItem) -> Dict[str, float]:
-    """Make hyperelastic material parameters from data.
-
-    Parameters
-    ----------
-    data_item : DataItem
-        The data item to make material parameters from.
-
-    Returns
-    -------
-    Dict[str, float]
-        The material parameters.
-
-    """
-    # get the data
-    data = data_item.data
-
-    # make the material parameters
-    return {
-        'E': data['Stress(MPa)'].max() / data['Strain'].max(),
-        'nu': 0.5
-    }
-
-# take a dataset and a function to predict data in a dataitem
-# take a list of columns to group by
-# take a column to use for the parameter id
-# make a data table with the parameter ids as the index
-# make an info table with the parameter ids as the index
-# make the material parameters
-# save the material parameters
-def fit_material_parameters(
-        data_set: DataSet, data_dir: str, info_file: str, param_by_cols: List[str], param_by: str,
-        param_func: Callable[[DataItem], Dict[str, float]]
-) -> None:
-    """Fit material parameters to data.
-
-    Parameters
-    ----------
-    data_set : DataSet
-        The data set to fit material parameters to.
-    data_dir : str
-        The directory to save the material parameter data in.
-    info_file : str
-        The file to save the material parameter info in.
-    param_by_cols : List[str]
-        The columns to group the data by.
-    param_by : str
-        The column to use for the parameter id.
-    param_func : Callable[[DataItem], Dict[str, float]]
-        The function to use to fit the material parameters.
-
-    """
-    # get the parameter ids
-    param_ids = data_set.info_table.groupby(param_by_cols)[param_by].unique().apply(lambda x: x[0])
-
-    # make the data and info tables
-    data_table = pd.DataFrame(index=param_ids, columns=param_func(data_set.data_table.iloc[0]).keys())
-    info_table = data_set.info_table.groupby(param_by_cols).first().loc[param_ids]
-
-    # make the material parameters
-    for param_id in param_ids:
-        data_table.loc[param_id] = param_func(data_set.data_table.loc[param_id])
-
-    # save the material parameters
-    data_table.to_csv(os.path.join(data_dir, 'data.csv'))
-    info_table.to_excel(info_file)
-
-def hyperelasticity(data_item: DataItem) -> Dict[str, float]:
-    """Make hyperelastic material parameters from data.
-
-    Parameters
-    ----------
-    data_item : DataItem
-        The data item to make material parameters from.
-
-    Returns
-    -------
-    Dict[str, float]
-        The material parameters.
-
-    """
-    # get the data
-    data = data_item.data
-
-    # make the material parameters
-    return {
-        'E': data['Stress(MPa)'].max() / data['Strain'].max(),
-        'nu': 0.5
-    }
-
-# Path: paramaterial\processing.py
-"""Module for processing datasets."""
-
-if __name__ == '__main__':
-    main()
-
-# Path: paramaterial\plug.py
-"""Module for loading and saving data and info."""
+# todo: sample data with minimum in given area (i.e both x and y tolerance)
+# todo: variable sampling runtime paramaterial
+# todo: full elastic range with plastic sampling only
+# todo: equidistant strain sampling
+# todo: if strain decreasing, omit point
