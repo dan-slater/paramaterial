@@ -24,9 +24,15 @@ class DataItem:
         return repr_string
 
     @staticmethod
-    def read_from_csv(file_path: str):
+    def read_data(file_path: str):
         test_id = os.path.split(file_path)[1].split('.')[0]
-        data = pd.read_csv(file_path)
+        # add support for common file types
+        if file_path.endswith('.csv'):
+            data = pd.read_csv(file_path)
+        elif file_path.endswith('.xlsx'):
+            data = pd.read_excel(file_path)
+        else:
+            raise ValueError(f'File type not supported: {file_path}')
         return DataItem(test_id, data)
 
     def read_info_row(self, info_table: pd.DataFrame, test_id_key: str = 'test id'):
@@ -43,10 +49,11 @@ class DataItem:
 class DataSet:
     info_path: str = None
     info_table: pd.DataFrame = None
+    test_id_key: str = None
     data_dir: str = None
     data_map: map = None
 
-    def __init__(self, data_dir: str, info_path: str, test_id_key: str = 'test id'):
+    def __init__(self, data_dir: str, info_path: str, test_id_key: str = 'test id', load: bool = True):
         """Initialize the dataset.
         Args:
             data_dir: The directory containing the data.
@@ -55,19 +62,36 @@ class DataSet:
         self.data_dir = data_dir
         self.info_path = info_path
         self.test_id_key = test_id_key
+        if load:
+            self.info_table = pd.read_excel(self.info_path)
+            file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self.info_table[test_id_key]]
+            self.data_map = map(lambda path: DataItem.read_data(path), file_paths)
+            self.data_map = map(lambda obj: DataItem.read_info_row(obj, self.info_table, test_id_key=test_id_key),
+                                self.data_map)
 
-        self.info_table = pd.read_excel(self.info_path)
-        file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self.info_table[test_id_key]]
-
-        self.data_map = map(lambda path: DataItem.read_from_csv(path), file_paths)
-        self.data_map = map(lambda obj: DataItem.read_info_row(obj, self.info_table, test_id_key=test_id_key),
-                            self.data_map)
+    def write_output(self, data_dir: str, info_path: str) -> None:
+        """Execute the processing operations and write the output of the dataset to a directory.
+        Args:
+            data_dir: The directory to write the data to.
+            info_path: The path to write the info table to.
+        """
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+        for dataitem in self:
+            dataitem.write_data_to_csv(data_dir)
+        self.info_table.to_excel(info_path, index=False)
+        out_info_table = pd.DataFrame()
+        for i, dataitem in enumerate(copy.deepcopy(self.data_map)):
+            dataitem.write_data_to_csv(data_dir)
+            out_info_table = pd.concat([out_info_table, dataitem.info.to_frame().T], ignore_index=True)
+            out_info_table.to_excel(info_path, index=False)
 
     def __iter__(self):
         """Iterate over the dataset."""
         for dataitem in tqdm(copy.deepcopy(self.data_map), unit='DataItems', leave=False):
             if dataitem.test_id in self.info_table[self.test_id_key].values:
                 yield dataitem
+
 
     def apply_function(self, func: Callable[[DataItem], DataItem], update_info: bool = True) -> 'DataSet':
         """Apply a processing function to the dataset."""
@@ -97,23 +121,6 @@ class DataSet:
         # also sort the data map by the test ids in the info table
         new_dataset.data_map = sorted(new_dataset.data_map, key=lambda x: x.test_id)
         return new_dataset
-
-    def write_output(self, data_dir: str, info_path: str) -> None:
-        """Execute the processing operations and write the output of the dataset to a directory.
-        Args:
-            data_dir: The directory to write the data to.
-            info_path: The path to write the info table to.
-        """
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
-        for dataitem in self:
-            dataitem.write_data_to_csv(data_dir)
-        self.info_table.to_excel(info_path, index=False)
-        out_info_table = pd.DataFrame()
-        for i, dataitem in enumerate(copy.deepcopy(self.data_map)):
-            dataitem.write_data_to_csv(data_dir)
-            out_info_table = pd.concat([out_info_table, dataitem.info.to_frame().T], ignore_index=True)
-            out_info_table.to_excel(info_path, index=False)
 
     def copy(self) -> 'DataSet':
         """Return a copy of the dataset."""

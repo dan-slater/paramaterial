@@ -22,6 +22,11 @@ from paramaterial.plug import DataSet, DataItem
 # todo: separate resampling and interpolation.
 
 
+def calculate_statistics(ds: DataSet) -> DataSet:
+    """Calculate statistics for dataset."""
+    pass
+
+
 def make_screening_pdf(
         dataset: DataSet,
         plot_func: Callable[[DataItem], None],
@@ -72,37 +77,30 @@ def make_screening_pdf(
     pdf_canvas.save()
     print(f'Screening pdf saved to {pdf_path}.')
 
-# todo: rename to read screening pdf
-def screen_data(dataset: DataSet, screening_pdf: str, screened_data_dir: str, screened_info_path: str) -> None:
+
+def read_screening_pdf_to(ds: DataSet, screening_pdf: str) -> DataSet:
     """Screen data using marked pdf file."""
-    pdf_reader = PdfFileReader(open(screening_pdf, 'rb'))
-    test_id_key = dataset.test_id_key
+    test_id_key = ds.test_id_key
 
-    # read checkboxes
-    for key, value in pdf_reader.get_fields().items():
-        test_id = key[11:]
-        check_box = value['/V']
-        if check_box == '/Yes':
-            dataset.info_table.loc[dataset.info_table[test_id_key] == test_id, 'reject'] = 'y'
-        else:
-            dataset.info_table.loc[dataset.info_table[test_id_key] == test_id, 'reject'] = 'n'
+    with open(screening_pdf, 'rb') as f:
+        pdf_reader = PdfFileReader(f)
 
-    # read text fields
-    for key, value in pdf_reader.get_fields().items():
-        test_id = key[12:]
-        comment = value['/V']
-        dataset.info_table.loc[dataset.info_table[test_id_key] == test_id, 'comment'] = comment
+        # read checkboxes
+        for key, value in pdf_reader.get_fields().items():
+            test_id = key[11:]
+            check_box = value['/V']
+            if check_box == '/Yes':
+                ds.info_table.loc[ds.info_table[test_id_key] == test_id, 'reject'] = 'y'
+            else:
+                ds.info_table.loc[ds.info_table[test_id_key] == test_id, 'reject'] = 'n'
 
-    # make new dataset with rejected data and write to screened data dir and info file
-    rejected_data = dataset[{'reject': ['y']}]
-    rejected_data.write_output(screened_data_dir, screened_info_path)
+        # read text fields
+        for key, value in pdf_reader.get_fields().items():
+            test_id = key[12:]
+            comment = value['/V']
+            ds.info_table.loc[ds.info_table[test_id_key] == test_id, 'comment'] = comment
 
-    # remove rejected data files from original directory and info file
-    dataset = dataset[{'reject': ['n']}]
-    dataset.write_output(dataset.data_dir, dataset.info_path)
-
-    print(f'Screening complete. {len(rejected_data)} tests rejected.')
-    print(f'Rejected tests saved to {screened_data_dir} with info at {screened_info_path}.')
+    return ds
 
 
 def make_representative_curves(

@@ -5,7 +5,7 @@ from typing import List, Dict, Union
 import pandas as pd
 
 from paramaterial.plug import DataSet
-from paramaterial.screening import make_screening_pdf
+# from paramaterial.screening import make_screening_pdf
 
 
 def make_info_table(data_dir: str, columns: List[str]) -> pd.DataFrame:
@@ -94,27 +94,12 @@ def check_column_headers(data_dir: str):
     print(f'Headers in all files are the same as in the first file.')
 
 
-def make_preparing_screening_pdf(data_dir: str, pdf_path: str, df_plt_kwargs: Dict):
-    print(os.getcwd())
-    make_screening_pdf(data_dir, pdf_path, df_plt_kwargs)
-
-
 def make_experimental_matrix(dataset: DataSet, index: Union[str, List[str]], columns: Union[str, List[str]]):
     if isinstance(index, str):
         index = [index]
     if isinstance(columns, str):
         columns = [columns]
     return dataset.info_table.groupby(index + columns).size().unstack(columns).fillna(0).astype(int)
-
-
-if __name__ == '__main__':
-    make_preparing_screening_pdf('../examples/baron study/data/01 raw data',
-                                 '../examples/baron study/info/01 raw screening.pdf',
-                                 df_plt_kwargs={'x': 'Jaw(mm)', 'y': 'Force(kN)'})
-
-
-def make_prepared_data():
-    ...
 
 
 def copy_and_rename_by_test_id(old_dir: str, new_dir: str, info_path: str):
@@ -124,21 +109,12 @@ def copy_and_rename_by_test_id(old_dir: str, new_dir: str, info_path: str):
 
 
 def convert_files_in_directory_to_csv(directory_path: str):
-    # loop through files in directory
-    # if a file is not a .csv file read it into a pandas dataframe and combine the first two rows as header if second column not unnamed
-    # remove the suffix from the original name and save as a .csv file
-
     for file in os.listdir(directory_path):
         if not file.endswith('.csv'):
             df = pd.read_csv(f'{directory_path}/{file}', header=[0, 1], delimiter='\t')
             df.columns = \
                 [col[0] if str(col[1]).startswith('Unnamed') else ' '.join(col).strip() for col in df.columns]
             df.to_csv(f'{directory_path}/{file[:-4]}.csv', index=False)
-
-
-def print_file_names_in_directory(directory_path: str):
-    for file in os.listdir(directory_path):
-        print(file)
 
 
 def extract_info(in_dir, info_path):
@@ -155,33 +131,3 @@ def extract_info(in_dir, info_path):
         info_row['material'] = 'AA6061-T651_' + name_list[2]
         info_df = info_df.append(info_row, ignore_index=True)
     info_df.to_excel(info_path, index=False)
-
-# def prepare_data(cfg):
-#     in_dir = cfg['io'][0]
-#     in_info_path = cfg['io'][1]
-#     out_dir = cfg['io'][2]
-#     out_info_path = cfg['io'][3]
-#
-#     in_info_df = pd.read_excel(in_info_path)
-#     out_info_df = pd.DataFrame()
-#
-#     for filename in os.listdir(in_dir):
-#         in_data_df = pd.read_csv(f'{in_dir}/{filename}').dropna()
-#         info_row = in_info_df.loc[in_info_df['filename'] == filename].squeeze()
-#         test_id = info_row['test id']
-#
-#         eng_strain = in_data_df['Strain']
-#         eng_stress = in_data_df['Stress_MPa']
-#         true_strain = np.log(1 + eng_strain)
-#         true_stress = eng_stress * (1 + eng_strain)
-#
-#         out_data_df = pd.DataFrame()
-#         out_data_df['eng strain'] = eng_strain
-#         out_data_df['eng stress'] = eng_stress
-#         out_data_df['Strain'] = true_strain
-#         out_data_df['Stress(MPa)'] = true_stress
-#
-#         out_data_df.to_csv(f'{out_dir}/{test_id}.csv', index=False)
-#         out_info_df = out_info_df.append(info_row)
-#
-#     out_info_df.to_excel(out_info_path, index=False)

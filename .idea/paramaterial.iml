@@ -7,8 +7,8 @@
       <excludeFolder url="file://$MODULE_DIR$/examples/tensile study/data" />
       <excludeFolder url="file://$MODULE_DIR$/examples/baron study/data" />
       <excludeFolder url="file://$MODULE_DIR$/examples/hyde study/data" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/geometry study/data" />
       <excludeFolder url="file://$MODULE_DIR$/examples/ringing study/data" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/edge vs center study/data" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
