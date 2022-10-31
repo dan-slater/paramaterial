@@ -1,23 +1,12 @@
 import os
 import shutil
+from pathlib import Path
 from typing import List, Dict, Union
 
 import pandas as pd
 
 from paramaterial.plug import DataSet
 # from paramaterial.screening import make_screening_pdf
-
-
-def make_info_table(data_dir: str, columns: List[str]) -> pd.DataFrame:
-    """Make a table of information about the tests in the directory."""
-    columns = ['test id', 'old filename'] + columns
-    info_df = pd.DataFrame(columns=columns)
-    for filename in os.listdir(data_dir):
-        if filename.endswith('.csv'):
-            info_row = pd.Series(dtype=str)
-            info_row['old filename'] = filename
-            info_df = pd.concat([info_df, info_row.to_frame().T], ignore_index=True)
-    return info_df
 
 
 def copy_data_and_info(old_data_dir: str, new_data_dir: str, old_info_path: str, new_info_path: str) -> None:
@@ -46,37 +35,30 @@ def copy_data_and_info(old_data_dir: str, new_data_dir: str, old_info_path: str,
     print(f'Copied info table from {old_info_path} to {new_info_path}.')
 
 
-def rename_by_test_id(data_dir, info_path, test_id_col='test id'):
+def copy_data_and_rename_by_test_id(data_in: Path, data_out: Path, info_table: pd.DataFrame, test_id_col='test id'):
     """Rename files in data directory by test id in info table."""
     # make data directory if it doesn't exist
-    if not os.path.exists(data_dir):
-        os.mkdir(data_dir)
-
-    # read info table
-    info_df = pd.read_excel(info_path)
+    if not os.path.exists(data_out):
+        os.mkdir(data_out)
 
     # check info table
-    if 'old filename' not in info_df.columns:
-        raise ValueError(f'There is no "old filename" column in {info_path}. Please add it.'
-                         f'\nExisting columns are: {list(info_df.columns)}')
-    if test_id_col not in info_df.columns:
-        raise ValueError(f'There is no "test id" column in {info_path}.')
-    if info_df[test_id_col].duplicated().any():
-        raise ValueError(f'There are duplicate test ids {info_path}.')
-    if info_df['old filename'].duplicated().any():
-        raise ValueError(f'There are duplicate old filenames in {info_path}.')
+    if 'old filename' not in info_table.columns:
+        raise ValueError(f'There is no "old filename" column in the info table.')
+    if test_id_col not in info_table.columns:
+        raise ValueError(f'There is no "{test_id_col}" column in the info table.')
+    if info_table[test_id_col].duplicated().any():
+        raise ValueError(f'There are duplicate test ids.')
+    if info_table['old filename'].duplicated().any():
+        raise ValueError(f'There are duplicate old filenames.')
 
-    # rename files if they exist and if new name is not already taken
-    for filename, test_id in zip(info_df['old filename'], info_df[test_id_col]):
-        if os.path.exists(f'{data_dir}/{filename}'):
-            if os.path.exists(f'{data_dir}/{test_id}.csv'):
-                raise ValueError(f'File {test_id}.csv already exists in {data_dir}.')
-            os.rename(f'{data_dir}/{filename}', f'{data_dir}/{test_id}.csv')
-            print(f'Renamed {filename} to {test_id}.csv.')
-        else:
-            print(f'File {filename}.csv does not exist in {data_dir}.')
+    for filename, test_id in zip(info_table['old filename'], info_table[test_id_col]):
+        # check that file exists
+        if not os.path.exists(f'{data_in/filename}'):
+            raise FileNotFoundError(f'File {filename} does not exist in {data_in}.')
+        # copy and rename file
+        shutil.copy(f'{data_in/filename}', f'{data_out/test_id}.csv')
 
-    print(f'Renamed {len(info_df)} files in {data_dir}.')
+    print(f'Copied {len(info_table)} files in {data_in} to {data_out}.')
 
 
 def check_column_headers(data_dir: str):
@@ -94,12 +76,24 @@ def check_column_headers(data_dir: str):
     print(f'Headers in all files are the same as in the first file.')
 
 
-def make_experimental_matrix(dataset: DataSet, index: Union[str, List[str]], columns: Union[str, List[str]]):
+# compare csv files
+def check_for_duplicate_files(data_dir: str):
+    hashes = [hash(open(f'{data_dir}/{file}', 'rb').read()) for file in os.listdir(data_dir)]
+    if len(hashes) != len(set(hashes)):
+        duplicates = [file for file, filehash in zip(os.listdir(data_dir), hashes) if hashes.count(filehash) > 1]
+        raise ValueError(f'There are duplicate files in {data_dir}.\n'
+                         'The duplicates are:' + '\n\t'.join(duplicates))
+    else:
+        print(f'No duplicate files found in "{data_dir}".')
+
+
+
+def make_experimental_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], columns: Union[str, List[str]]):
     if isinstance(index, str):
         index = [index]
     if isinstance(columns, str):
         columns = [columns]
-    return dataset.info_table.groupby(index + columns).size().unstack(columns).fillna(0).astype(int)
+    return info_table.groupby(index + columns).size().unstack(columns).fillna(0).astype(int)
 
 
 def copy_and_rename_by_test_id(old_dir: str, new_dir: str, info_path: str):

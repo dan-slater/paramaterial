@@ -2,6 +2,7 @@
 import copy
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, Callable, List, Any, Union
 
 import pandas as pd
@@ -14,25 +15,10 @@ class DataItem:
     data: pd.DataFrame = None
     info: pd.Series = None
 
-    def __len__(self):
-        return len(self.data)
-
-    def __repr__(self):
-        repr_string = f'DataItem with test id {self.test_id}.\n'
-        repr_string += f'Info: {self.info.to_dict()}\n'
-        repr_string += f'Data: {self.data.head(2)}'
-        return repr_string
-
     @staticmethod
     def read_data(file_path: str):
         test_id = os.path.split(file_path)[1].split('.')[0]
-        # add support for common file types
-        if file_path.endswith('.csv'):
-            data = pd.read_csv(file_path)
-        elif file_path.endswith('.xlsx'):
-            data = pd.read_excel(file_path)
-        else:
-            raise ValueError(f'File type not supported: {file_path}')
+        data = pd.read_csv(file_path)
         return DataItem(test_id, data)
 
     def read_info_row(self, info_table: pd.DataFrame, test_id_key: str = 'test id'):
@@ -44,16 +30,18 @@ class DataItem:
         self.data.to_csv(output_path, index=False)
         return self
 
+    def __len__(self):
+        return len(self.data)
 
-@dataclass
+    def __repr__(self):
+        repr_string = f'DataItem with test id {self.test_id}.\n'
+        repr_string += f'Info: {self.info.to_dict()}\n'
+        repr_string += f'Data: {self.data.head(2)}'
+        return repr_string
+
+
 class DataSet:
-    info_path: str = None
-    info_table: pd.DataFrame = None
-    test_id_key: str = None
-    data_dir: str = None
-    data_map: map = None
-
-    def __init__(self, data_dir: str, info_path: str, test_id_key: str = 'test id', load: bool = True):
+    def __init__(self, data_dir: Path, info_path: Path, test_id_key: str = 'test id', load: bool = True):
         """Initialize the dataset.
         Args:
             data_dir: The directory containing the data.
@@ -64,10 +52,61 @@ class DataSet:
         self.test_id_key = test_id_key
         if load:
             self.info_table = pd.read_excel(self.info_path)
-            file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self.info_table[test_id_key]]
+            file_paths = [self.data_dir / f'{test_id}.csv' for test_id in self.info_table[test_id_key]]
             self.data_map = map(lambda path: DataItem.read_data(path), file_paths)
-            self.data_map = map(lambda obj: DataItem.read_info_row(obj, self.info_table, test_id_key=test_id_key),
-                                self.data_map)
+            self.data_map = map(lambda di: DataItem.read_info_row(di, self.info_table, test_id_key), self.data_map)
+
+    def __iter__(self):
+        """Iterate over the dataset."""
+        for dataitem in tqdm(copy.deepcopy(self.data_map), unit='DataItems', leave=False):
+            if dataitem.test_id in self.info_table[self.test_id_key].values:
+                yield dataitem
+
+    def __getitem__(self, item: Union[Dict[str, List[Any]], int, slice]) -> Union['DataSet', DataItem]:
+        """Get a subset of the dataset using a dictionary of column names and lists of values or using normal list
+        indexing. """
+        if isinstance(item, int):
+            test_id = self.info_table.iloc[item]['test id']
+            data = list(copy.deepcopy(self.data_map))[item].data
+            info = self.info_table.loc[self.info_table['test id'] == test_id].squeeze()
+            return DataItem(test_id, data, info)
+        elif isinstance(item, slice):
+            subset = copy.deepcopy(self)
+            subset.data_map = list(self.data_map)[item]
+            subset.info_table = subset.info_table.iloc[item]
+            return subset
+        elif isinstance(item, dict):
+            new_ds = self.copy()
+            new_ds.data_map = filter(lambda dataitem: all(
+                [dataitem.info[column] in values for column, values in item.items()]), new_ds.data_map)
+            for col_name, vals in item.items():
+                if not isinstance(vals, list):
+                    vals = [vals]
+                new_ds.info_table = new_ds.info_table.loc[new_ds.info_table[col_name].isin(vals)]
+            return new_ds
+        else:
+            raise ValueError(f'Invalid argument type: {type(item)}')
+
+    def apply_function(self, func: Callable[[DataItem], DataItem], update_info: bool = True) -> 'DataSet':
+        """Apply a processing function to the dataset."""
+
+        def wrapped_func(di: DataItem):
+            try:
+                di = func(di)
+                di.data.reset_index(drop=True, inplace=True)
+                return di
+            except Exception as e:
+                print(f'Error applying "{func.__name__}": {e}')
+                return di
+
+        new_set = self.copy()
+        new_set.data_map = map(wrapped_func, new_set.data_map)
+        if update_info:
+            new_info_table = pd.DataFrame()
+            for i, dataitem in enumerate(new_set):
+                new_info_table = pd.concat([new_info_table, dataitem.info.to_frame().T], ignore_index=True)
+            new_set.info_table = new_info_table
+        return new_set
 
     def write_output(self, data_dir: str, info_path: str) -> None:
         """Execute the processing operations and write the output of the dataset to a directory.
@@ -86,35 +125,7 @@ class DataSet:
             out_info_table = pd.concat([out_info_table, dataitem.info.to_frame().T], ignore_index=True)
             out_info_table.to_excel(info_path, index=False)
 
-    def __iter__(self):
-        """Iterate over the dataset."""
-        for dataitem in tqdm(copy.deepcopy(self.data_map), unit='DataItems', leave=False):
-            if dataitem.test_id in self.info_table[self.test_id_key].values:
-                yield dataitem
-
-
-    def apply_function(self, func: Callable[[DataItem], DataItem], update_info: bool = True) -> 'DataSet':
-        """Apply a processing function to the dataset."""
-
-        def wrapped_func(dataitem: DataItem):
-            try:
-                dataitem = func(dataitem)
-                dataitem.data.reset_index(drop=True, inplace=True)
-                return dataitem
-            except Exception as e:
-                print(f'Error applying "{func.__name__}": {e}')
-                return dataitem
-
-        new_dataset = self.copy()
-        new_dataset.data_map = map(wrapped_func, new_dataset.data_map)
-        if update_info:
-            new_info_table = pd.DataFrame()
-            for i, dataitem in enumerate(new_dataset):
-                new_info_table = pd.concat([new_info_table, dataitem.info.to_frame().T], ignore_index=True)
-            new_dataset.info_table = new_info_table
-        return new_dataset
-
-    def sort_by(self, column: str, ascending: bool = True) -> 'DataSet':
+    def sort_by(self, column: str | List[str], ascending: bool = True) -> 'DataSet':
         """Sort the dataset by a column in the info table."""
         new_dataset = self.copy()
         new_dataset.info_table.sort_values(by=column, inplace=True, ascending=ascending)
@@ -142,27 +153,3 @@ class DataSet:
             raise ValueError('Length of info table and datamap are different.')
         return len(self.info_table)
 
-    def __getitem__(self, item: Union[Dict[str, List[Any]], int, slice]) -> Union['DataSet', DataItem]:
-        """Get a subset of the dataset using a dictionary of column names and lists of values or using normal list
-        indexing. """
-        if isinstance(item, int):
-            test_id = self.info_table.iloc[item]['test id']
-            data = list(copy.deepcopy(self.data_map))[item].data
-            info = self.info_table.loc[self.info_table['test id'] == test_id].squeeze()
-            return DataItem(test_id, data, info)
-        elif isinstance(item, slice):
-            subset = copy.deepcopy(self)
-            subset.data_map = list(self.data_map)[item]
-            subset.info_table = subset.info_table.iloc[item]
-            return subset
-        elif isinstance(item, dict):
-            new_ds = self.copy()
-            new_ds.data_map = filter(lambda dataitem: all(
-                [dataitem.info[column] in values for column, values in item.items()]), new_ds.data_map)
-            for col_name, vals in item.items():
-                if not isinstance(vals, list):
-                    vals = [vals]
-                new_ds.info_table = new_ds.info_table.loc[new_ds.info_table[col_name].isin(vals)]
-            return new_ds
-        else:
-            raise ValueError(f'Invalid argument type: {type(item)}')
