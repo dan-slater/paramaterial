@@ -55,13 +55,6 @@ class Styler:
 
     def __post_init__(self):
         """Post init."""
-        if self.color_by is not None:
-            self.color_by_label = self.color_by_label or self.color_by
-        if self.linestyle_by is not None:
-            self.linestyle_by_label = self.linestyle_by_label or self.linestyle_by
-        if self.marker_by is not None:
-            self.marker_by_label = self.marker_by_label or self.marker_by
-
         self.plot_kwargs['legend'] = False
 
         # todo: use pandas in-built color bar
@@ -77,9 +70,7 @@ class Styler:
 
         if self.color_by is not None:
             color_vals = ds.info_table[self.color_by].unique()
-            if self.color_norm is not None:
-                pass
-            elif all(str(x).isnumeric() for x in color_vals):
+            if all(str(x).isnumeric() for x in color_vals):
                 self.color_norm = plt.Normalize(min(color_vals), max(color_vals))
                 self.color_dict = {x: plt.cm.get_cmap(self.cmap)(self.color_norm(x)) for x in color_vals}
             else:

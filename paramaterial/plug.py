@@ -22,7 +22,7 @@ class DataItem:
         return DataItem(test_id, data)
 
     def read_info_row(self, info_table: pd.DataFrame, test_id_key: str = 'test id'):
-        self.info = info_table.loc[info_table[test_id_key] == self.test_id].squeeze()
+        self.info = info_table.loc[info_table[test_id_key] == self.test_id].squeeze() # todo: move this to dataset class
         return self
 
     def write_data_to_csv(self, output_dir: str):
@@ -41,7 +41,7 @@ class DataItem:
 
 
 class DataSet:
-    def __init__(self, data_dir: Path, info_path: Path, test_id_key: str = 'test id', load: bool = True):
+    def __init__(self, data_dir: str, info_path: str, test_id_key: str = 'test id', load: bool = True):
         """Initialize the dataset.
         Args:
             data_dir: The directory containing the data.
@@ -52,7 +52,7 @@ class DataSet:
         self.test_id_key = test_id_key
         if load:
             self.info_table = pd.read_excel(self.info_path)
-            file_paths = [self.data_dir / f'{test_id}.csv' for test_id in self.info_table[test_id_key]]
+            file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self.info_table[test_id_key]]
             self.data_map = map(lambda path: DataItem.read_data(path), file_paths)
             self.data_map = map(lambda di: DataItem.read_info_row(di, self.info_table, test_id_key), self.data_map)
 
@@ -91,13 +91,9 @@ class DataSet:
         """Apply a processing function to the dataset."""
 
         def wrapped_func(di: DataItem):
-            try:
-                di = func(di)
-                di.data.reset_index(drop=True, inplace=True)
-                return di
-            except Exception as e:
-                print(f'Error applying "{func.__name__}": {e}')
-                return di
+            di = func(di)
+            di.data.reset_index(drop=True, inplace=True)
+            return di
 
         new_set = self.copy()
         new_set.data_map = map(wrapped_func, new_set.data_map)
