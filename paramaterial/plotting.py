@@ -5,6 +5,7 @@ from typing import Optional, Tuple, List, Any, Dict, Callable
 
 import matplotlib.patches as mpatches
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -46,91 +47,109 @@ class Styler:
     handles: Optional[List[mpatches.Patch]] = None
     linestyles: List[str] = field(default_factory=lambda: ['-', '--', ':', '-.'])
     markers: List[str] = field(default_factory=lambda: ['o', 's', 'v', '^'])
-    color_vals: Optional[np.ndarray] = None
-    linestyle_vals: Optional[List[Any]] = None
-    marker_vals: Optional[List[Any]] = None
+    color_dict: Optional[Dict[str | int | float, str]] = None
+    linestyle_dict: Optional[Dict[str | int | float, str]] = None
+    marker_dict: Optional[Dict[str | int | float, str]] = None
     plot_kwargs: Dict[str, Any] = field(default_factory=lambda: dict())
+    styled_ds: Optional[DataSet] = None
+
+    def __post_init__(self):
+        """Post init."""
+        if self.color_by is not None:
+            self.color_by_label = self.color_by_label or self.color_by
+        if self.linestyle_by is not None:
+            self.linestyle_by_label = self.linestyle_by_label or self.linestyle_by
+        if self.marker_by is not None:
+            self.marker_by_label = self.marker_by_label or self.marker_by
+
+        self.plot_kwargs['legend'] = False
+
+        # todo: use pandas in-built color bar
+        # if self.cbar:
+        #     self.plot_kwargs['cmap'] = self.cmap
+        #     self.plot_kwargs['norm'] = self.color_norm
+        #     self.plot_kwargs['colorbar'] = True
+        #     self.plot_kwargs['colorbar_label'] = self.cbar_label
 
     def style_to(self, ds: DataSet):
         """Style the dataset based on the styler attributes."""
+        self.styled_ds = copy.deepcopy(ds)
+
         if self.color_by is not None:
-            self.color_vals = ds.info_table[self.color_by].unique()
-            if self.color_norm is None:
-                self.color_norm = plt.Normalize(ds.info_table[self.color_by].min(), ds.info_table[self.color_by].max())
+            color_vals = ds.info_table[self.color_by].unique()
+            if self.color_norm is not None:
+                pass
+            elif all(str(x).isnumeric() for x in color_vals):
+                self.color_norm = plt.Normalize(min(color_vals), max(color_vals))
+                self.color_dict = {x: plt.cm.get_cmap(self.cmap)(self.color_norm(x)) for x in color_vals}
+            else:
+                self.color_norm = plt.Normalize(0, len(color_vals))
+                self.color_dict = {x: plt.cm.get_cmap(self.cmap)(self.color_norm(i)) for i, x in enumerate(color_vals)}
 
         if self.linestyle_by is not None:
-            self.linestyle_vals = ds.info_table[self.linestyle_by].unique().tolist()
-            while len(self.linestyles) < len(self.linestyle_vals):
+            linestyle_vals = ds.info_table[self.linestyle_by].unique().tolist()
+            while len(self.linestyles) < len(linestyle_vals):
                 self.linestyles.extend(self.linestyles)
+            self.linestyle_dict = dict(zip(linestyle_vals, self.linestyles))
 
         if self.marker_by is not None:
-            self.marker_vals = ds.info_table[self.marker_by].unique().tolist()
-            while len(self.markers) < len(self.marker_vals):
+            marker_vals = ds.info_table[self.marker_by].unique().tolist()
+            while len(self.markers) < len(marker_vals):
                 self.markers.extend(self.markers)
+            self.marker_dict = dict(zip(marker_vals, self.markers))
 
         return self
 
     def curve_formatters(self, di: DataItem) -> Dict[str, Any]:
         """Return the curve formatters for the data item."""
+        if self.styled_ds is None:
+            raise ValueError('The styler must be styled to a dataset before plotting.')
+
         configure_plt_formatting()
         formatters = dict()
 
         if self.color_by is not None:
-            formatters['color'] = plt.get_cmap(self.cmap)(self.color_norm(di.info[self.color_by]))
-            formatters['zorder'] = di.info[self.color_by]
+            formatters['color'] = self.color_dict[di.info[self.color_by]]
+            if all(str(x).isnumeric() for x in self.color_dict.keys()):
+                formatters['zorder'] = di.info[self.color_by]
         else:
             formatters['color'] = plt.gca()._get_lines.get_next_color()
 
         if self.linestyle_by is not None:
-            formatters['linestyle'] = self.linestyles[self.linestyle_vals.index(di.info[self.linestyle_by])]
-        else:
-            formatters['linestyle'] = None
+            formatters['linestyle'] = self.linestyle_dict[di.info[self.linestyle_by]]
 
         if self.marker_by is not None:
-            formatters['marker'] = self.markers[self.marker_vals.index(di.info[self.marker_by])]
-        else:
-            formatters['marker'] = None
+            formatters['marker'] = self.marker_dict[di.info[self.marker_by]]
 
         return {k: v for k, v in formatters.items() if v is not None}
 
     def legend_handles(self, ds: Optional[DataSet] = None) -> List[mpatches.Patch]:
         """Return the legend handles."""
-        handles = list()
+        if ds is None:
+            ds = self.styled_ds
 
-        if ds is not None:
-            styler_copy = copy.deepcopy(self)
-            styler_copy.style_to(ds)
-            color_vals = styler_copy.color_vals
-            linestyle_vals = styler_copy.linestyle_vals
-            marker_vals = styler_copy.marker_vals
-        else:
-            color_vals = self.color_vals
-            linestyle_vals = self.linestyle_vals
-            marker_vals = self.marker_vals
+        handles = list()
 
         if self.color_by_label is not None:
             handles.append(mpatches.Patch(label=self.color_by_label, alpha=0))
 
         if self.color_by is not None:
-            for color_val in color_vals:
-                handles.append(Line2D([], [], label=color_val, marker='o', linestyle='',
-                                      color=plt.get_cmap(self.cmap)(self.color_norm(color_val))))
+            for color_val in ds.info_table[self.color_by].unique():
+                handles.append(Line2D([], [], label=color_val, color=self.color_dict[color_val], marker='o', ls=''))
 
         if self.linestyle_by_label is not None:
-            handles.append(mpatches.Patch(label=self.linestyle_by_label, alpha=0))
+            handles.append(mpatches.Patch(label='\n'+self.linestyle_by_label, alpha=0))
 
         if self.linestyle_by is not None:
-            for linestyle_val in linestyle_vals:
-                handles.append(Line2D([], [], color='black', label=linestyle_val,
-                                      linestyle=self.linestyles[linestyle_vals.index(linestyle_val)]))
+            for ls_val in ds.info_table[self.linestyle_by].unique():
+                handles.append(Line2D([], [], label=ls_val, ls=self.linestyle_dict[ls_val], c='k', marker=''))
 
         if self.marker_by_label is not None:
-            handles.append(mpatches.Patch(label=self.marker_by_label, alpha=0))
+            handles.append(mpatches.Patch(label='\n'+self.marker_by_label, alpha=0))
 
         if self.marker_by is not None:
-            for marker_val in marker_vals:
-                handles.append(Line2D([], [], color='black', label=marker_val, linestyle='None', mfc='none',
-                                      marker=self.markers[marker_vals.index(marker_val)]))
+            for marker_val in ds.info_table[self.marker_by].unique():
+                handles.append(Line2D([], [], label=marker_val, marker=self.marker_dict[marker_val], c='k', ls=''))
 
         return handles
 
@@ -140,7 +159,7 @@ def dataset_plot(
         styler: Optional[Styler] = None,
         ax: Optional[plt.Axes] = None,
         fill_between: Optional[Tuple[str, str]] = None,
-        styler_legend: bool = True,
+        plot_legend: bool = True,
         **kwargs
 ) -> plt.Axes:
     """Make a single plot from the dataframe of every item in the dataset."""
@@ -148,11 +167,8 @@ def dataset_plot(
         fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (10, 6)))
     kwargs['ax'] = ax
 
-    if ax.get_legend() is not None and styler_legend:
+    if ax.get_legend() is not None and plot_legend:
         ax.get_legend().remove()
-
-    if styler is None:
-        styler = Styler()
 
     kwargs = {**styler.plot_kwargs, **kwargs}
 
@@ -165,13 +181,14 @@ def dataset_plot(
             ax.fill_between(di.data[kwargs['x']], di.data[fill_between[0]], di.data[fill_between[1]], alpha=0.2,
                             **styler.curve_formatters(di))
 
+
     # add the legend
     handles = styler.legend_handles(ds)
-    if len(handles) > 0 and styler_legend:
-        ax.legend(handles=handles, loc='best', frameon=True)
+    if len(handles) > 0 and plot_legend:
+        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False)
 
     # colorbar
-    if styler.cbar and styler_legend:
+    if styler.cbar and plot_legend:
         sm = plt.cm.ScalarMappable(cmap=styler.cmap, norm=styler.color_norm)
         sm.set_array([])
         cbar = plt.colorbar(sm, ax=kwargs['ax'], fraction=0.046, pad=0.04)
@@ -183,7 +200,7 @@ def dataset_plot(
 
 
 def dataset_subplots(
-        dataset,
+        ds: DataSet,
         shape: Tuple[int, int],
         rows_by: str,
         cols_by: str,
@@ -200,13 +217,14 @@ def dataset_subplots(
         col_titles: Optional[List[str]] = None,
         plot_titles: Optional[List[str]] = None,
         subplot_legend: bool = True,
-        subplot_cbar: bool = True,
+        subplot_cbar: bool = False,
         **kwargs
 ) -> plt.Axes:
     """Plot a dataset as a grid of subplots, split by the 'rows_by' and 'cols_by' columns in the info_table."""
     if axs is None:
         fig, axs = plt.subplots(shape[0], shape[1], figsize=figsize, sharex=sharex, sharey=sharey)
         fig.subplots_adjust(wspace=wspace, hspace=hspace)
+
     if axs.ndim == 1:
         axs = np.array([axs])
 
@@ -224,11 +242,16 @@ def dataset_subplots(
             ax.set_title(subplot_title)
 
     # loop through the grid of axes and plot the subsets
-    for row, row_val in enumerate(row_vals):
-        for col, col_val in enumerate(col_vals):
-            ax = axs[row, col]
-            subset = dataset[{cols_by: col_val, rows_by: row_val}]
+    if rows_by == cols_by:
+        for ax, row_val in zip(axs.flat, row_vals):
+            subset = ds[{rows_by: row_val}]
             dataset_plot(subset, styler=styler, ax=ax, **kwargs)
+    else:
+        for row, row_val in enumerate(row_vals):
+            for col, col_val in enumerate(col_vals):
+                ax = axs[row, col]
+                subset = ds[{cols_by: col_val, rows_by: row_val}]
+                dataset_plot(subset, styler=styler, ax=ax, **kwargs)
 
     if subplot_cbar:
         plt.subplots_adjust(right=0.875)
@@ -240,7 +263,9 @@ def dataset_subplots(
             cbar.set_label(styler.cbar_label)
 
     if subplot_legend:
-        axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='right', frameon=True)
+        plt.subplots_adjust(right=0.85)
+        axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', frameon=True,
+                                        bbox_to_anchor=(0.925, 0.5), markerfirst=False)
 
     return axs
 
