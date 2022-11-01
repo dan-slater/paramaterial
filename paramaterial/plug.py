@@ -11,19 +11,20 @@ from tqdm import tqdm
 
 @dataclass
 class DataItem:
-    test_id: str = None
-    data: pd.DataFrame = None
+    test_id: str
+    data: pd.DataFrame
     info: pd.Series = None
 
     @staticmethod
-    def read_data(file_path: str):
+    def read_data_from_csv(file_path: str):
         test_id = os.path.split(file_path)[1].split('.')[0]
         data = pd.read_csv(file_path)
         return DataItem(test_id, data)
 
-    def read_info_row(self, info_table: pd.DataFrame, test_id_key: str = 'test id'):
-        self.info = info_table.loc[info_table[test_id_key] == self.test_id].squeeze() # todo: move this to dataset class
-        return self
+    @staticmethod
+    def update_info(dataitem: 'DataItem', info_table: pd.DataFrame, test_id_key: str):
+        dataitem.info = info_table.loc[info_table[test_id_key] == dataitem.test_id].squeeze()
+        return dataitem
 
     def write_data_to_csv(self, output_dir: str):
         output_path = output_dir + '/' + self.test_id + '.csv'
@@ -50,34 +51,46 @@ class DataSet:
         self.data_dir = data_dir
         self.info_path = info_path
         self.test_id_key = test_id_key
-        self.info_table = pd.read_excel(self.info_path)
-        file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self.info_table[test_id_key]]
-        self.data_map = map(lambda path: DataItem.read_data(path), file_paths)
-        self.data_map = map(lambda di: DataItem.read_info_row(di, self.info_table, test_id_key), self.data_map)
+
+        _info_table = pd.read_excel(self.info_path)
+        file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in _info_table[test_id_key]]
+
+        self.dataitem_map = map(DataItem.read_data_from_csv, file_paths)
+        self.dataitem_map = map(lambda di: DataItem.update_info(di, _info_table, test_id_key), self.dataitem_map)
+
+    @property
+    def info_table(self) -> pd.DataFrame:
+        info_table = pd.DataFrame()
+        for dataitem in self.copy():
+            info_table = pd.concat([info_table, dataitem.info.to_frame().T], ignore_index=True)
+        return info_table
+
+    @info_table.setter
+    def info_table(self, info_table: pd.DataFrame):
+        self.dataitem_map = map(lambda di: DataItem.update_info(di, info_table, self.test_id_key), self.dataitem_map)
 
     def __iter__(self):
         """Iterate over the dataset."""
-        for dataitem in tqdm(copy.deepcopy(self.data_map), unit='DataItems', leave=False):
-            if dataitem.test_id in self.info_table[self.test_id_key].values:
-                yield dataitem
+        for dataitem in tqdm(copy.deepcopy(self.dataitem_map), unit='DataItems', leave=False):
+            yield dataitem
 
     def __getitem__(self, item: Union[Dict[str, List[Any]], int, slice]) -> Union['DataSet', DataItem]:
         """Get a subset of the dataset using a dictionary of column names and lists of values or using normal list
         indexing. """
         if isinstance(item, int):
             test_id = self.info_table.iloc[item]['test id']
-            data = list(copy.deepcopy(self.data_map))[item].data
+            data = list(copy.deepcopy(self.dataitem_map))[item].data
             info = self.info_table.loc[self.info_table['test id'] == test_id].squeeze()
             return DataItem(test_id, data, info)
         elif isinstance(item, slice):
             subset = copy.deepcopy(self)
-            subset.data_map = list(self.data_map)[item]
+            subset.dataitem_map = list(self.dataitem_map)[item]
             subset.info_table = subset.info_table.iloc[item]
             return subset
         elif isinstance(item, dict):
             new_ds = self.copy()
-            new_ds.data_map = filter(lambda dataitem: all(
-                [dataitem.info[column] in values for column, values in item.items()]), new_ds.data_map)
+            new_ds.dataitem_map = filter(lambda dataitem: all(
+                [dataitem.info[column] in values for column, values in item.items()]), new_ds.dataitem_map)
             for col_name, vals in item.items():
                 if not isinstance(vals, list):
                     vals = [vals]
@@ -95,7 +108,7 @@ class DataSet:
             return di
 
         new_set = self.copy()
-        new_set.data_map = map(wrapped_func, new_set.data_map)
+        new_set.dataitem_map = map(wrapped_func, new_set.dataitem_map)
         if update_info:
             new_info_table = pd.DataFrame()
             for i, dataitem in enumerate(new_set):
@@ -115,7 +128,7 @@ class DataSet:
             dataitem.write_data_to_csv(data_dir)
         self.info_table.to_excel(info_path, index=False)
         out_info_table = pd.DataFrame()
-        for i, dataitem in enumerate(copy.deepcopy(self.data_map)):
+        for i, dataitem in enumerate(copy.deepcopy(self.dataitem_map)):
             dataitem.write_data_to_csv(data_dir)
             out_info_table = pd.concat([out_info_table, dataitem.info.to_frame().T], ignore_index=True)
             out_info_table.to_excel(info_path, index=False)
@@ -125,7 +138,7 @@ class DataSet:
         new_dataset = self.copy()
         new_dataset.info_table.sort_values(by=column, inplace=True, ascending=ascending)
         # also sort the data map by the test ids in the info table
-        new_dataset.data_map = sorted(new_dataset.data_map, key=lambda x: x.test_id)
+        new_dataset.dataitem_map = sorted(new_dataset.dataitem_map, key=lambda x: x.test_id)
         return new_dataset
 
     def copy(self) -> 'DataSet':
@@ -140,11 +153,11 @@ class DataSet:
 
     def __eq__(self, other):
         """Check if the datamaps and info tables of the datasets are equal."""
-        return self.data_map == other.data_map and self.info_table.equals(other.info_table)
+        return self.dataitem_map == other.dataitem_map and self.info_table.equals(other.info_table)
 
     def __len__(self):
         """Get the number of dataitems in the dataset."""
-        if len(self.info_table) != len(list(copy.deepcopy(self.data_map))):
+        if len(self.info_table) != len(list(copy.deepcopy(self.dataitem_map))):
             raise ValueError('Length of info table and datamap are different.')
         return len(self.info_table)
 

@@ -64,7 +64,7 @@ def overview_subfig_plot(
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
 
-    for dataitem in dataset.data_map:
+    for dataitem in dataset.dataitem_map:
         data, info = dataitem.data, dataitem.info
         temp = info[temp_key]
         ax.plot(data['Strain'], data['Stress(MPa)'], color=colors[temp], alpha=0.8)
@@ -116,7 +116,7 @@ def eng_curve_gradients_overview(
     dataset.load_data(data_dir=data_dir, info_path=info_path)
 
     with PdfPages(f'{plot_dir}/{pdf_name}') as pdf:
-        for dataitem in dataset.data_map:
+        for dataitem in dataset.dataitem_map:
             test_id = dataitem.test_id
             data = dataitem.data
             info = dataitem.info
@@ -235,7 +235,7 @@ def report_plots(
     dataset = DataSet()
     dataset.load_data(data_path, info_path, filters)
     with PdfPages(f'{plot_dir}/{pdf_name}') as pdf:
-        for dataitem in dataset.data_map:
+        for dataitem in dataset.dataitem_map:
             test_id = dataitem.test_id
             df = dataitem.data
             df['rate'] = np.gradient(df['Strain'], df['Time(sec)'])
@@ -306,7 +306,7 @@ def fitted_curves(
     fitted_set = DataSet()
     fitted_set.load_data(fitted_data, fitted_info, filters)
     with PdfPages(f'{plot_dir}/{pdf_name}') as pdf:
-        for dataitem in fitted_set.data_map:
+        for dataitem in fitted_set.dataitem_map:
             fig, (ax) = plt.subplots(1, 1, figsize=(10, 4))  # super-plot setup
             id = " ".join(dataitem.test_id.split("_"))
             info = dataitem.info
