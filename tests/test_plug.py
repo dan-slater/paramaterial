@@ -28,7 +28,7 @@ class TestDataItem(unittest.TestCase):
     def test_get_row_from_info_table(self):
         info_table = pd.DataFrame({'test id': ['test_id', 'test_id2'], 'a': [1, 2], 'b': [2, 3]})
         dataitem = DataItem(self.test_id, self.data)
-        dataitem.read_info_row(info_table)
+        dataitem.update_info(info_table)
         self.assertTrue(dataitem.info.equals(self.info))
 
     def test_write_to_csv(self):
