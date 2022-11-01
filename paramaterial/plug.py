@@ -50,11 +50,10 @@ class DataSet:
         self.data_dir = data_dir
         self.info_path = info_path
         self.test_id_key = test_id_key
-        if load:
-            self.info_table = pd.read_excel(self.info_path)
-            file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self.info_table[test_id_key]]
-            self.data_map = map(lambda path: DataItem.read_data(path), file_paths)
-            self.data_map = map(lambda di: DataItem.read_info_row(di, self.info_table, test_id_key), self.data_map)
+        self.info_table = pd.read_excel(self.info_path)
+        file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self.info_table[test_id_key]]
+        self.data_map = map(lambda path: DataItem.read_data(path), file_paths)
+        self.data_map = map(lambda di: DataItem.read_info_row(di, self.info_table, test_id_key), self.data_map)
 
     def __iter__(self):
         """Iterate over the dataset."""

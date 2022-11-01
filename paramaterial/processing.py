@@ -53,7 +53,7 @@ def make_screening_pdf(
         pdf_canvas.setFont("Courier", plt.rcParams['font.size'] + 6)
 
         # add test id
-        pdf_canvas.drawString(0.05*pagesize[0], 0.95*pagesize[1], f'TEST ID: {di.test_id}')
+        pdf_canvas.drawString(0.05*pagesize[0], 0.95*pagesize[1], f'{di.test_id}')
 
         # add checkbox
         pdf_canvas.drawString(0.05*pagesize[0], 0.14*pagesize[1], 'REJECT?:')
@@ -68,6 +68,7 @@ def make_screening_pdf(
                        borderColor=magenta, fillColor=pink, textColor=black, forceBorder=True, fieldFlags='multiline')
 
         # add page to canvas and close plot
+        # make name of page the test id
         pdf_canvas.showPage()
         plt.close()
 
@@ -82,25 +83,32 @@ def read_screening_pdf_to(ds: DataSet, screening_pdf: str) -> DataSet:
     """Screen data using marked pdf file."""
     test_id_key = ds.test_id_key
 
+    # dataframe for screening results
+    screening_df = pd.DataFrame(columns=[test_id_key, 'reject', 'comment'])
+
     with open(screening_pdf, 'rb') as f:
-        pdf_reader = PdfFileReader(f)
+        pdf_fields = PdfFileReader(f).get_fields()
 
-        # read checkboxes
-        for key, value in pdf_reader.get_fields().items():
-            test_id = key[11:]
-            check_box = value['/V']
-            if check_box == '/Yes':
-                ds.info_table.loc[ds.info_table[test_id_key] == test_id, 'reject'] = 'y'
-            else:
-                ds.info_table.loc[ds.info_table[test_id_key] == test_id, 'reject'] = 'n'
+    # get comment and reject fields
+    comment_fields = [field for field in pdf_fields if 'comment' in field]
+    reject_fields = [field for field in pdf_fields if 'reject' in field]
 
-        # read text fields
-        for key, value in pdf_reader.get_fields().items():
-            test_id = key[12:]
-            comment = value['/V']
-            ds.info_table.loc[ds.info_table[test_id_key] == test_id, 'comment'] = comment
+    # get test ids from comment fields
+    test_ids = [field.split('_')[-1] for field in comment_fields]
+
+    # get comments and rejects
+    comments = [pdf_fields[field]['/V'] for field in comment_fields]
+    rejects = [pdf_fields[field]['/V'] for field in reject_fields]
+
+    # add to dataframe
+    screening_df[test_id_key] = test_ids
+    screening_df['reject'] = rejects
+    screening_df['comment'] = comments
+
+    ds.info_table = ds.info_table.merge(screening_df, on=test_id_key, how='left')
 
     return ds
+
 
 
 def make_representative_curves(
