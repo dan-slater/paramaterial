@@ -94,7 +94,7 @@ def read_screening_pdf_to(ds: DataSet, screening_pdf: str) -> DataSet:
     reject_fields = [field for field in pdf_fields if 'reject' in field]
 
     # get test ids from comment fields
-    test_ids = [field.split('_')[-1] for field in comment_fields]
+    test_ids = [field_name[-11:] for field_name in comment_fields]
 
     # get comments and rejects
     comments = [pdf_fields[field]['/V'] for field in comment_fields]
