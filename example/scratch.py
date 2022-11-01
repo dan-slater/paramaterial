@@ -26,3 +26,10 @@ print(prepared_set)
 for di in trimmed_set:
     print(di.test_id, di.info['comment'])
 
+
+pam.processing.make_representative_data(trimmed_set,
+                                          'data/02 representative data',
+                                          'info/02 representative info.xlsx',
+                                        repr_col='Stress_MPa',
+                                        repr_by_cols=['temperature', 'lot'],
+                                        interp_by='Strain')
