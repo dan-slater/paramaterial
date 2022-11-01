@@ -110,9 +110,8 @@ def read_screening_pdf_to(ds: DataSet, screening_pdf: str) -> DataSet:
     return ds
 
 
-
-def make_representative_curves(
-        dataset: DataSet, data_dir: str, info_path: str,
+def make_representative_data(
+        ds: DataSet, data_dir: str, info_path: str,
         repr_col: str, repr_by_cols: List[str],
         interp_by: str, interp_res: int = 200, min_interp_val: float = 0., interp_end: str = 'max_all'
 ):
@@ -124,9 +123,13 @@ def make_representative_curves(
         os.makedirs(data_dir)
 
     # make subset filters from combinations of unique values in repr_by_cols
+
+    # val_counts = ds.info_table.groupby(repr_by_cols).size().unstack(repr_by_cols)
+    val_counts_2 = ds.info_table.value_counts(repr_by_cols)
+
     # todo: replace with value counts
     subset_filters = []
-    value_lists = [dataset.info_table[col].unique() for col in repr_by_cols]
+    value_lists = [ds.info_table[col].unique() for col in repr_by_cols]
     for i in range(len(value_lists[0])):
         subset_filters.append({repr_by_cols[0]: [value_lists[0][i]]})
     for i in range(1, len(repr_by_cols)):
@@ -145,7 +148,7 @@ def make_representative_curves(
     # make representative curves
     for repr_id, subset_filter in zip(repr_ids, subset_filters):
         # get representative subset
-        repr_subset = dataset[subset_filter]
+        repr_subset = ds[subset_filter]
         if repr_subset.info_table.empty:
             continue
         # add row to repr_info_table
