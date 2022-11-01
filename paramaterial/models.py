@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import scipy.optimize as op
 from scipy.optimize import OptimizeResult
-from sklearn.metrics import mean_squared_error
+# from sklearn.metrics import mean_squared_error
 
 from paramaterial.plug import DataItem, DataSet
 
@@ -48,8 +48,8 @@ class Model2:
         )
         self.fit_params = {param: value for param, value in zip(self.params, self.fit[0])}
         self.fit_errors = {param: value for param, value in zip(self.params, np.sqrt(np.diag(self.fit[1])))}
-        self.fit_r2 = 1 - mean_squared_error(self.data.y, self.func(self.data.x, *self.fit_params))/np.var(self.data.y)
-        self.fit_rmse = mean_squared_error(self.data.y, self.func(self.data.x, *self.fit_params))
+        # self.fit_r2 = 1 - mean_squared_error(self.data.y, self.func(self.data.x, *self.fit_params))/np.var(self.data.y)
+        # self.fit_rmse = mean_squared_error(self.data.y, self.func(self.data.x, *self.fit_params))
 
 
 @dataclass
