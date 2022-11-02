@@ -53,10 +53,10 @@ def copy_data_and_rename_by_test_id(data_in: Path, data_out: Path, info_table: p
 
     for filename, test_id in zip(info_table['old filename'], info_table[test_id_col]):
         # check that file exists
-        if not os.path.exists(f'{data_in/filename}'):
+        if not os.path.exists(f'{data_in}/{filename}'):
             raise FileNotFoundError(f'File {filename} does not exist in {data_in}.')
         # copy and rename file
-        shutil.copy(f'{data_in/filename}', f'{data_out/test_id}.csv')
+        shutil.copy(f'{data_in}/{filename}', f'{data_out}/{test_id}.csv')
 
     print(f'Copied {len(info_table)} files in {data_in} to {data_out}.')
 
