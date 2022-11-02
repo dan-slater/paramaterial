@@ -11,14 +11,14 @@ from tqdm import tqdm
 @dataclass
 class DataItem:
     test_id: str
+    info: pd.Series
     data: pd.DataFrame
-    info: pd.Series = None
 
     @staticmethod
     def read_data_from_csv(file_path: str):
         test_id = os.path.split(file_path)[1].split('.')[0]
         data = pd.read_csv(file_path)
-        return DataItem(test_id, data)
+        return DataItem(test_id, pd.Series(dtype=object), data)
 
     def read_info_from_table(self, info_table: pd.DataFrame, test_id_key: str):
         self.info = info_table.loc[info_table[test_id_key] == self.test_id].squeeze()
@@ -68,8 +68,7 @@ class DataSet:
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
         """Distribute the info table in the dataitems."""
-        _data_map = map(DataItem.read_data_from_csv, self.file_paths)
-        self.data_map = map(lambda di: DataItem.read_info_from_table(di, info_table, self.test_id_key), _data_map)
+        self.data_map = map(lambda di: DataItem.read_info_from_table(di, info_table, self.test_id_key), self.data_map)
 
     @property
     def dataitems(self) -> List[DataItem]:
@@ -125,7 +124,7 @@ class DataSet:
 
     def __iter__(self):
         """Iterate over the dataset."""
-        for dataitem in tqdm(self.copy().dataitems, unit='DataItems', leave=False):
+        for dataitem in tqdm(self.copy().data_map, unit='DataItems', leave=False):
             yield dataitem
 
     def __getitem__(self, specifier: Union[int, str, slice, Dict[str, List[Any]]]) -> Union['DataSet', DataItem]:
@@ -151,9 +150,12 @@ class DataSet:
             new_set = self.copy()
             _info_table = new_set.info_table
             for info_col, vals in specifier.items():
+                if not isinstance(vals, list):
+                    vals = [vals]
                 _info_table = _info_table.loc[_info_table[info_col].isin(vals)]
             test_ids = _info_table[self.test_id_key].tolist()
             new_set.data_map = filter(lambda di: di.info[self.test_id_key] in test_ids, new_set.data_map)
+            new_set.file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in test_ids]
             return new_set
         else:
             raise ValueError(f'Invalid dataset[specifier] specifier type: {type(specifier)}')

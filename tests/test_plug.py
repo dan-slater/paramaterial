@@ -110,6 +110,15 @@ class TestDataSet(unittest.TestCase):
         dataset.info_table = info_table
         self.assertTrue(dataset.info_table.convert_dtypes().equals(info_table.convert_dtypes()))
 
+        # test if an applied function is still applied after setting the info table
+        def test(di: DataItem):
+            di.data = di.data[:-1]
+            return di
+
+        dataset = dataset.apply(test)
+        dataset.info_table = info_table
+        self.assertTrue(dataset.dataitems[0].data.convert_dtypes().equals(self.data1[:-1].convert_dtypes()))
+
     def test_apply(self):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
 
@@ -211,6 +220,21 @@ class TestDataSet(unittest.TestCase):
         dataset = dataset.apply(trim)
         self.assertTrue(dataset[{'a': [1, 2], 'b': [4,5]}].dataitems[0].data.convert_dtypes().equals(
             self.data1[:-1].convert_dtypes()))
+
+    def test_copy(self):
+        # test if an applied function is still applied after copying
+        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+
+        def trim(di: DataItem) -> DataItem:
+            di.data = di.data[:-1]
+            return di
+
+        dataset = dataset.apply(trim)
+        dataset_copy = dataset.copy()
+        self.assertTrue(dataset_copy.dataitems[0].data.convert_dtypes().equals(
+            self.data1[:-1].convert_dtypes()))
+
+
 
 
 

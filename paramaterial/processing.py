@@ -85,6 +85,12 @@ def read_screening_pdf_to(ds: DataSet, screening_pdf: str) -> DataSet:
     _info_table = new_ds.copy().info_table
     test_id_key = ds.test_id_key
 
+    # drop reject and comment cols if they exist
+    if 'reject' in _info_table.columns:
+        _info_table.drop(columns=['reject'], inplace=True)
+    if 'comment' in _info_table.columns:
+        _info_table.drop(columns=['comment'], inplace=True)
+
     # dataframe for screening results
     screening_df = pd.DataFrame(columns=[test_id_key, 'reject', 'comment'])
 
@@ -109,7 +115,7 @@ def read_screening_pdf_to(ds: DataSet, screening_pdf: str) -> DataSet:
 
     _info_table = _info_table.merge(screening_df, on=test_id_key, how='left')
 
-    new_ds.info_table = _info_table.merge(screening_df, on=test_id_key, how='left')
+    new_ds.info_table = _info_table
 
     return new_ds
 

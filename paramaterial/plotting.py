@@ -116,10 +116,12 @@ class Styler:
 
     def legend_handles(self, ds: Optional[DataSet] = None) -> List[mpatches.Patch]:
         """Return the legend handles."""
+        handles = list()
+
         if ds is None:
             ds = self.styled_ds
-
-        handles = list()
+        if len(ds) == 0:
+            return handles
 
         if self.color_by_label is not None:
             handles.append(mpatches.Patch(label=self.color_by_label, alpha=0))
