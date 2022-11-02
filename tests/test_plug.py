@@ -4,6 +4,7 @@ import shutil
 import unittest
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from paramaterial.plug import DataItem, DataSet
@@ -32,7 +33,7 @@ class TestDataItem(unittest.TestCase):
         file_path = './test_data/id_001.csv'
         dataitem = DataItem.read_data_from_csv(file_path)
         info_table = pd.DataFrame({'test id': ['id_001'], 'a': [1], 'b': [2]})
-        dataitem.set_info(info_table, 'test id')
+        dataitem.read_info_from_table(info_table, 'test id')
         self.assertTrue(dataitem.info.equals(self.info))
 
     def test_write_data_to_csv(self):
@@ -65,10 +66,10 @@ class TestDataSet(unittest.TestCase):
                                         'a': [1, 2, 3],
                                         'b': [4, 5, 6]})
 
-        self.dataitems = map(DataItem,
-                             ['id_001', 'id_002', 'id_003'],
-                             [self.data1, self.data2, self.data3],
-                             [self.info1, self.info2, self.info3])
+        self.dataitems = list(map(DataItem,
+                                  ['id_001', 'id_002', 'id_003'],
+                                  [self.data1, self.data2, self.data3],
+                                  [self.info1, self.info2, self.info3]))
 
         os.mkdir('./test_data')
 
@@ -83,12 +84,22 @@ class TestDataSet(unittest.TestCase):
 
     def test_init(self):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
-        self.assertTrue(dataset.info_table.convert_dtypes().equals(self.info_table.convert_dtypes()))
-        self.assertEqual(len(list(dataset.dataitems)), 3)
-        # todo:
+        self.assertEqual(dataset.data_dir, self.data_dir)
+        self.assertEqual(dataset.info_path, self.info_path)
+        self.assertEqual(dataset.test_id_key, self.test_id_key)
 
-    def test_get_info_table(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        self.assertEqual(dataset.dataitems[0].test_id, 'id_001')
+        self.assertTrue(dataset.dataitems[0].data.convert_dtypes().equals(self.data1.convert_dtypes()))
+        self.assertTrue(dataset.dataitems[0].info.convert_dtypes().equals(self.info1.convert_dtypes()))
+
+        self.assertEqual(dataset.dataitems[1].test_id, 'id_002')
+        self.assertTrue(dataset.dataitems[1].data.convert_dtypes().equals(self.data2.convert_dtypes()))
+        self.assertTrue(dataset.dataitems[1].info.convert_dtypes().equals(self.info2.convert_dtypes()))
+
+        self.assertEqual(dataset.dataitems[2].test_id, 'id_003')
+        self.assertTrue(dataset.dataitems[2].data.convert_dtypes().equals(self.data3.convert_dtypes()))
+        self.assertTrue(dataset.dataitems[2].info.convert_dtypes().equals(self.info3.convert_dtypes()))
+
         self.assertTrue(dataset.info_table.convert_dtypes().equals(self.info_table.convert_dtypes()))
 
     def test_set_info_table(self):
@@ -99,36 +110,122 @@ class TestDataSet(unittest.TestCase):
         dataset.info_table = info_table
         self.assertTrue(dataset.info_table.convert_dtypes().equals(info_table.convert_dtypes()))
 
-    # def test_init(self):
-    #     dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
-    #     print(dataset.info_table)
-    #     self.assertEqual(dataset.data_dir, self.data_dir)
-    #     self.assertEqual(dataset.info_path, self.info_path)
-    #     self.assertEqual(dataset.test_id_key, self.test_id_key)
-    #     self.assertEqual(len(list(dataset.dataitems)), 3)
-    #     print(dataset.info_table)
-    #     self.assertTrue(dataset.info_table.equals(self.info_table))
+    def test_apply(self):
+        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
 
-    # def test_iter(self):
-    #     dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
-    #
-    #     # update info table and check if dataitems are updated
-    #     self.info_table['c'] = [7, 8, 9]
-    #
-    #     for di in dataset:
-    #         self.assertTrue(di.info.equals(self.info_table.loc[di.test_id]))
-    #
-    # def test_apply_function(self):
-    #     dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
-    #
-    #     def test(di: DataItem):
-    #         di.info['test'] = di.info['test id'][-3:]
-    #         return di
-    #
-    #     dataset = dataset.apply_function(test)
-    #
-    #     self.assertEqual(list(dataset.dataitems)[0].info['test'], '001')
-    #     self.assertEqual(list(dataset.dataitems)[1].info['test'], '002')
-    #     self.assertEqual(list(dataset.dataitems)[2].info['test'], '003')
-    #
-    #     self.assertEqual(dataset.info_table['test'], ['001', '002', '003'])
+        def apply_func(di: DataItem) -> DataItem:
+            di.data['x'] = di.data['x'] + 1
+            di.data['z'] = di.data['x'] + di.data['y']
+            di.info['a'] = di.info['a'] + 1
+            di.info['c'] = di.info['a'] + di.info['b']
+            return di
+
+        dataset = dataset.apply(apply_func)
+
+        self.assertEqual(dataset.dataitems[0].test_id, 'id_001')
+        self.assertTrue(np.equal(dataset.dataitems[0].data['x'], self.data1['x'] + 1).all())
+        self.assertTrue(np.equal(dataset.dataitems[0].data['y'], self.data1['y']).all())
+        self.assertTrue(np.equal(dataset.dataitems[0].data['z'], self.data1['x'] + self.data1['y'] + 1).all())
+
+        self.assertEqual(dataset.dataitems[0].info['a'], self.info1['a'] + 1)
+        self.assertEqual(dataset.dataitems[0].info['b'], self.info1['b'])
+        self.assertEqual(dataset.dataitems[0].info['c'], self.info1['a'] + self.info1['b'] + 1)
+
+    def test_write_output(self):
+        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+
+        def apply_func(di: DataItem) -> DataItem:
+            di.data['x'] = di.data['x'] + 1
+            di.data['z'] = di.data['x'] + di.data['y']
+            di.info['a'] = di.info['a'] + 1
+            di.info['c'] = di.info['a'] + di.info['b']
+            return di
+
+        dataset = dataset.apply(apply_func)
+        dataset.write_output('./test_data/output', './test_data/output/info.xlsx')
+
+        self.assertTrue(os.path.exists('./test_data/output'))
+        self.assertTrue(os.path.exists('./test_data/output/info.xlsx'))
+        self.assertTrue(os.path.exists('./test_data/output/id_001.csv'))
+        self.assertTrue(os.path.exists('./test_data/output/id_002.csv'))
+        self.assertTrue(os.path.exists('./test_data/output/id_003.csv'))
+
+        self.assertTrue(pd.read_csv('./test_data/output/id_001.csv').convert_dtypes().equals(
+            dataset.dataitems[0].data.convert_dtypes()))
+        self.assertTrue(pd.read_csv('./test_data/output/id_002.csv').convert_dtypes().equals(
+            dataset.dataitems[1].data.convert_dtypes()))
+        self.assertTrue(pd.read_csv('./test_data/output/id_003.csv').convert_dtypes().equals(
+            dataset.dataitems[2].data.convert_dtypes()))
+
+        self.assertTrue(pd.read_excel('./test_data/output/info.xlsx').convert_dtypes().equals(
+            dataset.info_table.convert_dtypes()))
+
+    def test_sort_by(self):
+        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        df = pd.DataFrame({'test id': ['id_001', 'id_002', 'id_003'],
+                                           'a': [9, 2, 3],
+                                           'b': [9, 5, 6]})
+        dataset.info_table = df
+        dataset = dataset.sort_by('a')
+        df = df.sort_values('a')
+        self.assertTrue(dataset.info_table.convert_dtypes().equals(df.convert_dtypes().reset_index(drop=True)))
+        self.assertTrue(type(dataset.data_map) is map)
+        self.assertEqual(dataset.dataitems[0].test_id, 'id_002')
+        self.assertTrue(dataset.dataitems[0].data.convert_dtypes().equals(self.data2.convert_dtypes()))
+
+    def test_iter(self):
+        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+
+        info_table = dataset.info_table
+        info_table['c'] = [7, 8, 9]
+        dataset.info_table = info_table
+
+        for di in dataset:
+            self.assertTrue(di.info['c'] in [7, 8, 9])
+
+    def test_len(self):
+        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        self.assertEqual(len(dataset), 3)
+
+    def test_getitem(self):
+        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+
+        self.assertTrue(dataset[0].data.convert_dtypes().equals(self.data1.convert_dtypes()))
+        self.assertTrue(dataset[1].info.convert_dtypes().equals(self.info2.convert_dtypes()))
+
+        self.assertTrue(dataset['id_001'].data.convert_dtypes().equals(self.data1.convert_dtypes()))
+        self.assertTrue(dataset[1:].dataitems[0].data.convert_dtypes().equals(self.data2.convert_dtypes()))
+
+        self.assertTrue(type(dataset[:1]) is DataSet)
+        self.assertTrue(dataset[{'a': [1, 2], 'b': [4]}].dataitems[0].data.convert_dtypes().equals(
+            self.data1.convert_dtypes()))
+
+        self.assertTrue(type(dataset[{'a': [1, 2], 'b': [4]}]) is DataSet)
+        self.assertTrue(len(dataset[{'a': [1, 2], 'b': [4]}]) == 1)
+        self.assertTrue(len(dataset[{'a': [1, 2], 'b': [4,5]}]) == 2)
+
+        def trim(di: DataItem) -> DataItem:
+            di.data = di.data[:-1]
+            return di
+
+        dataset = dataset.apply(trim)
+        self.assertTrue(dataset[{'a': [1, 2], 'b': [4,5]}].dataitems[0].data.convert_dtypes().equals(
+            self.data1[:-1].convert_dtypes()))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

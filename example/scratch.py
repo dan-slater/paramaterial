@@ -7,29 +7,35 @@ import matplotlib.pyplot as plt
 
 prepared_set = DataSet('data/01 prepared data', 'info/01 prepared info.xlsx').sort_by(['temperature', 'lot'])
 
-print('a')
+prepared_set = prepared_set[{'test type': ['UT']}]
+
+assert(all(type(di.info) == pd.Series for di in prepared_set))
 
 def test(di: DataItem):
     di.info['test'] = di.info['test id'][-3:]
     return di
 
 
-prepared_set = prepared_set.apply_function(test)
+prepared_set = prepared_set.apply(test)
+assert(all(type(di.info) == pd.Series for di in prepared_set))
 
 for di in prepared_set:
     print(di.info['test'])
 
-trimmed_set = pam.processing.read_screening_pdf_to(prepared_set, '02 trimming screening marked.pdf')
-print(prepared_set)
+assert(all(type(di.info) == pd.Series for di in prepared_set))
 
 
-for di in trimmed_set:
-    print(di.test_id, di.info['comment'])
+def trim(di: DataItem) -> DataItem:
+    di.data = di.data[:-1]
+    return di
 
+assert(all(type(di.info) == pd.Series for di in prepared_set))
 
-pam.processing.make_representative_data(trimmed_set,
-                                          'data/02 representative data',
-                                          'info/02 representative info.xlsx',
-                                        repr_col='Stress_MPa',
-                                        repr_by_cols=['temperature', 'lot'],
-                                        interp_by='Strain')
+trimmed_set = prepared_set.apply(trim)
+a = trimmed_set[0].data
+assert(all(type(di.info) == pd.Series for di in trimmed_set))
+
+trimmed_set = pam.processing.read_screening_pdf_to(trimmed_set, '02 trimming screening marked.pdf')
+assert(all(type(di.info) == pd.Series for di in trimmed_set))
+
+print(trimmed_set.info_table['comment'].unique())

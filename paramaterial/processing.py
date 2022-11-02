@@ -81,6 +81,8 @@ def make_screening_pdf(
 
 def read_screening_pdf_to(ds: DataSet, screening_pdf: str) -> DataSet:
     """Screen data using marked pdf file."""
+    new_ds = ds.copy()
+    _info_table = new_ds.copy().info_table
     test_id_key = ds.test_id_key
 
     # dataframe for screening results
@@ -105,9 +107,11 @@ def read_screening_pdf_to(ds: DataSet, screening_pdf: str) -> DataSet:
     screening_df['reject'] = rejects
     screening_df['comment'] = comments
 
-    ds.info_table = ds.info_table.merge(screening_df, on=test_id_key, how='left')
+    _info_table = _info_table.merge(screening_df, on=test_id_key, how='left')
 
-    return ds
+    new_ds.info_table = _info_table.merge(screening_df, on=test_id_key, how='left')
+
+    return new_ds
 
 
 def make_representative_data(
