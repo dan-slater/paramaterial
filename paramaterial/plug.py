@@ -74,7 +74,7 @@ class DataSet:
     def dataitems(self) -> List[DataItem]:
         return list(copy.deepcopy(self.data_map))
 
-    def apply(self, func: Callable[[DataItem], DataItem]) -> 'DataSet':
+    def apply(self, func: Callable[[DataItem, ...], DataItem], **kwargs) -> 'DataSet':
         """Apply a function to every dataitem in a copy of the dataset and return the copy."""
 
         # def wrapped_func(di: DataItem):
@@ -90,7 +90,7 @@ class DataSet:
         #         return di
 
         def wrapped_func(di: DataItem):
-                di = func(di)
+                di = func(di, **kwargs)
                 di.data.reset_index(drop=True, inplace=True)
                 assert type(di.data) == pd.DataFrame
                 assert type(di.info) == pd.Series
