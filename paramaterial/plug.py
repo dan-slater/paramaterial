@@ -77,13 +77,25 @@ class DataSet:
     def apply(self, func: Callable[[DataItem], DataItem]) -> 'DataSet':
         """Apply a function to every dataitem in a copy of the dataset and return the copy."""
 
+        # def wrapped_func(di: DataItem):
+        #     try:
+        #         di = func(di)
+        #         di.data.reset_index(drop=True, inplace=True)
+        #         assert type(di.data) == pd.DataFrame
+        #         assert type(di.info) == pd.Series
+        #         assert self.test_id_key in di.info.index
+        #         return di
+        #     except Exception as e:
+        #         print(f'Error applying {func.__name__} to {di.test_id}: {e}')
+        #         return di
+
         def wrapped_func(di: DataItem):
-            di = func(di)
-            di.data.reset_index(drop=True, inplace=True)
-            assert type(di.data) == pd.DataFrame
-            assert type(di.info) == pd.Series
-            assert self.test_id_key in di.info.index
-            return di
+                di = func(di)
+                di.data.reset_index(drop=True, inplace=True)
+                assert type(di.data) == pd.DataFrame
+                assert type(di.info) == pd.Series
+                assert self.test_id_key in di.info.index
+                return di
 
         new_set = self.copy()
         new_set.data_map = map(wrapped_func, new_set.data_map)
