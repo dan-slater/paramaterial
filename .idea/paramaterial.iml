@@ -9,6 +9,7 @@
       <excludeFolder url="file://$MODULE_DIR$/examples/hyde study/data" />
       <excludeFolder url="file://$MODULE_DIR$/examples/ringing study/data" />
       <excludeFolder url="file://$MODULE_DIR$/examples/edge vs center study/data" />
+      <excludeFolder url="file://$MODULE_DIR$/example/data" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
