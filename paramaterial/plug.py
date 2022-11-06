@@ -208,3 +208,6 @@ class DataSet:
         if len(self.info_table) != len(self.dataitems):
             raise ValueError('Length of info table and datamap are different.')
         return len(self.info_table)
+
+    def __hash__(self):
+        return hash(tuple(map(hash, self.dataitems)))
