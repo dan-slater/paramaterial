@@ -55,7 +55,7 @@ di = dataset[0]
 
 x_vec = di.data['Strain'].values
 y_vec = di.data['Stress_MPa'].values
-# plt.plot(x_vec, y_vec, 'o', color='b', mfc='none', alpha=0.5, label='data')
+plt.plot(x_vec, y_vec, 'x', color='b', mfc='none', alpha=0.5, label='data', markersize=1)
 
 plt.ylim(0, 400)
 
@@ -84,7 +84,7 @@ for i in range(2, len(x_vec)):
         UPL = (x[-1], y[-1])
 
     lmin, = plt.plot(x, min_S_mrel_slope*x + min_S_mrel_intercept, color='k', label='linear fit min variance', lw=1,
-                     ls='--', zorder=10)
+                         ls='--', zorder=10)
     lp, =  plt.plot(x, y, color='r', alpha=0.9, label='data', lw=0,
                     marker='o', mfc='none')
     l, = plt.plot(x_vec, slope*x_vec + intercept, color='k', alpha=0.5, label='linear fit', lw=1)
