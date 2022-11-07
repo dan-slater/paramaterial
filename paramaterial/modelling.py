@@ -61,3 +61,9 @@ def determine_proportional_limits_and_elastic_modulus(
     di.info['LPL_1'] = LPL[1]
     di.info['E'] = (UPL[1] - LPL[1])/(UPL[0] - LPL[0])
     return di
+
+
+def find_proof_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa') -> DataItem:
+    """Find the proof stress of a stress-strain curve."""
+
+    return di

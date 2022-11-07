@@ -97,18 +97,18 @@ strain_shift = UPL[0] - UPL[1]/E
 # plt.show()
 
 #6
-plt.plot(x_data - strain_shift, y_data, **data_kwargs)
-
-
-y_line = E*(x_data - offset - strain_shift)
-cut_idx = np.where(np.diff(np.sign(y_line - y_data)) != 0)
-plt.plot(x_data - strain_shift, y_line, **elastic_line_kwargs)
-
-plt.plot(x_data[cut_idx] - strain_shift, y_data[cut_idx], **proof_point_kwargs)
-
-
-plt.legend()
-plt.show()
+# plt.plot(x_data - strain_shift, y_data, **data_kwargs)
+#
+#
+# y_line = E*(x_data - offset - strain_shift)
+# cut_idx = np.where(np.diff(np.sign(y_line - y_data)) != 0)
+# plt.plot(x_data - strain_shift, y_line, **elastic_line_kwargs)
+#
+# plt.plot(x_data[cut_idx] - strain_shift, y_data[cut_idx], **proof_point_kwargs)
+#
+#
+# plt.legend()
+# plt.show()
 
 
 def animate(i):
@@ -120,34 +120,40 @@ def animate(i):
     ax.set_ylabel('Stress (MPa)')
     strain_shift = UPL[0] - UPL[1]/E
     if i <= 20:  # extend line to intercept x_axis
+        title = 'Extend proportional region to intercept x-axis'
         x_shift = strain_shift
         ax.plot(x_data, y_data, **data_kwargs)
         plot_proporional_region(ax, 0)
         ax.axline((x_shift, 0), slope=E, **elastic_line_kwargs)
         ax.plot(x_shift, 0,  label=f'$\\varepsilon_{{shift}} = {x_shift:.3f}$', **strain_intercept_kwargs)
     elif 20 < i <= 40:  # shift line to the origin
+        title = 'Shift line to the origin'
         x_shift = strain_shift*(1-(i - 20)/20)
         ax.plot(x_data, y_data, **data_kwargs)
         plot_proporional_region(ax, 0)
         ax.axline((x_shift, 0), slope=E, **elastic_line_kwargs)
         ax.plot(x_shift, 0,  label=f'$\\varepsilon_{{shift}} = {x_shift:.3f}$', **strain_intercept_kwargs)
     elif 40 < i <= 60:  # shift data the same amount as the line (apply foot correction)
+        title = 'Shift data (apply foot correction)'
         x_shift = strain_shift*(i - 40)/20
         ax.plot(x_data - x_shift, y_data, **data_kwargs)
         plot_proporional_region(ax, -x_shift)
         ax.axline((0, 0), slope=E, **elastic_line_kwargs)
-        ax.plot(0, 0,  label=f'$\\varepsilon_{{shift}} = {x_shift:.3f}$', **strain_intercept_kwargs)
+        ax.plot(0, 0,  label=f'$\\varepsilon_{{shift}} = {0:.3f}$', **strain_intercept_kwargs)
     elif 60 < i <= 80:  # shift line so that the x-intercept is at 0.02 % (proof strain), mark line-data intersection
+        title = 'Find 0.02 % proof stress'
         x_shift = offset*(i - 60)/20
         ax.plot(x_data - strain_shift, y_data, **data_kwargs)
         plot_proporional_region(ax, -strain_shift)
         y_line = E*(x_data - x_shift - strain_shift)
         cut_idx = np.where(np.diff(np.sign(y_line - y_data)) != 0)
+        # YP = np.interp()  # todo
         ax.axline((x_shift, 0), slope=E, **elastic_line_kwargs)
         ax.plot(x_data[cut_idx] - strain_shift, y_data[cut_idx], **proof_point_kwargs)
-        ax.plot(x_shift, 0,  label=f'$\\varepsilon_{{shift}} = {x_shift:.3f}$', **strain_intercept_kwargs)
+        ax.plot(x_shift, 0,  label=f'$\\varepsilon_{{shift}} = {x_shift:.2f}$', **strain_intercept_kwargs)
     else:  # add annotation to proof point with cool entrance animation
         assert 80 < i <= 100, f'i must be between 0 and 100, not {i}'
+        title = '0.2% proof stress found'
         x_shift = offset
         ax.plot(x_data - strain_shift, y_data, **data_kwargs)
         plot_proporional_region(ax, -strain_shift)
@@ -157,14 +163,10 @@ def animate(i):
         ax.plot(x_data[cut_idx] - strain_shift, y_data[cut_idx], **proof_point_kwargs)
         ax.plot(x_shift, 0, label=f'$\\varepsilon_{{shift}} = {x_shift:.3f}$', **strain_intercept_kwargs)
     ax.legend(frameon=True)
-    ax.set_title(f'Frame {i}')
+    ax.set_title(title)
     ax.grid()
     return fig,
 
 
-
-
-plt.grid()
 anim = animation.FuncAnimation(fig=fig, func=animate, frames=100, repeat=False)
-
 anim.save(f'foot correction and proof stress animation.mp4', writer='ffmpeg', fps=5, dpi=150)
