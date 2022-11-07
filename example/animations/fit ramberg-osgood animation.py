@@ -13,8 +13,8 @@ from paramaterial import DataSet, DataItem
 
 
 class Model:
-    def __init__(self, E, UPL, LPL, YP, bounds):
-        self.E = E
+    def __init__(self, UPL, LPL, YP, bounds):
+        # self.E = E
         self.UPL = UPL
         self.LPL = LPL
         self.YP = YP
@@ -24,8 +24,8 @@ class Model:
         self.x_data = None
         self.y_data = None
 
-    def model(self, y, K, n):
-        x = y/self.E + K*((y/self.E) ** n)
+    def model(self, y, E, K, n):
+        x = y/E + K*((y/E) ** n)
         return x
 
     def fit(self, x_data, y_data, **de_kwargs):
@@ -38,8 +38,6 @@ class Model:
 
     def predict(self, y):
         return self.model(y, *self.fitted_params)
-
-
 
     def rmse(self, w):
         """Root mean squared error."""
@@ -75,8 +73,9 @@ class Model:
                     if f < fitness[best_idx]:
                         best_idx = j
                         best = trial_denorm
-        # yield best, fitness[best_idx]
-            yield min_b + pop * diff, fitness, best_idx
+            # yield best, fitness[best_idx]
+            yield min_b + pop*diff, fitness, best_idx
+
 
 def style_plt():
     FONT = 13
@@ -98,15 +97,13 @@ def style_plt():
 fig, ax = style_plt()
 
 
-
-
 def main():
     dataset = DataSet('../data/02 trimmed small data', '../info/02 trimmed small info.xlsx')
-    di = dataset[10]
+    di = dataset[1]
 
     # trim data after UPL
     UPL = di.info.UPL_0, di.info.UPL_1
-    di.data = di.data[di.data['Stress_MPa'] > UPL[1]]
+    # di.data = di.data[di.data['Stress_MPa'] > UPL[1]]
 
     data_kwargs = dict(marker='o', c='b', mfc='none', alpha=0.5, lw=0, label='Tensile test data')
     UPL_kwargs = dict(marker=4, color='k', mfc='m', markersize=10, label='UPL', lw=0)
@@ -116,7 +113,7 @@ def main():
 
     eps_scale = 1000
 
-    E = di.info['E']/eps_scale  # MPa/..
+    # E = di.info['E']/eps_scale  # MPa/..
     UPL = di.info['UPL_0']/eps_scale, di.info['UPL_1']  # (.., MPa)
     LPL = di.info['LPL_0']/eps_scale, di.info['LPL_1']  # (.., MPa)
     YP = (0, 0)  # (.., MPa)
@@ -125,15 +122,16 @@ def main():
     sig_data = di.data['Stress_MPa'].values  # MPa
 
     # shift data to start at 0
-    eps_data -= eps_data[0]
-    sig_data -= sig_data[0]
+    # eps_data -= eps_data[0]
+    # sig_data -= sig_data[0]
 
     # plt.plot(sig_data, eps_data, **data_kwargs)
 
-    model = Model(E, UPL, LPL, YP, bounds=[(2, 2000), (1, 100)])
-    result = model.fit(eps_data, sig_data, popsize=20, its=2000, mut=2, crossp=0.8)
+    model = Model(UPL, LPL, YP, bounds=[(40000, 90000), (2, 2000), (1, 100)])
+    result = model.fit(eps_data, sig_data, popsize=20, its=2000, mut=0.7, crossp=0.8)
     a = result[0][0]
     n = result[0][1]
+
     # print(model.fitted_params, model.fitting_error)
 
     # plt.plot(sig_data, model.predict(sig_data), 'r', label='Model')
