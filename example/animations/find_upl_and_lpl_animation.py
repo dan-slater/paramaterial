@@ -11,9 +11,9 @@ import numpy as np
 
 from paramaterial import DataSet, DataItem
 
-PRELOAD = 30.0  # MPa
+PRELOAD = 36.0  # MPa
 
-dataset = DataSet('../data/02 processed data', 'info/02 processed info.xlsx')
+dataset = DataSet('../data/02 processed data', '../info/02 processed info.xlsx')
 di = dataset[1]
 
 FONT = 13
@@ -98,7 +98,7 @@ def animate(i):
     ax.grid()
     ax.set_xlabel('Strain')
     ax.set_ylabel('Stress (MPa)')
-    ax.plot(x_vec, y_vec, **data_kwargs)
+    ax.plot(x_data, y_data, **data_kwargs)
 
     def plot_fitting_sample():
         ax.plot(x, y, **fitting_sample_kwargs)
@@ -107,13 +107,13 @@ def animate(i):
     if i <= 2:
         title = ''
         x, y, m, c = np.zeros(1), np.zeros(1), 0, 0
-    elif 2 < i < len(x_vec):
+    elif 2 < i < len(x_data):
         title = 'Finding Upper Proportional Limit'
-        a = len(x_vec)
-        x_vec_ups = x_vec[y_vec >= PRELOAD]
-        y_vec_ups = y_vec[y_vec >= PRELOAD]
-        x = x_vec_ups[:i]
-        y = y_vec_ups[:i]
+        a = len(x_data)
+        x_data_ups = x_data[y_data >= PRELOAD]
+        y_data_ups = y_data[y_data >= PRELOAD]
+        x = x_data_ups[:i]
+        y = y_data_ups[:i]
         m, c, S_m, S_rel = fit_line(x, y)
         if S_rel < S_min:
             S_min = S_rel
@@ -121,20 +121,20 @@ def animate(i):
             UPL[1] = y[-1]
         LPL = x[0], y[0]
         plot_fitting_sample()
-    elif i == len(x_vec):
+    elif i == len(x_data):
         title = ''
         x, y, m, c = np.zeros(1), np.zeros(1), 0, 0
         S_min = np.inf
         LPL = UPL
-    elif len(x_vec) < i < int(1.7*len(x_vec)):
+    elif len(x_data) < i < int(1.7*len(x_data)):
         title = 'Finding Lower Proportional Limit'
-        x_vec_lps = x_vec[y_vec < UPL[1]]
-        y_vec_lps = y_vec[y_vec < UPL[1]]
-        j = len(x_vec_lps) - (i - len(x_vec))
+        x_data_lps = x_data[y_data < UPL[1]]
+        y_data_lps = y_data[y_data < UPL[1]]
+        j = len(x_data_lps) - (i - len(x_data))
         if not j > 2:
             j = 3
-        x = x_vec_lps[j:]
-        y = y_vec_lps[j:]
+        x = x_data_lps[j:]
+        y = y_data_lps[j:]
         m, c, S_m, S_rel = fit_line(x, y)
         if S_rel < S_min:
             S_min = S_rel
@@ -155,4 +155,4 @@ def animate(i):
 
 anim = animation.FuncAnimation(fig=fig, func=animate, frames=int(2.1*len(x_data)), repeat=False)
 
-anim.save(f'find_upl_and_lpl_animation.mp4', writer='ffmpeg', fps=10, dpi=300)
+anim.save(f'find upl and lpl animation.mp4', writer='ffmpeg', fps=10, dpi=300)

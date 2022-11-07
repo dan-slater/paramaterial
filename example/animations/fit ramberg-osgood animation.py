@@ -103,7 +103,7 @@ def main():
 
     # trim data after UPL
     UPL = di.info.UPL_0, di.info.UPL_1
-    # di.data = di.data[di.data['Stress_MPa'] > UPL[1]]
+    di.data = di.data[di.data['Stress_MPa'] > UPL[1]]
 
     data_kwargs = dict(marker='o', c='b', mfc='none', alpha=0.5, lw=0, label='Tensile test data')
     UPL_kwargs = dict(marker=4, color='k', mfc='m', markersize=10, label='UPL', lw=0)
@@ -113,7 +113,7 @@ def main():
 
     eps_scale = 1000
 
-    # E = di.info['E']/eps_scale  # MPa/..
+    E = di.info['E']/eps_scale  # MPa/..
     UPL = di.info['UPL_0']/eps_scale, di.info['UPL_1']  # (.., MPa)
     LPL = di.info['LPL_0']/eps_scale, di.info['LPL_1']  # (.., MPa)
     YP = (0, 0)  # (.., MPa)
@@ -122,8 +122,8 @@ def main():
     sig_data = di.data['Stress_MPa'].values  # MPa
 
     # shift data to start at 0
-    # eps_data -= eps_data[0]
-    # sig_data -= sig_data[0]
+    eps_data -= eps_data[0]
+    sig_data -= sig_data[0]
 
     # plt.plot(sig_data, eps_data, **data_kwargs)
 
@@ -154,7 +154,7 @@ def main():
 
     # anim = animation.FuncAnimation(fig, animate, frames=2000, interval=20)
     anim = animation.FuncAnimation(fig=fig, func=animate, frames=300, repeat=False)
-    anim.save(f'find_upl_and_lpl_animation.mp4', writer='ffmpeg', fps=20, dpi=100)
+    anim.save(f'fit ramberg osgood animation.mp4', writer='ffmpeg', fps=20, dpi=100)
 
 
 if __name__ == '__main__':
