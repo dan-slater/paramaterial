@@ -265,8 +265,8 @@ def dataset_subplots(
 
 
 def subplot_wrapper(
-        dataset: DataSet,
-        plot_func: Callable[[DataSet, ...], plt.Axes],
+        ds: DataSet,
+        plot_func: Callable[[DataItem, plt.axes], DataItem],
         shape: Tuple[int, int],
         rows_by: str,
         cols_by: str,
@@ -290,11 +290,19 @@ def subplot_wrapper(
         axs = np.array([axs])
 
     # loop through the grid of axes and plot the subsets
-    for row, row_val in enumerate(row_vals):
-        for col, col_val in enumerate(col_vals):
-            subset = dataset[{cols_by: col_val, rows_by: row_val}]
-            kwargs['ax'] = axs[row, col]
-            plot_func(subset, **kwargs)
+    if rows_by == cols_by:
+        for ax, row_val in zip(axs.flat, row_vals):
+            kwargs['ax'] = ax
+            subset = ds[{rows_by: row_val}]
+            for di in subset:
+                plot_func(di, **kwargs)
+    else:
+        for row, row_val in enumerate(row_vals):
+            for col, col_val in enumerate(col_vals):
+                kwargs['ax'] = axs[row, col]
+                subset = ds[{cols_by: col_val, rows_by: row_val}]
+                for di in subset:
+                    plot_func(di, **kwargs)
 
     # add row titles
     if row_titles is not None:

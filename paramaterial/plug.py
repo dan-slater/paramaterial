@@ -159,18 +159,39 @@ class DataSet:
             return new_set
 
         elif isinstance(specifier, dict):
-            new_set = self.copy()
-            _info_table = new_set.info_table
-            for info_col, vals in specifier.items():
-                if not isinstance(vals, list):
-                    vals = [vals]
-                _info_table = _info_table.loc[_info_table[info_col].isin(vals)]
-            test_ids = _info_table[self.test_id_key].tolist()
-            new_set.data_map = filter(lambda di: di.info[self.test_id_key] in test_ids, new_set.data_map)
-            new_set.file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in test_ids]
-            return new_set
+            new_dataset = self.copy()
+            new_dataset.data_map = filter(lambda di: all(
+                [di.info[key] in values for key, values in specifier.items()]), new_dataset.data_map)
+            return new_dataset
+            # new_set = self.copy()
+            # _info_table = new_set.info_table
+            # for info_col, vals in specifier.items():
+            #     if not isinstance(vals, list):
+            #         vals = [vals]
+            #     _info_table = _info_table.loc[_info_table[info_col].isin(vals)]
+            # test_ids = _info_table[self.test_id_key].tolist()
+            # new_set.data_map = filter(lambda di: di.info[self.test_id_key] in test_ids, new_set.data_map)
+            # new_set.file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in test_ids]
+            # return new_set
         else:
             raise ValueError(f'Invalid dataset[specifier] specifier type: {type(specifier)}')
+
+    def get_subset(self, subset_filter: Dict[str, List[Any]]) -> 'DataSet':
+        subset = copy.deepcopy(self)
+        info_table = subset.info_table
+        for col_name, vals in subset_filter.items():
+            info_table = info_table.loc[info_table[col_name].isin(vals)]
+        subset.file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in info_table[self.test_id_key]]
+        subset.datamap = map(lambda path: DataItem.read_data_from_csv(path), subset.file_paths)
+        subset.datamap = map(lambda di: di.read_info_from_table(info_table, self.test_id_key), subset.datamap)
+        subset.info_table = info_table
+        return subset
+
+    def get_subset_2(self, subset_filter: Dict[str, List[Any]]) -> 'DataSet':
+        new_dataset = self.copy()
+        new_dataset.data_map = filter(lambda di: all(
+            [di.info[key] in values for key, values in subset_filter.items()]), new_dataset.data_map)
+        return new_dataset
 
     def copy(self) -> 'DataSet':
         """Return a copy of the dataset."""
@@ -187,3 +208,6 @@ class DataSet:
         if len(self.info_table) != len(self.dataitems):
             raise ValueError('Length of info table and datamap are different.')
         return len(self.info_table)
+
+    def __hash__(self):
+        return hash(tuple(map(hash, self.dataitems)))
