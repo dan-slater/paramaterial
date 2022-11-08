@@ -71,7 +71,8 @@ class Styler:
         if self.color_by is not None:
             color_vals = ds.info_table[self.color_by].unique()
             if all(str(x).isnumeric() for x in color_vals):
-                self.color_norm = plt.Normalize(min(color_vals), max(color_vals))
+                if self.color_norm is None:
+                    self.color_norm = plt.Normalize(color_vals.min(), color_vals.max())
                 self.color_dict = {x: plt.cm.get_cmap(self.cmap)(self.color_norm(x)) for x in color_vals}
             else:
                 self.color_norm = plt.Normalize(0, len(color_vals))
