@@ -63,7 +63,28 @@ def determine_proportional_limits_and_elastic_modulus(
     return di
 
 
-def find_proof_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa') -> DataItem:
+def find_proof_stress(di: DataItem, proof_strain: float=0.002, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa') -> DataItem:
     """Find the proof stress of a stress-strain curve."""
-
+    E = di.info['E']
+    x_data = di.data[strain_key].values
+    y_data = di.data[stress_key].values
+    x_shift = proof_strain
+    y_line = E*(x_data - x_shift)
+    cut = np.where(np.diff(np.sign(y_line - y_data)) != 0)[0][-1]
+    m = (y_data[cut + 1] - y_data[cut])/(x_data[cut + 1] - x_data[cut])
+    xl = x_data[cut]
+    yl = y_line[cut]
+    xd = x_data[cut]
+    yd = y_data[cut]
+    K = np.array(
+        [[1, -E],
+         [1, -m]]
+    )
+    f = np.array(
+        [[yl - E*xl],
+         [yd - m*xd]]
+    )
+    d = np.linalg.solve(K, f)
+    di.info[f'YP_{proof_strain}_0'] = d[1]
+    di.info[f'YP_{proof_strain}_1'] = d[0]
     return di
