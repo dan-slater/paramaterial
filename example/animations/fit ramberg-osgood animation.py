@@ -86,7 +86,7 @@ class ModelSP:
         self.y_data = None
 
     def model(self, E, y, K, n):
-        x = y/E + K*((y/E) ** n)
+        x = K*((y/E) ** n)
         return x
 
     def fit(self, x_data, y_data, **de_kwargs):
@@ -147,7 +147,7 @@ class ModelE:
         self.x_data = None
         self.y_data = None
 
-    def model(self, E, y, K, n):
+    def model(self, y, E, K, n):
         x = y/E + K*((y/E) ** n)
         return x
 
@@ -165,8 +165,8 @@ class ModelE:
     def rmse(self, w):
         """Root mean squared error."""
         x_pred = self.model(self.y_data, *w)
-        # return np.sqrt(sum((self.x_data - x_pred) ** 2)/len(self.x_data))
-        return np.sqrt(max((self.x_data - x_pred) ** 2)/len(self.x_data))
+        return np.sqrt(sum((self.x_data - x_pred) ** 2)/len(self.x_data))
+        # return np.sqrt(max((self.x_data - x_pred) ** 2)/len(self.x_data))
 
     @staticmethod
     def de(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=5000):
@@ -227,25 +227,28 @@ fitted_curve_kwargs = dict(color='r', lw=1, label='Fitted curve')
 sample_kwargs = dict(marker='o', c='r', mfc='none', alpha=0.5, lw=0, label='Fitting sample')
 
 dataset = DataSet('../data/02 fitting data', '../info/02 fitting info.xlsx')
-di = dataset[2]
+dataset = DataSet('../data/02 trimmed small data', '../info/02 trimmed small info.xlsx')
+di = dataset[1]
 
 
 def main():
-    eps_scale = 1000
-
+    eps_scale = 10000
     E = di.info['E']/eps_scale  # MPa/..
-
-
     eps_data = di.data['Strain'].values*eps_scale  # ..
     sig_data = di.data['Stress_MPa'].values  # MPa
 
+    # add data point at 0
+    eps_data = np.insert(eps_data, 0, 0)
+    sig_data = np.insert(sig_data, 0, 0)
+
+    # remove elastic contribution
+    # eps_data = eps_data - sig_data/E
+
     # shift data to start at 0
-    eps_data -= eps_data[0]
-    sig_data -= sig_data[0]
+    # eps_data -= eps_data[0]
+    # sig_data -= sig_data[0]
 
-    # plt.plot(sig_data, eps_data, **data_kwargs)
-
-    model = ModelE(bounds=[(0.5*E, 1.5*E), (2, 2000), (1, 100)])
+    model = ModelE(bounds=[(0.1*E, 100*E), (10, 10000), (2, 100)])
     result = model.fit(eps_data, sig_data, popsize=20, its=2000, mut=0.7, crossp=0.8)
 
     def animate(i):

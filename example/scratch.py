@@ -1,54 +1,42 @@
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+from numpy import exp, linspace, pi, random, sign, sin
 
-import paramaterial as pam
-from paramaterial.plug import DataSet, DataItem
+from lmfit import Parameters, minimize
+from lmfit.printfuncs import report_fit
 
 
 def main():
-    """Main function."""
+    p_true = Parameters()
+    p_true.add('amp', value=14.0)
+    p_true.add('period', value=5.4321)
+    p_true.add('shift', value=0.12345)
+    p_true.add('decay', value=0.01000)
 
-    def ds_plot(dataset: DataSet, **kwargs) -> plt.Axes:
-        return pam.plotting.dataset_plot(
-            dataset, x='Strain', y='Stress(MPa)', color_by='temperature',
-            cbar=True, cbar_label='Temperature ($^{\circ}$C)',
-            xlim=(-0.2, 1.5), grid=True, **kwargs
-        )
+    def residual(pars, x, data=None):
+        argu = (x*pars['decay'])**2
+        shift = pars['shift']
+        if abs(shift) > pi/2:
+            shift = shift - sign(shift)*pi
+        model = pars['amp']*sin(shift + x/pars['period'])*exp(-argu)
+        if data is None:
+            return model
+        return model - data
 
-    proc_set = DataSet('data/02 processed data', 'info/02 processed info.xlsx')
+    random.seed(0)
+    x = linspace(0, 250, 1500)
+    noise = random.normal(scale=2.8, size=x.size)
+    data = residual(p_true, x) + noise
 
-    def multiply_neg_one(di: DataItem) -> DataItem:
-        di.data['Stress_MPa'] *= -1
-        return di
+    fit_params = Parameters()
+    fit_params.add('amp', value=13, max=20, min=0)
+    fit_params.add('period', value=2, max=10)
+    fit_params.add('shift', value=0, max=pi/2., min=-pi/2.)
+    fit_params.add('decay', value=0.02, max=0.1, min=0)
 
-    proc_set = proc_set.apply(multiply_neg_one)
+    out = minimize(residual, fit_params, args=(x,), kws={'data': data})
+    fit = residual(out.params, x)
 
-    def subset_test():
-        a = proc_set[{'lot': ['A']}]
-
-    def subset_test_2():
-        a = proc_set.get_subset_2({'lot': ['A']})
-
-    def subset_test_3():
-        a = proc_set.get_subset_2({'lot': ['A']})
-
-
-    # function to time a function
-    def time_function(func, *args, **kwargs):
-        import time
-        start = time.time()
-        for i in range(50):
-            func(*args, **kwargs)
-        end = time.time()
-        return end - start
-
-    # time the functions
-    print('subset_test', time_function(subset_test))
-    print('subset_test_2', time_function(subset_test_2))
-    print('subset_test_3', time_function(subset_test_3))
-
-    # a = proc_set[{'material': ['AC']}]
-    # ds_plot(proc_set.get_subset({'material': ['AC']}))
-    # plt.show()
+    report_fit(out, modelpars=p_true)
 
 
 

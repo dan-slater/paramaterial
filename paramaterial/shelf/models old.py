@@ -1,6 +1,7 @@
 """
 Module containing 1D constitutive models for fitting to stress-strain curves.
 """
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
@@ -111,7 +112,7 @@ class ModelSet:
                 minimizer_kwargs=dict(
                     args=(di,),
                     bounds=self.bounds,
-                    constraints=self.constraints,
+                    constraints= self.constraints,
                     **self.scipy_kwargs
                 )
             )
@@ -141,6 +142,57 @@ class ModelSet:
             raise ValueError(f'Invalid scipy_func: {self.scipy_func}')
         params = pd.Series(result.x, index=self.param_names)
         return ModelItem.from_model(self.model_func, di.info, params, result)
+
+
+@dataclass
+class Model(ABC):
+    name: str = None
+    func: Callable = None
+    param_names: List[str] = None
+    bounds: List[Tuple[float, float]] = None
+    constraints: Dict = None
+    strain_vec: np.ndarray = None
+    stress_vec: np.ndarray = None
+    opt_res: OptimizeResult = None
+
+    @abstractmethod
+    def fit(self):
+        pass
+
+    @abstractmethod
+    def predict(self, x_lin: np.ndarray) -> np.ndarray:
+        pass
+
+
+@dataclass
+class IsoReturnMapModel(Model):
+    def fit(self):
+        print(f'{".": <10}Fitting "{self.name}".')
+        if self.constraints is not None:
+            self.opt_res = op.differential_evolution(
+                lambda params: np.linalg.norm(
+                    self.stress_vec - self.func(self.strain_vec, *params, vec='stress'))/np.sqrt(
+                    len(self.stress_vec)),
+                bounds=self.bounds,
+                constraints=op.LinearConstraint(**self.constraints)
+            )
+        else:
+            self.opt_res = op.differential_evolution(
+                lambda params: np.linalg.norm(
+                    self.stress_vec - self.func(self.strain_vec, *params, vec='stress'))/np.sqrt(
+                    len(self.stress_vec)),
+                bounds=self.bounds
+            )
+        return self
+
+    def predict(self, x_lin: np.ndarray) -> np.ndarray:
+        return self.func(x_lin, *self.opt_res.x, vec='stress')
+
+    def predict_plastic_strain(self, x_lin: np.ndarray):
+        return self.func(x_lin, *self.opt_res.x, vec='plastic strain')
+
+    def predict_accumulated_plastic_strain(self, x_lin: np.ndarray):
+        return self.func(x_lin, *self.opt_res.x, vec='accumulated plastic strain')
 
 
 def iso_return_map(yield_stress_func: Callable, vec: str = 'stress'):
