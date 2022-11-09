@@ -2,10 +2,12 @@
 stress-strain curve. The UPL is the point that minimizes the residuals of the slope fit between that point and the
 specified preload. The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL."""
 from functools import partial
+from typing import List
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib as mpl
+import scipy.optimize as op
 
 import numpy as np
 
@@ -23,6 +25,68 @@ class Model:
 
     def model(self, y, K, n):
         x = y/self.E + K*((y/self.E) ** n)
+        return x
+
+    def fit(self, x_data, y_data, **de_kwargs):
+        self.x_data = x_data
+        self.y_data = y_data
+        result = list(self.de(self.rmse, self.bounds, **de_kwargs))
+        # self.fitted_params = result[0]
+        # self.fitting_error = result[1]
+        return result
+
+    def predict(self, y):
+        return self.model(y, *self.fitted_params)
+
+    def rmse(self, w):
+        """Root mean squared error."""
+        x_pred = self.model(self.y_data, *w)
+        return np.sqrt(sum((self.x_data - x_pred) ** 2)/len(self.x_data))
+        # return np.sqrt(max((self.x_data - x_pred) ** 2)/len(self.x_data))
+
+    @staticmethod
+    def de(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=5000):
+        """Differential evolution algorithm."""
+        dimensions = len(bounds)
+        pop = np.random.rand(popsize, dimensions)
+        min_b, max_b = np.asarray(bounds).T
+        diff = np.fabs(min_b - max_b)
+        pop_denorm = min_b + pop*diff
+        fitness = np.asarray([fobj(ind) for ind in pop_denorm])
+        best_idx = np.argmin(fitness)
+        best = pop_denorm[best_idx]
+        for i in range(its):
+            for j in range(popsize):
+                idxs = [idx for idx in range(popsize) if idx != j]
+                a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                mutant = np.clip(a + mut*(b - c), 0, 1)
+                cross_points = np.random.rand(dimensions) < crossp
+                if not np.any(cross_points):
+                    cross_points[np.random.randint(0, dimensions)] = True
+                trial = np.where(cross_points, mutant, pop[j])
+                trial_denorm = min_b + trial*diff
+                f = fobj(trial_denorm)
+                if f < fitness[j]:
+                    fitness[j] = f
+                    pop[j] = trial
+                    if f < fitness[best_idx]:
+                        best_idx = j
+                        best = trial_denorm
+            # yield best, fitness[best_idx]
+            yield min_b + pop*diff, fitness, best_idx
+
+
+
+class ModelSP:
+    def __init__(self, bounds):
+        self.bounds = bounds
+        self.fitted_params: List | None = None
+        self.fitting_error = None
+        self.x_data = None
+        self.y_data = None
+
+    def model(self, E, y, K, n):
+        x = y/E + K*((y/E) ** n)
         return x
 
     def fit(self, x_data, y_data, **de_kwargs):
@@ -74,6 +138,69 @@ class Model:
             yield min_b + pop*diff, fitness, best_idx
 
 
+
+class ModelE:
+    def __init__(self, bounds):
+        self.bounds = bounds
+        self.fitted_params = None
+        self.fitting_error = None
+        self.x_data = None
+        self.y_data = None
+
+    def model(self, E, y, K, n):
+        x = y/E + K*((y/E) ** n)
+        return x
+
+    def fit(self, x_data, y_data, **de_kwargs):
+        self.x_data = x_data
+        self.y_data = y_data
+        result = list(self.de(self.rmse, self.bounds, **de_kwargs))
+        # self.fitted_params = result[0]
+        # self.fitting_error = result[1]
+        return result
+
+    def predict(self, y):
+        return self.model(y, *self.fitted_params)
+
+    def rmse(self, w):
+        """Root mean squared error."""
+        x_pred = self.model(self.y_data, *w)
+        # return np.sqrt(sum((self.x_data - x_pred) ** 2)/len(self.x_data))
+        return np.sqrt(max((self.x_data - x_pred) ** 2)/len(self.x_data))
+
+    @staticmethod
+    def de(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=5000):
+        """Differential evolution algorithm."""
+        dimensions = len(bounds)
+        pop = np.random.rand(popsize, dimensions)
+        min_b, max_b = np.asarray(bounds).T
+        diff = np.fabs(min_b - max_b)
+        pop_denorm = min_b + pop*diff
+        fitness = np.asarray([fobj(ind) for ind in pop_denorm])
+        best_idx = np.argmin(fitness)
+        best = pop_denorm[best_idx]
+        for i in range(its):
+            for j in range(popsize):
+                idxs = [idx for idx in range(popsize) if idx != j]
+                a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+                mutant = np.clip(a + mut*(b - c), 0, 1)
+                cross_points = np.random.rand(dimensions) < crossp
+                if not np.any(cross_points):
+                    cross_points[np.random.randint(0, dimensions)] = True
+                trial = np.where(cross_points, mutant, pop[j])
+                trial_denorm = min_b + trial*diff
+                f = fobj(trial_denorm)
+                if f < fitness[j]:
+                    fitness[j] = f
+                    pop[j] = trial
+                    if f < fitness[best_idx]:
+                        best_idx = j
+                        best = trial_denorm
+            # yield best, fitness[best_idx]
+            yield min_b + pop*diff, fitness, best_idx
+
+
+
 def style_plt():
     FONT = 13
     plt.style.use('seaborn-dark')
@@ -108,6 +235,7 @@ def main():
 
     E = di.info['E']/eps_scale  # MPa/..
 
+
     eps_data = di.data['Strain'].values*eps_scale  # ..
     sig_data = di.data['Stress_MPa'].values  # MPa
 
@@ -117,7 +245,7 @@ def main():
 
     # plt.plot(sig_data, eps_data, **data_kwargs)
 
-    model = Model(E, bounds=[(2, 2000), (1, 100)])
+    model = ModelE(bounds=[(0.5*E, 1.5*E), (2, 2000), (1, 100)])
     result = model.fit(eps_data, sig_data, popsize=20, its=2000, mut=0.7, crossp=0.8)
 
     def animate(i):

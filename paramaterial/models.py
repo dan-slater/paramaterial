@@ -16,14 +16,13 @@ from scipy.optimize import OptimizeResult
 from paramaterial.plug import DataItem, DataSet
 
 
-
 class Model:
     def __init__(self,
                  objective_function: Callable[[List[float], DataItem], float],
                  initial_guess: List[float],
-                 bounds: Optional[List[Tuple[float, float]]] = None,
-                 dataitem_func: Optional[Callable[[pd.Series, List[float]], DataItem]] = None,
-                 opt_result: Optional[op.OptimizeResult] = None):
+                 bounds: List[Tuple[float, float]] | None = None,
+                 dataitem_func: Callable[[pd.Series, List[float]], DataItem] | None = None,
+                 opt_result: op.OptimizeResult | None = None):
         self.objective_function = objective_function
         self.initial_guess = np.array(initial_guess)
         self.bounds = bounds
