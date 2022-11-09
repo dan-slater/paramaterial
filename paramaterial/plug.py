@@ -71,7 +71,7 @@ class DataSet:
         self.data_map = map(lambda di: DataItem.read_info_from_table(di, info_table, self.test_id_key), self.data_map)
 
     @property
-    def dataitems(self) -> List[DataItem]:
+    def data_items(self) -> List[DataItem]:
         return list(copy.deepcopy(self.data_map))
 
     def apply(self, func: Callable[[DataItem, ...], DataItem], **kwargs) -> 'DataSet':
@@ -143,10 +143,10 @@ class DataSet:
         """Get a subset of the dataset using a dictionary of column names and lists of values or using normal list
         indexing. """
         if isinstance(specifier, int):
-            return self.dataitems[specifier]
+            return self.data_items[specifier]
 
         elif isinstance(specifier, str):
-            return self.dataitems[self.info_table[self.test_id_key].tolist().index(specifier)]
+            return self.data_items[self.info_table[self.test_id_key].tolist().index(specifier)]
 
         elif isinstance(specifier, slice):
             new_set = DataSet()
@@ -200,14 +200,14 @@ class DataSet:
     def __repr__(self):
         repr_string = f'DataSet with {len(self.info_table)} DataItems.\n'
         repr_string += f'Columns in info table: {", ".join(self.info_table.columns)}\n'
-        repr_string += f'Columns in data: {", ".join(self.dataitems[0].data.columns)}'
+        repr_string += f'Columns in data: {", ".join(self.data_items[0].data.columns)}'
         return repr_string
 
     def __len__(self):
         """Get the number of dataitems in the dataset."""
-        if len(self.info_table) != len(self.dataitems):
+        if len(self.info_table) != len(self.data_items):
             raise ValueError('Length of info table and datamap are different.')
         return len(self.info_table)
 
     def __hash__(self):
-        return hash(tuple(map(hash, self.dataitems)))
+        return hash(tuple(map(hash, self.data_items)))

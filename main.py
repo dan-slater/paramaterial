@@ -31,7 +31,7 @@ def run(func: Callable, cfg: Dict) -> None:
     dataset = DataSet()
     subset_filters = cfg['filters']
     dataset.load_data(io.input_data, io.input_info, subset_filters)  # map input
-    dataset.dataitems = map(lambda o: func(o, cfg), dataset.dataitems)  # map function
+    dataset.dataitems = map(lambda o: func(o, cfg), dataset.data_items)  # map function
     dataset.write_output(io.output_data, io.output_info)  # execute function and write output
 
 
