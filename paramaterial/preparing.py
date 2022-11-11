@@ -35,7 +35,7 @@ def copy_data_and_info(old_data_dir: str, new_data_dir: str, old_info_path: str,
     print(f'Copied info table from {old_info_path} to {new_info_path}.')
 
 
-def copy_data_and_rename_by_test_id(data_in: Path, data_out: Path, info_table: pd.DataFrame, test_id_col='test id'):
+def copy_data_and_rename_by_test_id(data_in: str, data_out: str, info_table: pd.DataFrame, test_id_col='test id'):
     """Rename files in data directory by test id in info table."""
     # make data directory if it doesn't exist
     if not os.path.exists(data_out):

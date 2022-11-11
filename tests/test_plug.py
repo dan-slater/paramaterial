@@ -181,6 +181,15 @@ class TestDataSet(unittest.TestCase):
         self.assertTrue(type(dataset.data_map) is map)
         self.assertEqual(dataset.data_items[0].test_id, 'id_002')
         self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data2.convert_dtypes()))
+        # test if an applied function is still applied after sorting
+        def test(di: DataItem):
+            di.data = di.data[:-1]
+            return di
+
+        dataset = dataset.apply(test)
+        dataset = dataset.sort_by('a')
+        self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data2[:-1].convert_dtypes()))
+
 
     def test_iter(self):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)

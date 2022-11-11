@@ -7,18 +7,20 @@ import pandas as pd
 from paramaterial import ModelSet, DataSet, DataItem, ModelItem
 import unittest
 
-linear_model = lambda x, p1, p2: p1*x + p2
+def linear_model(x, params):
+    return params[0] + params[1] * x
+# linear_model = lambda x, p1, p2: p1*x + p2
 
 
 class TestModelSet(unittest.TestCase):
     """Tests for ModelSet class."""
 
-    def SetUp(self):
+    def setUp(self):
         # make fake data with noise from a linear model
         x1 = np.linspace(0, 10, 100)
         x2 = np.linspace(0, 0.001, 100)
-        y1 = linear_model(x1, 2, 3) + np.random.normal(0, 0.1, 100)
-        y2 = linear_model(x2, 2, 3) + np.random.normal(0, 0.1, 100)
+        y1 = linear_model(x1, [2, 3]) + np.random.normal(0, 0.1, 100)
+        y2 = linear_model(x2, [2, 3]) + np.random.normal(0, 0.1, 100)
 
         self.data_dir = './test_data'
         self.info_path = './test_data/info.xlsx'
@@ -41,12 +43,12 @@ class TestModelSet(unittest.TestCase):
         # make params table
         self.param_names = ['p1', 'p2']
         self.bounds = [(0, 10), (0, 10)]
-        self.initial_guess = [1, 1]
+        self.initial_guess = [3, 6]
 
-        self.params1 = pd.Series({'p1': 2, 'p2': 3})
-        self.params2 = pd.Series({'p1': 2, 'p2': 3})
+        self.params1 = np.array([2,3])
+        self.params2 = np.array([2,3])
 
-        self.params_table = pd.DataFrame({'test id': ['id_001', 'id_002'], 'p1': [2, 2], 'p2': [3, 3]})
+        self.params_table = pd.DataFrame({'test id': ['model_id_001', 'model_id_002'], 'p1': [2, 2], 'p2': [3, 3]})
         self.params_table.to_excel('./test_data/params.xlsx', index=False)
 
         # make results table
@@ -58,14 +60,15 @@ class TestModelSet(unittest.TestCase):
 
         # make model items
         self.model_items = list(map(
-            ModelItem, ['id_001', 'id_002'],
+            ModelItem,
+            ['id_001', 'id_002'],
             [self.info1, self.info2],
             [self.params1, self.params2],
             [self.results1, self.results2],
             [self.data1, self.data2]
         ))
 
-    def TearDown(self):
+    def tearDown(self):
         shutil.rmtree('./test_data')
 
     def test_init(self):
@@ -81,18 +84,18 @@ class TestModelSet(unittest.TestCase):
 
     def test_fit(self):
         """Test ModelSet.fit"""
-        dataset = DataSet('./test_data', './test_data/info.xlsx', 'test id')
+        dataset = DataSet(self.data_dir, self.info_path, 'test id')
         model_set = ModelSet(
             model_func=linear_model,
             param_names=['p1', 'p2'],
             bounds=[(0, 10), (0, 10)]
         )
         model_set.fit(dataset, 'x', 'y')
-        self.assertEqual(model_set.model_items, self.model_items)
+        self.assertEqual(self.model_items, model_set.model_items)
 
     def test_predict(self):
         """Test ModelSet.predict"""
-        dataset = DataSet('./test_data', './test_data/info.xlsx', 'test id')
+        dataset = DataSet(self.data_dir, self.info_path, 'test id')
         model_set = ModelSet(
             model_func=linear_model,
             param_names=['p1', 'p2'],

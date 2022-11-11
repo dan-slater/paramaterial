@@ -22,6 +22,7 @@ class DataItem:
 
     def read_info_from_table(self, info_table: pd.DataFrame, test_id_key: str):
         self.info = info_table.loc[info_table[test_id_key] == self.test_id].squeeze()
+        self.info.name = None
         return self
 
     def write_data_to_csv(self, output_dir: str):

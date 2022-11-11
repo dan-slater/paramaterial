@@ -158,7 +158,7 @@ def dataset_plot(
 ) -> plt.Axes:
     """Make a single plot from the dataframe of every item in the dataset."""
     if ax is None:
-        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (10, 6)))
+        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
     kwargs['ax'] = ax
 
     if ax.get_legend() is not None and plot_legend:

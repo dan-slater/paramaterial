@@ -79,7 +79,7 @@ def make_screening_pdf(
     print(f'Screening pdf saved to {pdf_path}.')
 
 
-def read_screening_pdf_fields(ds: DataSet, screening_pdf: str) -> DataSet:
+def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     """Screen data using marked pdf file."""
     new_ds = ds.copy()
     _info_table = new_ds.copy().info_table
