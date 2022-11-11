@@ -11,6 +11,7 @@
       <excludeFolder url="file://$MODULE_DIR$/examples/edge vs center study/data" />
       <excludeFolder url="file://$MODULE_DIR$/example/data" />
       <excludeFolder url="file://$MODULE_DIR$/paramaterial.egg-info" />
+      <excludeFolder url="file://$MODULE_DIR$/paramaterial/shelf" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
