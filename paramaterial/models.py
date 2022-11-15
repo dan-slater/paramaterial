@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from functools import wraps
 from typing import List, Tuple, Dict, Any
 
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import scipy.optimize as op
@@ -21,33 +22,41 @@ class ModelItem:
     model_id: str
     info: pd.Series
     params: List[float]
-    result: OptimizeResult
-    data: pd.DataFrame
+    model_func: Callable[[np.ndarray, List[float]], np.ndarray]
+    x_min: float
+    x_max: float
+    resolution: int = 1000
 
     @staticmethod
-    def from_model(
-            model_func: Callable[[np.ndarray, List[float]], np.ndarray],
-            x_min: float,
-            x_max: float,
-            info: pd.Series,
-            param_names: List[str],
-            params: List[float],
-            result: OptimizeResult,
-            resolution: int,
-    ) -> 'ModelItem':
-        model_id = 'model_' + str(info[0])
-        x_model = np.linspace(x_min, x_max, resolution)
-        y_model = model_func(x_model, params)
-        data = pd.DataFrame({'x': x_model, 'y': y_model})
-        info['test id'] = model_id
-        info['param_names'] = param_names
-        info['params'] = params
-        return ModelItem(model_id, info, params, result, data)
+    def from_results_dict(results_dict: Dict[str, Any]):
+        model_id = results_dict['model_id']
+        info = pd.Series(results_dict['info'])
+        params = results_dict['params']
+        model_func = results_dict['model_func']
+        x_min = results_dict['x_min']
+        x_max = results_dict['x_max']
+        return ModelItem(model_id, info, params, model_func, x_min, x_max)
+
+    def read_row_from_params_table(self, params_table: pd.DataFrame, model_id_key: str):
+        self.params = params_table.loc[params_table[model_id_key] == self.model_id].squeeze()
+        self.params.name = None
+        return self
+
+    @property
+    def data(self) -> pd.DataFrame:
+        x = np.linspace(self.x_min, self.x_max, self.resolution)
+        y = self.model_func(x, self.params)
+        return pd.DataFrame({'x': x, 'y': y})
+
+    @property
+    def test_id(self) -> str:
+        return self.info['test id']
 
     def write_data_to_csv(self, output_dir: str):
         output_path = output_dir + '/' + self.model_id + '.csv'
         self.data.to_csv(output_path, index=False)
         return self
+
 
 class ModelSet:
     def __init__(
@@ -60,12 +69,14 @@ class ModelSet:
             scipy_kwargs: Dict[str, Any] | None = None,
     ):
         self.model_func = model_func
+        self.params_table = pd.DataFrame(columns=['model id'] + param_names)
+        self.results_dict_list = []
         self.param_names = param_names
         self.bounds = bounds
         self.initial_guess = initial_guess if initial_guess is not None else [0.0]*len(param_names)
         self.scipy_func = scipy_func
         self.scipy_kwargs = scipy_kwargs if scipy_kwargs is not None else {}
-        self.resolution: int | None = None
+        self.sample_size: int | None = None
         self.fitted_ds: DataSet | None = None
         self.x_key: str | None = None
         self.y_key: str | None = None
@@ -74,44 +85,37 @@ class ModelSet:
         self.model_map: map | None = None
 
     @property
-    def params_table(self) -> pd.DataFrame:
-        return pd.DataFrame([mi.params for mi in self.model_map])
-
-    @property
-    def results_table(self) -> pd.DataFrame:
-        return pd.DataFrame([mi.result for mi in self.model_map])
-
-    @property
     def model_items(self) -> List[ModelItem]:
         return [mi for mi in copy.deepcopy(self.model_map)]
 
     def objective_function(self, params: List[float], di: DataItem) -> float:
         data = di.data[di.data[self.x_key] > 0]
-
         x_data = data[self.x_key].values
         y_data = data[self.y_key].values
-
-        sampling_stride = int(len(x_data)/self.resolution)
+        sampling_stride = int(len(x_data)/self.sample_size)
         if sampling_stride < 1:
             sampling_stride = 1
         x_data = x_data[::sampling_stride]
         y_data = y_data[::sampling_stride]
         y_model = self.model_func(x_data, params)
-        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data)))**2
+        # return max((y_data - y_model)/np.sqrt(len(y_data)))
+        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data))) ** 2
 
-    def predict(self) -> DataSet:
+    def predict(self, resolution: int = 30) -> DataSet:
         predict_ds = DataSet()
-        predict_ds.data_map = self.model_map
+        predict_ds.data_map = copy.deepcopy(self.model_map)
         return predict_ds
 
-    def fit(self, ds: DataSet, x_key: str, y_key: str, resolution: int = 30) -> None:
+    def fit_to(self, ds: DataSet, x_key: str, y_key: str, sample_size: int = 50) -> None:
         self.fitted_ds = ds
         self.x_key = x_key
         self.y_key = y_key
-        self.x_min = 0
+        self.x_min = min([di.data[x_key].min() for di in ds])
         self.x_max = max([di.data[x_key].max() for di in ds])
-        self.resolution = resolution
-        self.model_map = map(self.fit_item, ds.data_items)
+        self.sample_size = sample_size
+        for _ in tqdm(map(self.fit_item, ds.data_items), unit='fits', leave=False):
+            pass
+        self.model_map = map(ModelItem.from_results_dict, self.results_dict_list)
 
     def fit_item(self, di: DataItem) -> ModelItem:
         if self.scipy_func == 'minimize':
@@ -161,8 +165,23 @@ class ModelSet:
                 **self.scipy_kwargs
             )
         else:
-            raise ValueError(f'Invalid scipy_func: {self.scipy_func}')
-        return ModelItem.from_model(self.model_func, self.x_min, self.x_max, di.info, self.param_names, result.x, result, self.resolution)
+            raise ValueError(
+                f'Invalid scipy_func: {self.scipy_func}\nMust be one of:'
+                f' minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute')
+        model_id = 'model_' + str(di.info[0])
+        results_dict = {
+            'model_id': model_id,
+            'info': di.info,
+            'params': result.x,
+            'model_func': self.model_func,
+            'x_min': self.x_min,
+            'x_max': self.x_max,
+        }
+        self.results_dict_list.append(results_dict)
+        params = list(result.x)
+        self.params_table = pd.concat([self.params_table,
+                                       pd.DataFrame([[model_id] + params], columns=['model id'] + self.param_names)])
+        # return ModelItem(model_id, di.info, params, self.model_func, self.x_min, self.x_max, self.resolution)
 
 
 def iso_return_map(yield_stress_func: Callable, vec: str = 'stress'):
@@ -192,7 +211,6 @@ def iso_return_map(yield_stress_func: Callable, vec: str = 'stress'):
                 y[i + 1] = y_trial*(1 - d_aps*E/np.abs(y_trial))
                 x_p[i + 1] = x_p[i] + np.sign(y_trial)*d_aps
                 aps[i + 1] = aps[i] + d_aps
-
 
         if vec == 'stress':
             return y
@@ -238,7 +256,7 @@ def voce(mat_params):
 def ramberg(mat_params):
     """Ramberg-Osgood isotropic hardening yield function."""
     E, s_y, C, n = mat_params
-    return lambda a: s_y + C*(np.sign(a) * (np.abs(a)) ** n)
+    return lambda a: s_y + C*(np.sign(a)*(np.abs(a)) ** n)
 
 
 def sample(dataitem: DataItem, sample_size: int, delete_neg_strain: bool = True):

@@ -94,7 +94,7 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     # dataframe for screening results
     screening_df = pd.DataFrame(columns=[test_id_key, 'reject', 'comment'])
 
-    with open(screening_pdf, 'rb') as f:
+    with open(screening_pdf_path, 'rb') as f:
         pdf_fields = PdfFileReader(f).get_fields()
 
     # get comment and reject fields
@@ -175,14 +175,17 @@ def make_representative_data(
         # make monotonically increasing vector to interpolate by
         interp_vec = np.linspace(min_interp_val, max_interp_val, interp_res)
 
-        # make interpolated data for averaging
+        # make interpolated data for averaging, staring at origin
         interp_data = pd.DataFrame(data={interp_by: interp_vec})
+
         for n, dataitem in enumerate(repr_subset):
             # drop columns and rows outside interp range
             data = dataitem.data[[interp_by, repr_col]].reset_index(drop=True)
             data = data[(data[interp_by] <= max_interp_val) & (data[interp_by] >= min_interp_val)]
             # interpolate the repr_by column and add to interp_data
-            interp_data[f'interp_{repr_col}_{n}'] = np.interp(interp_vec, data[interp_by], data[repr_col])
+            # add 0 to start of data to ensure interpolation starts at origin
+            interp_data[f'interp_{repr_col}_{n}'] = np.interp(interp_vec, [0] + data[interp_by].tolist(),
+                                                              [0] + data[repr_col].tolist())
 
         # make representative data from stats of interpolated data
         interp_data = interp_data.drop(columns=[interp_by])

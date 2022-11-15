@@ -7,6 +7,5 @@ jinja2~=3.0.3
 setuptools~=63.4.1
 seaborn~=0.11.2
 pypdf2~=2.10.5
-reportlab~=3.5.67
 svglib~=1.4.1
 openpyxl~=3.0.9
