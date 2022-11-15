@@ -90,7 +90,7 @@ class TestModelSet(unittest.TestCase):
             param_names=['p1', 'p2'],
             bounds=[(0, 10), (0, 10)]
         )
-        model_set.fit(dataset, 'x', 'y')
+        model_set.fit_to(dataset, 'x', 'y')
         self.assertEqual(self.model_items, model_set.model_items)
 
     def test_predict(self):
@@ -101,7 +101,7 @@ class TestModelSet(unittest.TestCase):
             param_names=['p1', 'p2'],
             bounds=[(0, 10), (0, 10)]
         )
-        model_set.fit(dataset, 'x', 'y')
+        model_set.fit_to(dataset, 'x', 'y')
         predicted_ds = model_set.predict()
         self.assertEqual(predicted_ds.data_items[0].data, self.data_items[0].data)
         self.assertEqual(predicted_ds.data_items[1].data, self.data_items[1].data)

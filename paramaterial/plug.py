@@ -199,9 +199,9 @@ class DataSet:
         return copy.deepcopy(self)
 
     def __repr__(self):
-        repr_string = f'DataSet with {len(self.info_table)} DataItems.\n'
-        repr_string += f'Columns in info table: {", ".join(self.info_table.columns)}\n'
-        repr_string += f'Columns in data: {", ".join(self.data_items[0].data.columns)}'
+        repr_string = f'|---\nDataSet with {len(self.info_table)} DataItems.\n'
+        repr_string += f'\tColumns in info:\n\t\t{", ".join(self.info_table.columns)}\n'
+        repr_string += f'\tColumns in data:\n\t\t{", ".join(self.data_items[0].data.columns)}\n---|'
         return repr_string
 
     def __len__(self):

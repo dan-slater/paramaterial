@@ -53,7 +53,7 @@ def fit_models(dataitem: DataItem, cfg: Dict):
 
     # fit models
     print(f'Fitting models to {dataitem.test_id}.')
-    models = [model.fit() for model in models]
+    models = [model.fit_to() for model in models]
 
     # save model fitting info
     for model in models:

@@ -40,7 +40,7 @@ def main():
     ds = DataSet(data_dir, info_path, test_id_key)
     ms = ModelSet(linear_model, param_names=['p1', 'p2'], bounds=[(0, 10), (0, 10)], initial_guess=[2, 4])
 
-    ms.fit(ds, x_key='x', y_key='y')
+    ms.fit_to(ds, x_key='x', y_key='y')
 
     ds_p = ms.predict()
 
