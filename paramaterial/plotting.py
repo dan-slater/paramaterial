@@ -20,11 +20,12 @@ def configure_plt_formatting():
     mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
     mpl.rcParams["font.family"] = "Times New Roman"
     plt.rc('font', size=11)
-    plt.rc('axes', titlesize=11, labelsize=11)
+    plt.rc('axes', titlesize=12, labelsize=11)
     plt.rc('xtick', labelsize=9)
     plt.rc('ytick', labelsize=9)
     plt.rc('legend', fontsize=9)
     plt.rc('figure', titlesize=13)
+
 
 
 configure_plt_formatting()
@@ -180,7 +181,7 @@ def dataset_plot(
     handles = styler.legend_handles(ds)
     if len(handles) > 0 and plot_legend:
         ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False)
-
+        ax.get_legend().set_zorder(2000)
     # colorbar
     if styler.cbar and plot_legend:
         sm = plt.cm.ScalarMappable(cmap=styler.cmap, norm=styler.color_norm)
