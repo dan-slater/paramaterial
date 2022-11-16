@@ -43,6 +43,7 @@ def main():
     ms.fit_to(ds, x_key='x', y_key='y')
 
     ds_p = ms.predict()
+    print(ds_p.info_table)
 
     fig, axs = plt.subplots(1,2)
     axs[0].plot(ds[0].data['x'], ds[0].data['y'], 'x')
