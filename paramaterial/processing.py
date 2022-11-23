@@ -1,25 +1,98 @@
-"""Functions for post-processing material test data. (Stress-strain)"""
+"""Module with functions for modelling a stress-strain curve."""
 import os
-from io import BytesIO
-from typing import Callable
 from typing import List
-from typing import Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from PyPDF2 import PdfFileReader
-from reportlab.graphics import renderPDF
-from reportlab.lib.colors import black
-from reportlab.lib.colors import magenta, pink, blue
-from reportlab.pdfgen import canvas
-from svglib.svglib import svg2rlg
 
-from paramaterial.plug import DataSet, DataItem
+from paramaterial.plug import DataItem, DataSet
 
 
-# todo: resample data using time series.
-# todo: separate resampling and interpolation.
+def determine_proportional_limits_and_elastic_modulus(
+        di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
+        preload: float = 0, preload_key: str = 'Stress_MPa', max_strain: float = 0.02,
+        suppress_numpy_warnings: bool = False) -> DataItem:
+    """Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of a stress-strain curve.
+    The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.
+    The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL.
+    The elastic modulus is the slope between the UPL and LPL."""
+    if suppress_numpy_warnings:
+        np.seterr(all="ignore")
+
+    data = di.data[di.data[strain_key] <= max_strain]
+
+    UPL = (0, 0)
+    LPL = (0, 0)
+
+    def fit_line(_x, _y):
+        n = len(_x)  # number of points
+        m = (n*np.sum(_x*_y) - np.sum(_x)*np.sum(_y))/(n*np.sum(np.square(_x)) - np.square(np.sum(_x)))  # slope
+        c = (np.sum(_y) - m*np.sum(_x))/n  # intercept
+        S_xy = (n*np.sum(_x*_y) - np.sum(_x)*np.sum(_y))/(n - 1)  # empirical covariance
+        S_x = np.sqrt((n*np.sum(np.square(_x)) - np.square(np.sum(_x)))/(n - 1))  # x standard deviation
+        S_y = np.sqrt((n*np.sum(np.square(_y)) - np.square(np.sum(_y)))/(n - 1))  # y standard deviation
+        r = S_xy/(S_x*S_y)  # correlation coefficient
+        S_m = np.sqrt((1 - r**2)/(n - 2))*S_y/S_x  # slope standard deviation
+        S_rel = S_m/m  # relative deviation of slope
+        return S_rel
+
+    x = data[strain_key].values
+    y = data[stress_key].values
+
+    x_upl = x[data[preload_key] >= preload]
+    y_upl = y[data[preload_key] >= preload]
+
+    S_min = np.inf
+    for i in range(3, len(x)):
+        S_rel = fit_line(x_upl[:i], y_upl[:i])  # fit a line to the first i points after the preload
+        if S_rel < S_min:
+            S_min = S_rel
+            UPL = (x_upl[i], y_upl[i])
+
+    x_lpl = x[x <= UPL[0]]
+    y_lpl = y[x <= UPL[0]]
+
+    S_min = np.inf
+    for j in range(len(x), 3, -1):
+        S_rel = fit_line(x_lpl[j:], y_lpl[j:])  # fit a line to the last i points before the UPL
+        if S_rel < S_min:
+            S_min = S_rel
+            LPL = (x_lpl[j], y_lpl[j])
+
+    di.info['UPL_0'] = UPL[0]
+    di.info['UPL_1'] = UPL[1]
+    di.info['LPL_0'] = LPL[0]
+    di.info['LPL_1'] = LPL[1]
+    di.info['E'] = (UPL[1] - LPL[1])/(UPL[0] - LPL[0])
+    return di
+
+
+def find_proof_stress(di: DataItem, proof_strain: float = 0.002, strain_key: str = 'Strain',
+                      stress_key: str = 'Stress_MPa') -> DataItem:
+    """Find the proof stress of a stress-strain curve."""
+    E = di.info['E']
+    x_data = di.data[strain_key].values
+    y_data = di.data[stress_key].values
+    x_shift = proof_strain
+    y_line = E*(x_data - x_shift)
+    cut = np.where(np.diff(np.sign(y_line - y_data)) != 0)[0][-1]
+    m = (y_data[cut + 1] - y_data[cut])/(x_data[cut + 1] - x_data[cut])
+    xl = x_data[cut]
+    yl = y_line[cut]
+    xd = x_data[cut]
+    yd = y_data[cut]
+    K = np.array(
+        [[1, -E],
+         [1, -m]]
+    )
+    f = np.array(
+        [[yl - E*xl],
+         [yd - m*xd]]
+    )
+    d = np.linalg.solve(K, f).flatten()
+    di.info[f'YP_{proof_strain}_0'] = d[1]
+    di.info[f'YP_{proof_strain}_1'] = d[0]
+    return di
 
 
 def calculate_statistics(ds: DataSet) -> DataSet:
@@ -27,103 +100,11 @@ def calculate_statistics(ds: DataSet) -> DataSet:
     pass
 
 
-def make_screening_pdf(
-        dataset: DataSet,
-        plot_func: Callable[[DataItem], None],
-        pdf_path: str = 'dataset_plots.pdf',
-        pagesize: Tuple[float, float] = (900, 600),
-) -> None:
-    # setup canvas
-    pdf_canvas = canvas.Canvas(pdf_path, pagesize=(pagesize[0], pagesize[1]))
-
-    # loop through dataitems
-    for di in dataset:
-        # make plot for dataitem
-        plot_func(di)
-
-        # add plot to page
-        imgdata = BytesIO()
-        plt.savefig(imgdata, format='svg')
-        imgdata.seek(0)
-        drawing = svg2rlg(imgdata)
-        renderPDF.draw(drawing, pdf_canvas, 0.001*pagesize[0], 0.15*pagesize[1])
-
-        # setup form
-        form = pdf_canvas.acroForm
-        pdf_canvas.setFont("Courier", plt.rcParams['font.size'] + 6)
-
-        # add test id
-        pdf_canvas.drawString(0.05*pagesize[0], 0.95*pagesize[1], f'{di.test_id}')
-
-        # add checkbox
-        pdf_canvas.drawString(0.05*pagesize[0], 0.14*pagesize[1], 'REJECT?:')
-        form.checkbox(name=f'reject_box_{di.test_id}', buttonStyle='check',
-                      x=0.15*pagesize[0], y=0.13*pagesize[1],
-                      borderColor=magenta, fillColor=pink, textColor=blue, forceBorder=True)
-
-        # add text field
-        pdf_canvas.drawString(0.05*pagesize[0], 0.08*pagesize[1], 'COMMENT:')
-        form.textfield(name=f'comment_box_{di.test_id}', maxlen=10000,
-                       x=0.15*pagesize[0], y=0.05*pagesize[1], width=0.7*pagesize[0], height=0.05*pagesize[1],
-                       borderColor=magenta, fillColor=pink, textColor=black, forceBorder=True, fieldFlags='multiline')
-
-        # add page to canvas and close plot
-        # make name of page the test id
-        pdf_canvas.showPage()
-        plt.close()
-
-    # save document
-    if os.path.exists(pdf_path):
-        pdf_path = pdf_path[:-4] + '_2.pdf'
-    pdf_canvas.save()
-    print(f'Screening pdf saved to {pdf_path}.')
-
-
-def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
-    """Screen data using marked pdf file."""
-    new_ds = ds.copy()
-    _info_table = new_ds.copy().info_table
-    test_id_key = ds.test_id_key
-
-    # drop reject and comment cols if they exist
-    if 'reject' in _info_table.columns:
-        _info_table.drop(columns=['reject'], inplace=True)
-    if 'comment' in _info_table.columns:
-        _info_table.drop(columns=['comment'], inplace=True)
-
-    # dataframe for screening results
-    screening_df = pd.DataFrame(columns=[test_id_key, 'reject', 'comment'])
-
-    with open(screening_pdf_path, 'rb') as f:
-        pdf_fields = PdfFileReader(f).get_fields()
-
-    # get comment and reject fields
-    comment_fields = [field for field in pdf_fields if 'comment' in field]
-    reject_fields = [field for field in pdf_fields if 'reject' in field]
-
-    # get test ids from comment fields
-    test_ids = [field_name[-11:] for field_name in comment_fields]
-
-    # get comments and rejects
-    comments = [pdf_fields[field]['/V'] for field in comment_fields]
-    rejects = [pdf_fields[field]['/V'] for field in reject_fields]
-
-    # add to dataframe
-    screening_df[test_id_key] = test_ids
-    screening_df['reject'] = rejects
-    screening_df['comment'] = comments
-
-    _info_table = _info_table.merge(screening_df, on=test_id_key, how='left')
-
-    new_ds.info_table = _info_table
-
-    return new_ds
-
-
 def make_representative_data(
         ds: DataSet, data_dir: str, info_path: str,
         repr_col: str, repr_by_cols: List[str],
-        interp_by: str, interp_res: int = 200, min_interp_val: float = 0., interp_end: str = 'max_all'
+        interp_by: str, interp_res: int = 200, min_interp_val: float = 0., interp_end: str = 'max_all',
+        group_info_cols: List[str]|None = None
 ):
     """Make representative curves of the dataset and save them to a directory.
     Args:
@@ -155,7 +136,7 @@ def make_representative_data(
     repr_ids = [f'repr_id_{i + 1:0>4}' for i in range(len(subset_filters))]
     repr_info_table = pd.DataFrame(columns=['repr id'] + repr_by_cols)
 
-    # make representative curves
+    # make representative curves and take means of info table columns
     for repr_id, subset_filter in zip(repr_ids, subset_filters):
         # get representative subset
         repr_subset = ds[subset_filter]
@@ -164,6 +145,12 @@ def make_representative_data(
         # add row to repr_info_table
         repr_info_table = pd.concat(
             [repr_info_table, pd.DataFrame({'repr id': [repr_id], **subset_filter, 'nr averaged': [len(repr_subset)]})])
+
+        # add means of group info columns to repr_info_table
+        if group_info_cols is not None:
+            for col in group_info_cols:
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'mean_' + col] \
+                    = repr_subset.info_table[col].mean()
 
         # find minimum of maximum interp_by vals in subset
         if interp_end == 'max_all':
@@ -181,7 +168,7 @@ def make_representative_data(
         for n, dataitem in enumerate(repr_subset):
             # drop columns and rows outside interp range
             data = dataitem.data[[interp_by, repr_col]].reset_index(drop=True)
-            data = data[(data[interp_by] <= max_interp_val) & (data[interp_by] >= min_interp_val)]
+            data = data[(data[interp_by] <= max_interp_val)&(data[interp_by] >= min_interp_val)]
             # interpolate the repr_by column and add to interp_data
             # add 0 to start of data to ensure interpolation starts at origin
             interp_data[f'interp_{repr_col}_{n}'] = np.interp(interp_vec, [0] + data[interp_by].tolist(),
@@ -203,6 +190,30 @@ def make_representative_data(
         repr_data[f'q1_{repr_col}'] = interp_data.quantile(0.25, axis=1)
         repr_data[f'q3_{repr_col}'] = interp_data.quantile(0.75, axis=1)
 
+        # make representative info from subset info
+
         # write the representative data and info
         repr_data.to_csv(os.path.join(data_dir, f'{repr_id}.csv'), index=False)
         repr_info_table.to_excel(info_path, index=False)
+
+
+def correct_friction(
+        di: DataItem,
+        mu_key: str = 'mu',
+        h_0_key: str = 'h_0',
+        D_0_key: str = 'D_0',
+        disp_key: str = 'Disp(mm)',
+        F_key: str = 'Force(kN)',
+) -> DataItem:
+    """
+
+    """
+    mu = di.info[mu_key] # friction coefficient
+    h_0 = di.info[h_0_key]  # initial height in axial direction
+    D_0 = di.info[D_0_key]  # initial diameter
+    h = h_0 - di.data[disp_key]  # instantaneous height
+    d = D_0*np.sqrt(h_0/h)  # instantaneous diameter
+    P = di.data[F_key]*1000*4/(np.pi*d**2)  # pressure (MPa)
+    di.data['Pressure(MPa)'] = P
+    di.data['Corrected_Stress(MPa)'] = P/(1 + (mu*d)/(3*h))  # correct stress
+    return di

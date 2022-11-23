@@ -58,14 +58,14 @@ fit_ds = DataSet('data/02 processed data', 'info/02 processed info.xlsx').apply(
 # plt.savefig('03 ramberg.png', dpi=300)
 # plt.close()
 
-voce_ms = ModelSet(voce, ['E', 's_y', 's_u', 'd'],
-                   bounds=[(35e3, 70e3), (1., 220.), (120., 320.), (1., 150.)],
-                   initial_guess=np.array([50e3, 80., 200., 50.]),
-                   scipy_func='minimize')
-voce_ms.fit_to(fit_ds, 'Strain', 'Stress_MPa', sample_size=40)
-voce_ms.params_table.to_excel('info/03 voce params.xlsx')
-voce_ds = voce_ms.predict()
-
-voce_axs = ds_subplots(fit_ds, **stress_strain_labels, alpha=0.4)
-ds_subplots(voce_ds, x='x', y='y', ls='--', alpha=0.9, axs=voce_axs)
-plt.savefig('03 voce.png', dpi=300)
+# voce_ms = ModelSet(voce, ['E', 's_y', 's_u', 'd'],
+#                    bounds=[(35e3, 70e3), (1., 220.), (120., 320.), (1., 150.)],
+#                    initial_guess=np.array([50e3, 80., 200., 50.]),
+#                    scipy_func='minimize')
+# voce_ms.fit_to(fit_ds, 'Strain', 'Stress_MPa', sample_size=40)
+# voce_ms.params_table.to_excel('info/03 voce params.xlsx')
+# voce_ds = voce_ms.predict()
+#
+# voce_axs = ds_subplots(fit_ds, **stress_strain_labels, alpha=0.4)
+# ds_subplots(voce_ds, x='x', y='y', ls='--', alpha=0.9, axs=voce_axs)
+# plt.savefig('03 voce.png', dpi=300)

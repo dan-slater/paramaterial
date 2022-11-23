@@ -13,6 +13,7 @@
       <excludeFolder url="file://$MODULE_DIR$/paramaterial.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/paramaterial/shelf" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
