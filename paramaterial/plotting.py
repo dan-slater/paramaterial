@@ -20,7 +20,7 @@ def configure_plt_formatting():
     mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
     mpl.rcParams["font.family"] = "Times New Roman"
     plt.rc('font', size=11)
-    plt.rc('axes', titlesize=12, labelsize=11)
+    plt.rc('axes', titlesize=11, labelsize=11)
     plt.rc('xtick', labelsize=9)
     plt.rc('ytick', labelsize=9)
     plt.rc('legend', fontsize=9)
@@ -180,7 +180,7 @@ def dataset_plot(
     # add the legend
     handles = styler.legend_handles(ds)
     if len(handles) > 0 and plot_legend:
-        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False)
+        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False, handletextpad=0.05)  #, labelspacing=0.1)
         ax.get_legend().set_zorder(2000)
     # colorbar
     if styler.cbar and plot_legend:
@@ -260,7 +260,7 @@ def dataset_subplots(
     if subplot_legend:
         plt.subplots_adjust(right=0.85)
         axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', frameon=True,
-                                        bbox_to_anchor=(0.925, 0.5), markerfirst=False)
+                                        bbox_to_anchor=(0.925, 0.5), markerfirst=False, handletextpad=0.05)
 
     return axs
 
