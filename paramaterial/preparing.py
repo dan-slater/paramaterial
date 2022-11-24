@@ -1,3 +1,5 @@
+"""Functions to be used for preparing the experimental data for batch processing."""
+
 import os
 import shutil
 from pathlib import Path
@@ -6,33 +8,6 @@ from typing import List, Dict, Union
 import pandas as pd
 
 from paramaterial.plug import DataSet
-# from paramaterial.screening import make_screening_pdf
-
-
-def copy_data_and_info(old_data_dir: str, new_data_dir: str, old_info_path: str, new_info_path: str) -> None:
-    """Copy data and info from old directory and path to new directory and path."""
-
-    # checks
-    if not os.path.exists(old_data_dir):
-        raise FileNotFoundError(f'Old data directory {old_data_dir} does not exist.')
-    if not os.path.exists(old_info_path):
-        raise FileNotFoundError(f'Old info file {old_info_path} does not exist.')
-    if not old_info_path.endswith('.xlsx'):
-        raise ValueError(f'Old info file {old_info_path} is not an excel file.')
-    if not new_info_path.endswith('.xlsx'):
-        raise ValueError(f'New info file {new_info_path} is not an excel file.')
-
-    # copy data
-    if not os.path.exists(new_data_dir):
-        os.mkdir(new_data_dir)
-    for file in os.listdir(old_data_dir):
-        shutil.copy(f'{old_data_dir}/{file}', f'{new_data_dir}/{file}')
-
-    # copy info
-    shutil.copy(old_info_path, new_info_path)
-
-    print(f'Copied {len(os.listdir(old_data_dir))} files from {old_data_dir} to {new_data_dir}.')
-    print(f'Copied info table from {old_info_path} to {new_info_path}.')
 
 
 def copy_data_and_rename_by_test_id(data_in: str, data_out: str, info_table: pd.DataFrame, test_id_col='test id'):
@@ -62,6 +37,7 @@ def copy_data_and_rename_by_test_id(data_in: str, data_out: str, info_table: pd.
 
 
 def check_column_headers(data_dir: str):
+    """Check that all files in a directory have the same column headers."""
     file_list = os.listdir(data_dir)
     first_file = pd.read_csv(f'{data_dir}/{file_list[0]}')
     print("Checking column headers...")
@@ -76,8 +52,8 @@ def check_column_headers(data_dir: str):
     print(f'Headers in all files are the same as in the first file.')
 
 
-# compare csv files
 def check_for_duplicate_files(data_dir: str):
+    """Check that there are no duplicate files in the data directory by hashing the contents."""
     hashes = [hash(open(f'{data_dir}/{file}', 'rb').read()) for file in os.listdir(data_dir)]
     if len(hashes) != len(set(hashes)):
         duplicates = [file for file, filehash in zip(os.listdir(data_dir), hashes) if hashes.count(filehash) > 1]
@@ -85,7 +61,6 @@ def check_for_duplicate_files(data_dir: str):
                          'The duplicates are:' + '\n\t'.join(duplicates))
     else:
         print(f'No duplicate files found in "{data_dir}".')
-
 
 
 def make_experimental_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], columns: Union[str, List[str]]):
