@@ -33,7 +33,7 @@ class DataItem:
 
 class DataSet:
     def __init__(self, data_dir: str | None = None, info_path: str | None = None, test_id_key: str = 'test id'):
-        """Initialize the dataset.
+        """Initialize the ds.
         Args:
             data_dir: The directory containing the data.
             info_path: The path to the info table.
@@ -76,7 +76,7 @@ class DataSet:
         return list(copy.deepcopy(self.data_map))
 
     def apply(self, func: Callable[[DataItem, ...], DataItem], **kwargs) -> 'DataSet':
-        """Apply a function to every dataitem in a copy of the dataset and return the copy."""
+        """Apply a function to every dataitem in a copy of the ds and return the copy."""
 
         # def wrapped_func(di: DataItem):
         #     try:
@@ -104,7 +104,7 @@ class DataSet:
         return new_set
 
     def write_output(self, data_dir: str, info_path: str) -> None:
-        """Execute the processing operations and write the output of the dataset to a directory.
+        """Execute the processing operations and write the output of the ds to a directory.
         Args:
             data_dir: The directory to write the data to.
             info_path: The path to write the info table to.
@@ -123,7 +123,7 @@ class DataSet:
             raise ValueError(f'Info table must be a csv or xlsx file. Got {info_path}')
 
     def sort_by(self, column: str | List[str], ascending: bool = True) -> 'DataSet':
-        """Sort a copy of the dataset by a column in the info table and return the copy."""
+        """Sort a copy of the ds by a column in the info table and return the copy."""
         new_set = DataSet()
         new_set.data_dir = self.data_dir
         new_set.info_path = self.info_path
@@ -136,12 +136,12 @@ class DataSet:
         return new_set
 
     def __iter__(self):
-        """Iterate over the dataset."""
+        """Iterate over the ds."""
         for dataitem in tqdm(self.copy().data_map, unit='DataItems', leave=False):
             yield dataitem
 
     def __getitem__(self, specifier: Union[int, str, slice, Dict[str, List[Any]]]) -> Union['DataSet', DataItem]:
-        """Get a subset of the dataset using a dictionary of column names and lists of values or using normal list
+        """Get a subset of the ds using a dictionary of column names and lists of values or using normal list
         indexing. """
         if isinstance(specifier, int):
             return self.data_items[specifier]
@@ -175,7 +175,7 @@ class DataSet:
             # new_set.file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in test_ids]
             # return new_set
         else:
-            raise ValueError(f'Invalid dataset[specifier] specifier type: {type(specifier)}')
+            raise ValueError(f'Invalid ds[specifier] specifier type: {type(specifier)}')
 
     def get_subset(self, subset_filter: Dict[str, List[Any]]) -> 'DataSet':
         subset = copy.deepcopy(self)
@@ -195,7 +195,7 @@ class DataSet:
         return new_dataset
 
     def copy(self) -> 'DataSet':
-        """Return a copy of the dataset."""
+        """Return a copy of the ds."""
         return copy.deepcopy(self)
 
     def __repr__(self):
@@ -205,7 +205,7 @@ class DataSet:
         return repr_string
 
     def __len__(self):
-        """Get the number of dataitems in the dataset."""
+        """Get the number of dataitems in the ds."""
         if len(self.info_table) != len(self.data_items):
             raise ValueError('Length of info table and datamap are different.')
         return len(self.info_table)

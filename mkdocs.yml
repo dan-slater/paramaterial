@@ -3,22 +3,29 @@ url: https://paramaterial.github.io
 site_url: https://dan-slater.github.io/paramaterial/
 
 theme:
+  logo: img/pam-icon.png
+  favicon: img/pam-icon.png
   name: material
+  font:
+    code: 'Roboto Mono'
+
+extra_css:
+  - stylesheets/extra.css
 
 plugins:
   - mkdocstrings
   - mkdocs-jupyter:
       include_source: True
+      ignore_h1_titles: True
 
 nav:
   - Home: index.md
   - Example:
       - Data Preparation: example/01 preparation.ipynb
   - Reference:
-      - classes.md
-      - Functions:
-          - preparing.md
-          - plotting.md
-          - processing.md
-          - screening.md
-          - modelling.md
+      - preparing.md
+      - plug.md
+      - plotting.md
+      - processing.md
+      - screening.md
+      - modelling.md
