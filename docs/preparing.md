@@ -1,3 +1,1 @@
-# Preparing
-
 ::: paramaterial.preparing

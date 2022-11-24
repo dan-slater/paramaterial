@@ -1,4 +1,4 @@
-"""Module containing the plotting functions for the dataset class."""
+"""Module containing the plotting functions for the ds class."""
 import copy
 from dataclasses import dataclass, field
 from typing import Optional, Tuple, List, Any, Dict, Callable
@@ -13,7 +13,6 @@ from paramaterial.plug import DataItem, DataSet
 
 
 def configure_plt_formatting():
-    """Configure the matplotlib formatting."""
     import matplotlib as mpl
     plt.style.use('seaborn-dark')
     mpl.rcParams['text.usetex'] = False
@@ -27,12 +26,12 @@ def configure_plt_formatting():
     plt.rc('figure', titlesize=13)
 
 
-
 configure_plt_formatting()
 
 
 @dataclass
 class Styler:
+    """A class for storing plotting styles for a dataset."""
     color_by: Optional[str] = None
     linestyle_by: Optional[str] = None
     marker_by: Optional[str] = None
@@ -48,14 +47,13 @@ class Styler:
     handles: Optional[List[mpatches.Patch]] = None
     linestyles: List[str] = field(default_factory=lambda: ['-', '--', ':', '-.'])
     markers: List[str] = field(default_factory=lambda: ['o', 's', 'v', '^'])
-    color_dict: Optional[Dict[str | int | float, str]] = None
-    linestyle_dict: Optional[Dict[str | int | float, str]] = None
-    marker_dict: Optional[Dict[str | int | float, str]] = None
+    color_dict: Optional[Dict[str|int|float, str]] = None
+    linestyle_dict: Optional[Dict[str|int|float, str]] = None
+    marker_dict: Optional[Dict[str|int|float, str]] = None
     plot_kwargs: Dict[str, Any] = field(default_factory=lambda: dict())
     styled_ds: Optional[DataSet] = None
 
     def __post_init__(self):
-        """Post init."""
         self.plot_kwargs['legend'] = False
 
         # todo: use pandas in-built color bar
@@ -66,7 +64,7 @@ class Styler:
         #     self.plot_kwargs['colorbar_label'] = self.cbar_label
 
     def style_to(self, ds: DataSet):
-        """Style the dataset based on the styler attributes."""
+        """Format the styles to match the dataset."""
         self.styled_ds = copy.deepcopy(ds)
 
         if self.color_by is not None:
@@ -94,9 +92,9 @@ class Styler:
         return self
 
     def curve_formatters(self, di: DataItem) -> Dict[str, Any]:
-        """Return the curve formatters for the data item."""
+        """Return the curve formatters for the dataitem curve."""
         if self.styled_ds is None:
-            raise ValueError('The styler must be styled to a dataset before plotting.')
+            raise ValueError('The styler must be styled to a ds before plotting.')
 
         configure_plt_formatting()
         formatters = dict()
@@ -117,7 +115,7 @@ class Styler:
         return {k: v for k, v in formatters.items() if v is not None}
 
     def legend_handles(self, ds: Optional[DataSet] = None) -> List[mpatches.Patch]:
-        """Return the legend handles."""
+        """Return the legend handles for the dataset plot."""
         handles = list()
 
         if ds is None:
@@ -133,14 +131,14 @@ class Styler:
                 handles.append(Line2D([], [], label=color_val, color=self.color_dict[color_val], marker='o', ls=''))
 
         if self.linestyle_by_label is not None:
-            handles.append(mpatches.Patch(label='\n'+self.linestyle_by_label, alpha=0))
+            handles.append(mpatches.Patch(label='\n' + self.linestyle_by_label, alpha=0))
 
         if self.linestyle_by is not None:
             for ls_val in ds.info_table[self.linestyle_by].unique():
                 handles.append(Line2D([], [], label=ls_val, ls=self.linestyle_dict[ls_val], c='k', marker=''))
 
         if self.marker_by_label is not None:
-            handles.append(mpatches.Patch(label='\n'+self.marker_by_label, alpha=0))
+            handles.append(mpatches.Patch(label='\n' + self.marker_by_label, alpha=0))
 
         if self.marker_by is not None:
             for marker_val in ds.info_table[self.marker_by].unique():
@@ -157,7 +155,18 @@ def dataset_plot(
         plot_legend: bool = True,
         **kwargs
 ) -> plt.Axes:
-    """Make a single plot from the dataframe of every item in the dataset."""
+    """Make a single combined plot from the data of every dataitem in the dataset using pandas.DataFrame.plot.
+
+    Args:
+        ds: The dataset to plot.
+        styler: The styler to use for the plot.
+        ax: The axis to plot on.
+        fill_between: A tuple of the two columns in the data to fill between.
+        plot_legend: Whether to plot the legend.
+        **kwargs: Additional keyword arguments to pass to the pandas.DataFrame.plot function.
+
+    Returns: The axis the plot was made on.
+    """
     if ax is None:
         fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
     kwargs['ax'] = ax
@@ -176,11 +185,11 @@ def dataset_plot(
             ax.fill_between(di.data[kwargs['x']], di.data[fill_between[0]], di.data[fill_between[1]], alpha=0.2,
                             **styler.curve_formatters(di))
 
-
     # add the legend
     handles = styler.legend_handles(ds)
     if len(handles) > 0 and plot_legend:
-        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False, handletextpad=0.05)  #, labelspacing=0.1)
+        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
+                  handletextpad=0.05)  # , labelspacing=0.1)
         ax.get_legend().set_zorder(2000)
     # colorbar
     if styler.cbar and plot_legend:
@@ -215,7 +224,31 @@ def dataset_subplots(
         subplot_cbar: bool = False,
         **kwargs
 ) -> plt.Axes:
-    """Plot a dataset as a grid of subplots, split by the 'rows_by' and 'cols_by' columns in the info_table."""
+    """Plot a dataset as a grid of subplots, split by the 'rows_by' and 'cols_by' columns in the info_table.
+
+    Args:
+        ds: The dataset to plot.
+        shape: The shape of the grid of subplots.
+        rows_by: The column in the info_table to split the rows by.
+        cols_by: The column in the info_table to split the columns by.
+        row_vals: The values of the rows to plot.
+        col_vals: The values of the columns to plot.
+        styler: The styler to use for the plot.
+        axs: The axes to plot on.
+        figsize: The size of the figure.
+        sharex: Whether to share the x axis between subplots.
+        sharey: Whether to share the y axis between subplots.
+        wspace: The width space between subplots.
+        hspace: The height space between subplots.
+        row_titles: The titles of the rows.
+        col_titles: The titles of the columns.
+        plot_titles: The titles of the subplots.
+        subplot_legend: Whether to plot the legend in each subplot.
+        subplot_cbar: Whether to plot the colorbar in each subplot.
+        **kwargs: Additional keyword arguments to pass to the pandas.DataFrame.plot function.
+
+    Returns: The axes the plot was made on.
+    """
     if axs is None:
         fig, axs = plt.subplots(shape[0], shape[1], figsize=figsize, sharex=sharex, sharey=sharey)
         fig.subplots_adjust(wspace=wspace, hspace=hspace)
@@ -265,7 +298,6 @@ def dataset_subplots(
     return axs
 
 
-
 def subplot_wrapper(
         ds: DataSet,
         plot_func: Callable[[DataItem, plt.axes], DataItem],
@@ -285,6 +317,30 @@ def subplot_wrapper(
         plot_titles: Optional[List[str]] = None,
         **kwargs
 ) -> np.ndarray:
+    """Plot a dataset using the given plot function as a grid of subplots,
+    split by the 'rows_by' and 'cols_by' columns in the info_table.
+
+    Args:
+        ds: The dataset to plot.
+        plot_func: The function to use to plot each subplot.
+        shape: The shape of the grid of subplots.
+        rows_by: The column in the info_table to split the rows by.
+        cols_by: The column in the info_table to split the columns by.
+        row_vals: The values of the rows to plot.
+        col_vals: The values of the columns to plot.
+        axs: The axes to plot on.
+        figsize: The size of the figure.
+        sharex: Whether to share the x axis between subplots.
+        sharey: Whether to share the y axis between subplots.
+        wspace: The width space between subplots.
+        hspace: The height space between subplots.
+        row_titles: The titles of the rows.
+        col_titles: The titles of the columns.
+        plot_titles: The titles of the subplots.
+        **kwargs: Additional keyword arguments to pass to the plot function.
+
+    Returns: The axes the plot was made on.
+    """
     if axs is None:
         fig, axs = plt.subplots(shape[0], shape[1], figsize=figsize, sharex=sharex, sharey=sharey)
         fig.subplots_adjust(wspace=wspace, hspace=hspace)

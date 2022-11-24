@@ -5,7 +5,7 @@ import numpy as np
 from paramaterial import DataItem, DataSet, ModelSet
 import matplotlib.pyplot as plt
 
-from paramaterial.models import ramberg, voce
+from paramaterial.modelling import ramberg, voce
 
 processed_ds = DataSet('data/02 processed data', 'info/02 processed info.xlsx')
 

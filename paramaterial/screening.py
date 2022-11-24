@@ -18,16 +18,26 @@ from paramaterial.plug import DataSet, DataItem
 
 
 def make_screening_pdf(
-        dataset: DataSet,
+        ds: DataSet,
         plot_func: Callable[[DataItem], None],
-        pdf_path: str = 'dataset_plots.pdf',
+        pdf_path: str = 'screening_pdf.pdf',
         pagesize: Tuple[float, float] = (900, 600),
 ) -> None:
+    """Make a screening pdf where each page contains a plot, a check box and a commentbox.
+
+    Args:
+        ds: DataSet object
+        plot_func: Function that takes a DataItem and generates a plot
+        pdf_path: Path where pdf will be saved
+        pagesize: Size of the pdf pages
+
+    Returns: None
+    """
     # setup canvas
     pdf_canvas = canvas.Canvas(pdf_path, pagesize=(pagesize[0], pagesize[1]))
 
     # loop through dataitems
-    for di in dataset:
+    for di in ds:
         # make plot for dataitem
         plot_func(di)
 
@@ -70,7 +80,14 @@ def make_screening_pdf(
 
 
 def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
-    """Screen data using marked pdf file."""
+    """Screen data using marked pdf file.
+
+    Args:
+        ds: DataSet object
+        screening_pdf_path: Path to screening pdf file
+
+    Returns: DataSet object with checkbox and comment fields added to each DataItem's info
+    """
     new_ds = ds.copy()
     _info_table = new_ds.copy().info_table
     test_id_key = ds.test_id_key
