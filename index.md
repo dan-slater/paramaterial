@@ -1,6 +1,8 @@
 ![Paramaterial logo](https://github.com/dan-slater/paramaterial/blob/main/docs/img/paramaterial-logo.png?raw=true)
 [![PyPI version](https://badge.fury.io/py/paramaterial.svg)](https://badge.fury.io/py/paramaterial)
 
+## About
+
 A Python package for parameterizing materials test data. Given a set of experimental measurements, Paramaterial can be
 used to determine material properties and constitutive model parameters.
 
