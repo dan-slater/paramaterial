@@ -54,6 +54,7 @@ def check_column_headers(data_dir: str):
 
 def check_for_duplicate_files(data_dir: str):
     """Check that there are no duplicate files in the data directory by hashing the contents."""
+    print('Checking for duplicate files...')
     hashes = [hash(open(f'{data_dir}/{file}', 'rb').read()) for file in os.listdir(data_dir)]
     if len(hashes) != len(set(hashes)):
         duplicates = [file for file, filehash in zip(os.listdir(data_dir), hashes) if hashes.count(filehash) > 1]
