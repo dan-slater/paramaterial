@@ -1,5 +1,15 @@
+# Paramaterial Documentation
+
 ![Paramaterial logo](https://github.com/dan-slater/paramaterial/blob/main/docs/img/paramaterial-logo.png?raw=true)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/paramaterial)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/paramaterial)
+![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/pypi/paramaterial)
 [![PyPI version](https://badge.fury.io/py/paramaterial.svg)](https://badge.fury.io/py/paramaterial)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/dan-slater/paramaterial?include_prereleases)
+
+[//]: # (![PyPI - Downloads]&#40;https://img.shields.io/pypi/dm/paramaterial&#41;)
+[//]: # (![GitHub search hit counter]&#40;https://img.shields.io/github/search/dan-slater/paramaterial/goto&#41;)
 
 ## About
 
@@ -20,7 +30,7 @@ data analyses, and help to reduce the time and effort required to perform such a
 
 ## Usage
 
-Usage of the toolkit is demonstrated in the [example]().
+Usage of the toolkit is demonstrated in the [example]() notebook.
 
 ## Installation
 
