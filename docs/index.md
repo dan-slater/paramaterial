@@ -26,8 +26,6 @@ The package was designed to help improve the quality and quantity of data availa
 simulation. It is hoped that using Paramaterial will help improve repeatability and reproducibility of materials test
 data analyses, and help to reduce the time and effort required to perform such analyses.
 
-> **Note**: Paramaterial is currently in alpha development. The API is subject to change.
-
 ## Usage
 
 Usage of the toolkit is demonstrated in the [example]() notebook.

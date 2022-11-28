@@ -95,7 +95,7 @@ class DataSet:
                 di.data.reset_index(drop=True, inplace=True)
                 assert type(di.data) == pd.DataFrame
                 assert type(di.info) == pd.Series
-                assert self.test_id_key in di.info.index
+                # assert self.test_id_key in di.info.index
                 return di
 
         new_set = self.copy()
