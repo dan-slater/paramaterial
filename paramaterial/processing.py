@@ -8,7 +8,7 @@ import pandas as pd
 from paramaterial.plug import DataItem, DataSet
 
 
-def determine_proportional_limits_and_elastic_modulus(
+def find_upl_and_lpl(
         di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
         preload: float = 0, preload_key: str = 'Stress_MPa', max_strain: float = 0.02,
         suppress_numpy_warnings: bool = False) -> DataItem:
@@ -77,6 +77,17 @@ def determine_proportional_limits_and_elastic_modulus(
     di.info['LPL_0'] = LPL[0]
     di.info['LPL_1'] = LPL[1]
     di.info['E'] = (UPL[1] - LPL[1])/(UPL[0] - LPL[0])
+    return di
+
+
+def correct_foot(di: DataItem):
+    UPL = di.info['UPL_0'], di.info['UPL_1']
+    E = di.info['E']
+    strain_shift = UPL[0] - UPL[1]/E  # x-intercept of line through UPL & LPL
+    di.info['foot correction'] = -strain_shift
+    di.data['Strain'] = di.data['Strain'].values - strain_shift
+    di.info['UPL_0'] = di.info['UPL_0'] - strain_shift
+    di.info['LPL_0'] = di.info['LPL_0'] - strain_shift
     return di
 
 
@@ -220,20 +231,19 @@ def correct_plane_strain_compression_friction(di: DataItem, mu_key: str = 'mu', 
 
 
 
-def smooth_load_cell_ringing():
-    pass
+def smooth_load_cell_ringing(di: DataItem):
+    return di
 
 
-def correct_compliance():
-    pass
+def correct_compliance(di: DataItem):
+    return di
 
 
-def correct_thermal_expansion():
-    pass
+def correct_thermal_expansion(di: DataItem):
+    return di
 
 
-def correct_foot():
-    pass
+
 
 
 def trim_leading_data():
