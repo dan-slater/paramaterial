@@ -6,6 +6,7 @@ theme:
   logo: img/pam-icon.png
   favicon: img/pam-icon.png
   name: material
+  custom_dir: docs/overrides
   font:
     code: 'Roboto Mono'
 

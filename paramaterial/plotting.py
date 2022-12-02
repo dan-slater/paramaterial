@@ -5,7 +5,6 @@ from typing import Optional, Tuple, List, Any, Dict, Callable
 
 import matplotlib.patches as mpatches
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -379,3 +378,19 @@ def subplot_wrapper(
             ax.set_title(subplot_title)
 
     return axs
+
+
+def plot_zener_holloman_regression(
+        ds: DataSet,
+        group_by: str|None = None,
+        flow_stress_key: str = 'flow_stress_(MPa)',
+        temperature_key: str = 'mean_temp_(K)',
+        rate_key: str = 'mean_rate_(\s)',
+        activation_energy_key: str = 'Q_activation',
+        gas_constant: float = 8.1345,
+        zener_holloman_paramater_key: str = 'ZH_parameter',
+        ax: Optional[plt.axes] = None,
+        styler: Optional[Styler] = None,
+        **kwargs
+):
+    pass

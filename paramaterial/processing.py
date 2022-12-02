@@ -8,9 +8,8 @@ import pandas as pd
 from paramaterial.plug import DataItem, DataSet
 
 
-def find_upl_and_lpl(
-        di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
-        preload: float = 0, preload_key: str = 'Stress_MPa', max_strain: float = 0.02,
+def find_upl_and_lpl(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', preload: float = 0,
+        preload_key: str = 'Stress_MPa', max_strain: float|None = None,
         suppress_numpy_warnings: bool = False) -> DataItem:
     """Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of a stress-strain curve.
     The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.
@@ -32,7 +31,7 @@ def find_upl_and_lpl(
     if suppress_numpy_warnings:
         np.seterr(all="ignore")
 
-    data = di.data[di.data[strain_key] <= max_strain]
+    data = di.data[di.data[strain_key] <= max_strain] if max_strain is not None else di.data
 
     UPL = (0, 0)
     LPL = (0, 0)
@@ -114,14 +113,8 @@ def determine_proof_stress(di: DataItem, proof_strain: float = 0.002, strain_key
     yl = y_line[cut]
     xd = x_data[cut]
     yd = y_data[cut]
-    K = np.array(
-        [[1, -E],
-         [1, -m]]
-    )
-    f = np.array(
-        [[yl - E*xl],
-         [yd - m*xd]]
-    )
+    K = np.array([[1, -E], [1, -m]])
+    f = np.array([[yl - E*xl], [yd - m*xd]])
     d = np.linalg.solve(K, f).flatten()
     di.info[f'YP_{proof_strain}_0'] = d[1]
     di.info[f'YP_{proof_strain}_1'] = d[0]
@@ -230,7 +223,6 @@ def correct_plane_strain_compression_friction(di: DataItem, mu_key: str = 'mu', 
     z_0 = (h/(2*mu))*np.log(1/(2*mu))  # sticking-sliding transition distance from centre (mm)
 
 
-
 def smooth_load_cell_ringing(di: DataItem):
     return di
 
@@ -241,9 +233,6 @@ def correct_compliance(di: DataItem):
 
 def correct_thermal_expansion(di: DataItem):
     return di
-
-
-
 
 
 def trim_leading_data():
