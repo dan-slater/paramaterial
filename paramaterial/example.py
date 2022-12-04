@@ -61,10 +61,11 @@ def download_example_data():
     pam.preparing.check_for_duplicate_files('data/00 raw data')
     
     # Make prepared data
-    pam.preparing.copy_data_and_rename_by_test_id('data/00 raw data', 'data/01 prepared data', info_table)
+    pam.preparing.copy_data_and_rename_by_test_id(os.path.join(os.getcwd(), 'data/00 raw data'),
+                                                  os.path.join(os.getcwd(), 'data/01 prepared data'), info_table)
     
     # Save the info table
-    info_table.to_csv('info/01 prepared info.csv', index=False)
+    info_table.to_csv(os.path.join(os.getcwd(), "info/01 prepared info.csv"), index=False)
     
     # Print a message
     print(f'Info table saved to {os.path.join(os.getcwd(), "info/01 prepared info.csv")}.')
