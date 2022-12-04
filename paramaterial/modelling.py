@@ -15,30 +15,24 @@ from tqdm import tqdm
 from paramaterial.plug import DataItem, DataSet
 
 
-def zener_holloman_regression(ds:DataSet, flow_stress_key: str = 'flow_stress_(MPa)',
-                                       temperature_key: str = 'mean_temp_(K)', rate_key: str = 'mean_rate_(\s)',
-                                       activation_energy_key: str = 'Q_activation', gas_constant: float = 8.1345,
-                                       zener_holloman_paramater_key: str = 'ZH_parameter'):
-    """Calculate the Zener-Holloman parameter for each dataitem and do a linear regression for LnZ vs flow stress.
+def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa_1', ZH_key: str = 'ZH_parameter'):
+    """Do a linear regression for LnZ vs flow stress. #todo link
 
     Args:
         ds: DataSet to be fitted.
-        flow_stress_key: Info key for the flow stress to use in the plot.
-        temperature_key: Info key for the mean temperature to use when determining the Zener-Holloman paramter.
-        rate_key: Info key for the mean strain rate to use when determining the Zener-Holloman paramter.
-        activation_energy_key: Info key for the activation energy to use when determining the Zener-Holloman paramter.
-        gas_constant: Gas constant to use when determining the Zener-Holloman paramter.
-        zener_holloman_paramater_key: Info key to use for the Zener-Holloman parameter.
+        flow_stress_key: Info key for the flow stress value.
+        ZH_key: Info key for the ZH parameter value.
 
     Returns:
         The DataSet with the Zener-Holloman parameter and regression parameters added to the info table.
     """
-    for di in ds:
-        di.info[zener_holloman_paramater_key] = np.log(di.info[flow_stress_key]) / (
-                di.info[temperature_key] * di.info[rate_key] * di.info[activation_energy_key] / gas_constant)
-    ds.info_table[zener_holloman_paramater_key] = np.array([di.info[zener_holloman_paramater_key] for di in ds])
-    ds.info_table['lnZ'] = np.array([np.log(di.info[zener_holloman_paramater_key]) for di in ds])
-    ds.info_table['lnZ_fit'] = np.polyfit(ds.info_table['lnZ'], ds.info_table[flow_stress_key], 1)
+    assert flow_stress_key in ds.info_table.columns, f'flow_stress_key {flow_stress_key} not in info table'
+    info_table = ds.info_table.copy()
+    info_table['lnZ'] = np.log(info_table[ZH_key].values.astype(np.float64))
+    m, c = np.polyfit(info_table[flow_stress_key].values.astype(np.float64), info_table['lnZ'], 1)
+    info_table['lnZ_fit_m'] = m
+    info_table['lnZ_fit_c'] = c
+    ds.info_table = info_table
     return ds
 
 
