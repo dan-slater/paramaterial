@@ -390,7 +390,46 @@ def plot_zener_holloman_regression(
         gas_constant: float = 8.1345,
         zener_holloman_paramater_key: str = 'ZH_parameter',
         ax: Optional[plt.axes] = None,
-        styler: Optional[Styler] = None,
         **kwargs
 ):
-    pass
+    """Plot the Zener-Holloman regression of the flow stress vs. temperature.
+
+    Args:
+        ds: The dataset to plot.
+        group_by: The column in the info_table to group by.
+        flow_stress_key: The key of the flow stress column in the info_table.
+        temperature_key: The key of the temperature column in the info_table.
+        rate_key: The key of the rate column in the info_table.
+        activation_energy_key: The key of the activation energy column in the info_table.
+        gas_constant: The gas constant.
+        zener_holloman_paramater_key: The key of the Zener-Holloman parameter column in the info_table.
+        ax: The axes to plot on.
+        **kwargs: Additional keyword arguments to pass to the plot function.
+
+    Returns: The axes the plot was made on.
+    """
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    if group_by is None:
+        group_by = 'none'
+
+    # plot the Zener-Holloman regression
+    for di in ds:
+        info = di.info
+        ax.plot(info[temperature_key], info[flow_stress_key], 'o', label=info[group_by])
+
+        # calculate the Zener-Holloman parameter
+        zener_holloman_parameter = info[activation_energy_key] / (gas_constant * info[temperature_key])
+        info[zener_holloman_paramater_key] = zener_holloman_parameter
+
+        # plot the Zener-Holloman regression
+        x = np.linspace(info[temperature_key].min(), info[temperature_key].max(), 100)
+        y = info[flow_stress_key].mean() * np.exp(-zener_holloman_parameter * (1 / x - 1 / info[temperature_key].mean()))
+        ax.plot(x, y, label=info[group_by])
+
+    ax.set_xlabel('Temperature (K)')
+    ax.set_ylabel('Flow stress (MPa)')
+    ax.legend()
+
+    return ax

@@ -9,8 +9,8 @@ from paramaterial.plug import DataItem, DataSet
 
 
 def find_upl_and_lpl(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', preload: float = 0,
-        preload_key: str = 'Stress_MPa', max_strain: float|None = None,
-        suppress_numpy_warnings: bool = False) -> DataItem:
+                     preload_key: str = 'Stress_MPa', max_strain: float | None = None,
+                     suppress_numpy_warnings: bool = False) -> DataItem:
     """Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of a stress-strain curve.
     The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.
     The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL.
@@ -44,7 +44,7 @@ def find_upl_and_lpl(di: DataItem, strain_key: str = 'Strain', stress_key: str =
         S_x = np.sqrt((n*np.sum(np.square(_x)) - np.square(np.sum(_x)))/(n - 1))  # x standard deviation
         S_y = np.sqrt((n*np.sum(np.square(_y)) - np.square(np.sum(_y)))/(n - 1))  # y standard deviation
         r = S_xy/(S_x*S_y)  # correlation coefficient
-        S_m = np.sqrt((1 - r**2)/(n - 2))*S_y/S_x  # slope standard deviation
+        S_m = np.sqrt((1 - r ** 2)/(n - 2))*S_y/S_x  # slope standard deviation
         S_rel = S_m/m  # relative deviation of slope
         return S_rel
 
@@ -156,7 +156,7 @@ def determine_fracture_point(di: DataItem, strain_key: str = 'Strain', stress_ke
 
 
 def determine_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
-                          flow_strain: float|None = None) -> DataItem:
+                          flow_strain: float | None = None) -> DataItem:
     """Find the flow stress of a stress-strain curve, defined as the point at which the stress is maximum,
     or as the point at a specified strain.
 
@@ -175,6 +175,27 @@ def determine_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: 
     else:
         di.info['Flow_Stress_0'] = flow_strain
         di.info['Flow_Stress_1'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
+    return di
+
+
+def calculate_ZH_parameter(di: DataItem, temperature_key: str = 'mean_temp_(K)', rate_key: str = 'mean_rate_(\s)',
+                           activation_energy_key: str = 'Q_activation', gas_constant: float = 8.1345,
+                           zener_holloman_paramater_key: str = 'ZH_parameter') -> DataItem:
+    """Calculate the Zener-Holloman parameter using $$ Z = \dot{eps} \exp \left(\frac{Q}{RT}\right) $$.
+
+    Args:
+        di: DataItem object
+        flow_stress_key: Info key for flow stress
+        temperature_key: Info key for mean temperature
+        rate_key: Info key for mean strain-rate rate
+        activation_energy_key: Info key for activation energy
+        gas_constant: Universal gas constant
+        zener_holloman_paramater_key: Key for Zener-Holloman parameter
+
+    Returns: DataItem with Zener-Holloman parameter added to info.
+    """
+    di.info[zener_holloman_paramater_key] = di.info[rate_key]*np.exp(
+        di.info[activation_energy_key]/(gas_constant*di.info[temperature_key]))
     return di
 
 
@@ -198,7 +219,7 @@ def correct_uniaxial_compression_friction(di: DataItem, mu_key: str = 'mu', h0_k
     D_0 = di.info[D0_key]  # initial diameter
     h = h_0 - di.data[disp_key]  # instantaneous height
     d = D_0*np.sqrt(h_0/h)  # instantaneous diameter
-    P = di.data[force_key]*1000*4/(np.pi*d**2)  # pressure (MPa)
+    P = di.data[force_key]*1000*4/(np.pi*d ** 2)  # pressure (MPa)
     di.data['Pressure(MPa)'] = P
     di.data['Corrected_Stress(MPa)'] = P/(1 + (mu*d)/(3*h))  # correct stress
     return di
@@ -214,9 +235,9 @@ def correct_plane_strain_compression_friction(di: DataItem, mu_key: str = 'mu', 
     b_0 = di.info[b0_key]  # initial width in transverse direction
     b_f = di.info[bf_key]  # final width in transverse direction
     n = di.info[spread_exponent_key]  # spread exponent
-    C = (b_f/b_0 - 1)/(1 - (h_f/h_0)**n)  # breadth spread coefficient
+    C = (b_f/b_0 - 1)/(1 - (h_f/h_0) ** n)  # breadth spread coefficient
     h = h_0 - di.data[disp_key]  # instantaneous height
-    b = b_0*(1 + C*(1 - (h/h_0)**n))  # instantaneous breadth
+    b = b_0*(1 + C*(1 - (h/h_0) ** n))  # instantaneous breadth
     w0 = di.info[w0_key]  # initial width in rolling direction
     P = di.data[force_key]*1000/(b*w0)  # pressure (MPa)
     di.data['Pressure(MPa)'] = P

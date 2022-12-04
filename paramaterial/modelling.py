@@ -15,27 +15,31 @@ from tqdm import tqdm
 from paramaterial.plug import DataItem, DataSet
 
 
-def calculate_zener_holloman_paramater(di: DataItem, flow_stress_key: str = 'flow_stress_(MPa)',
+def zener_holloman_regression(ds:DataSet, flow_stress_key: str = 'flow_stress_(MPa)',
                                        temperature_key: str = 'mean_temp_(K)', rate_key: str = 'mean_rate_(\s)',
                                        activation_energy_key: str = 'Q_activation', gas_constant: float = 8.1345,
                                        zener_holloman_paramater_key: str = 'ZH_parameter'):
-    """Calculate the Zener-Holloman parameter for a given DataItem.
+    """Calculate the Zener-Holloman parameter for each dataitem and do a linear regression for LnZ vs flow stress.
 
     Args:
-        di: DataItem.
-        flow_stress_key: Info key for reading flow stress.
-        temperature_key: Info key for reading mean temperature.
-        rate_key: Info key for reading mean strain-rate.
-        activation_energy_key: Info key for reading activation energy.
-        gas_constant: Universal gas constant.
-        zener_holloman_paramater_key: Info key for writing Zener-Holloman parameter.
+        ds: DataSet to be fitted.
+        flow_stress_key: Info key for the flow stress to use in the plot.
+        temperature_key: Info key for the mean temperature to use when determining the Zener-Holloman paramter.
+        rate_key: Info key for the mean strain rate to use when determining the Zener-Holloman paramter.
+        activation_energy_key: Info key for the activation energy to use when determining the Zener-Holloman paramter.
+        gas_constant: Gas constant to use when determining the Zener-Holloman paramter.
+        zener_holloman_paramater_key: Info key to use for the Zener-Holloman parameter.
 
     Returns:
-        DataItem with Zener-Holloman parameter in info.
+        The DataSet with the Zener-Holloman parameter and regression parameters added to the info table.
     """
-    di.info[zener_holloman_paramater_key] = di.info[rate_key] * np.exp(
-        di.info[activation_energy_key] / (gas_constant * di.info[temperature_key]))
-    return di
+    for di in ds:
+        di.info[zener_holloman_paramater_key] = np.log(di.info[flow_stress_key]) / (
+                di.info[temperature_key] * di.info[rate_key] * di.info[activation_energy_key] / gas_constant)
+    ds.info_table[zener_holloman_paramater_key] = np.array([di.info[zener_holloman_paramater_key] for di in ds])
+    ds.info_table['lnZ'] = np.array([np.log(di.info[zener_holloman_paramater_key]) for di in ds])
+    ds.info_table['lnZ_fit'] = np.polyfit(ds.info_table['lnZ'], ds.info_table[flow_stress_key], 1)
+    return ds
 
 
 def make_representative_data(
