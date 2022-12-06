@@ -125,3 +125,11 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     new_ds.info_table = _info_table
 
     return new_ds
+
+
+def reject_screened_items(ds: DataSet, screening_pdf_path: str) -> DataSet:
+    """Reject data items that were marked as reject in the screening pdf."""
+    new_ds = ds.copy()
+    screened_ds = read_screening_pdf_fields(new_ds, screening_pdf_path)
+    screened_ds.info_table = screened_ds.info_table[screened_ds.info_table['reject'] != 'Yes']
+    return screened_ds

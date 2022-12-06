@@ -1,6 +1,10 @@
-from paramaterial import preparing, plotting, processing, modelling, example, screening
+from paramaterial import example, models
 from paramaterial.plug import DataItem, DataSet
-from paramaterial.modelling import ModelSet, ModelItem
-from paramaterial.plotting import Styler, dataset_plot, dataset_subplots
+from paramaterial.preparing import *
+from paramaterial.processing import *
+from paramaterial.modelling import *
+from paramaterial.plotting import *
+from paramaterial.screening import *
+from paramaterial.zener_holloman import *
 
 
