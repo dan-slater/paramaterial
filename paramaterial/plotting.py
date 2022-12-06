@@ -5,7 +5,6 @@ from typing import Optional, Tuple, List, Any, Dict, Callable
 
 import matplotlib.patches as mpatches
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -24,6 +23,7 @@ def configure_plt_formatting():
     plt.rc('ytick', labelsize=9)
     plt.rc('legend', fontsize=9)
     plt.rc('figure', titlesize=13)
+    mpl.rcParams.update({"axes.grid": True})
 
 
 configure_plt_formatting()
@@ -379,3 +379,4 @@ def subplot_wrapper(
             ax.set_title(subplot_title)
 
     return axs
+

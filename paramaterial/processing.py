@@ -1,17 +1,15 @@
-"""Module with functions for modelling a stress-strain curve."""
-import os
-from typing import List
+"""Module with functions for processing materials test data. This includes functionality for finding properties
+like yield strength Young's modulus from stress-strain curves, as well as post-processing functions for cleaning
+and correcting experimental measurements."""
 
 import numpy as np
-import pandas as pd
 
-from paramaterial.plug import DataItem, DataSet
+from paramaterial.plug import DataItem
 
 
-def find_upl_and_lpl(
-        di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
-        preload: float = 0, preload_key: str = 'Stress_MPa', max_strain: float = 0.02,
-        suppress_numpy_warnings: bool = False) -> DataItem:
+def find_upl_and_lpl(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', preload: float = 0,
+                     preload_key: str = 'Stress_MPa', max_strain: float|None = None,
+                     suppress_numpy_warnings: bool = False) -> DataItem:
     """Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of a stress-strain curve.
     The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.
     The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL.
@@ -32,7 +30,7 @@ def find_upl_and_lpl(
     if suppress_numpy_warnings:
         np.seterr(all="ignore")
 
-    data = di.data[di.data[strain_key] <= max_strain]
+    data = di.data[di.data[strain_key] <= max_strain] if max_strain is not None else di.data
 
     UPL = (0, 0)
     LPL = (0, 0)
@@ -80,19 +78,8 @@ def find_upl_and_lpl(
     return di
 
 
-def correct_foot(di: DataItem):
-    UPL = di.info['UPL_0'], di.info['UPL_1']
-    E = di.info['E']
-    strain_shift = UPL[0] - UPL[1]/E  # x-intercept of line through UPL & LPL
-    di.info['foot correction'] = -strain_shift
-    di.data['Strain'] = di.data['Strain'].values - strain_shift
-    di.info['UPL_0'] = di.info['UPL_0'] - strain_shift
-    di.info['LPL_0'] = di.info['LPL_0'] - strain_shift
-    return di
-
-
-def determine_proof_stress(di: DataItem, proof_strain: float = 0.002, strain_key: str = 'Strain',
-                           stress_key: str = 'Stress_MPa') -> DataItem:
+def find_proof_stress(di: DataItem, proof_strain: float = 0.002, strain_key: str = 'Strain',
+                      stress_key: str = 'Stress_MPa') -> DataItem:
     """Find the proof stress of a stress-strain curve.
 
     Args:
@@ -114,22 +101,16 @@ def determine_proof_stress(di: DataItem, proof_strain: float = 0.002, strain_key
     yl = y_line[cut]
     xd = x_data[cut]
     yd = y_data[cut]
-    K = np.array(
-        [[1, -E],
-         [1, -m]]
-    )
-    f = np.array(
-        [[yl - E*xl],
-         [yd - m*xd]]
-    )
+    K = np.array([[1, -E], [1, -m]])
+    f = np.array([[yl - E*xl], [yd - m*xd]])
     d = np.linalg.solve(K, f).flatten()
     di.info[f'YP_{proof_strain}_0'] = d[1]
     di.info[f'YP_{proof_strain}_1'] = d[0]
     return di
 
 
-def determine_ultimate_strength(di: DataItem, force_key: str = 'Force_kN', strain_key: str = 'Strain',
-                                stress_key: str = 'Stress_MPa') -> DataItem:
+def find_ultimate_strength(di: DataItem, force_key: str = 'Force_kN', strain_key: str = 'Strain',
+                           stress_key: str = 'Stress_MPa') -> DataItem:
     """Find the ultimate strength of a stress-strain curve, defined as the strain and stress at the maximum force.
 
     Args:
@@ -146,7 +127,7 @@ def determine_ultimate_strength(di: DataItem, force_key: str = 'Force_kN', strai
     return di
 
 
-def determine_fracture_point(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa') -> DataItem:
+def find_fracture_point(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa') -> DataItem:
     """Find the fracture point of a stress-strain curve, defined as the point at which the strain is maximum.
 
     Args:
@@ -162,31 +143,46 @@ def determine_fracture_point(di: DataItem, strain_key: str = 'Strain', stress_ke
     return di
 
 
-def determine_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
-                          flow_strain: float|None = None) -> DataItem:
+def find_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
+                     flow_strain_key: str = 'flow_strain', flow_stress_key: str = 'flow_stress_MPa',
+                     flow_strain: float|None = None) -> DataItem:
     """Find the flow stress of a stress-strain curve, defined as the point at which the stress is maximum,
     or as the point at a specified strain.
 
     Args:
         di: DataItem with stress-strain curve
-        strain_key: Key for strain data
-        stress_key: Key for stress data
+        strain_key: Data key for reading strain.
+        stress_key: Data key for reading stress.
+        flow_strain_key: Info key for writing flow strain.
+        flow_stress_key: Info key for storing flow stress.
         flow_strain: Strain at which to find the flow stress. If None, the maximum stress is used.
 
     Returns: DataItem with flow stress added to info.
     """
     if flow_strain is None:
         idx_max = di.data[stress_key].idxmax()
-        di.info['Flow_Stress_0'] = di.data[strain_key][idx_max]
-        di.info['Flow_Stress_1'] = di.data[stress_key][idx_max]
+        di.info[f'{flow_strain_key}'] = di.data[strain_key][idx_max]
+        di.info[f'{flow_stress_key}'] = di.data[stress_key][idx_max]
     else:
-        di.info['Flow_Stress_0'] = flow_strain
-        di.info['Flow_Stress_1'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
+        di.info[f'{flow_strain_key}'] = flow_strain
+        di.info[f'{flow_stress_key}'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
     return di
 
 
-def correct_uniaxial_compression_friction(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0', D0_key: str = 'D_0',
-                                          disp_key: str = 'Disp(mm)', force_key: str = 'Force(kN)') -> DataItem:
+
+def correct_foot(di: DataItem):
+    UPL = di.info['UPL_0'], di.info['UPL_1']
+    E = di.info['E']
+    strain_shift = UPL[0] - UPL[1]/E  # x-intercept of line through UPL & LPL
+    di.info['foot correction'] = -strain_shift
+    di.data['Strain'] = di.data['Strain'].values - strain_shift
+    di.info['UPL_0'] = di.info['UPL_0'] - strain_shift
+    di.info['LPL_0'] = di.info['LPL_0'] - strain_shift
+    return di
+
+
+def correct_friction_UC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0', D0_key: str = 'D_0',
+                        disp_key: str = 'Disp(mm)', force_key: str = 'Force(kN)') -> DataItem:
     """
     Calculate the pressure and corrected stress for a uniaxial compression test with friction.
 
@@ -211,24 +207,58 @@ def correct_uniaxial_compression_friction(di: DataItem, mu_key: str = 'mu', h0_k
     return di
 
 
-def correct_plane_strain_compression_friction(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0',
-                                              hf_key: str = 'h_f', b0_key: str = 'b_0', bf_key: str = 'b_f',
-                                              w0_key: str = 'w_0', spread_exponent_key: str = 'spread_exponent',
-                                              disp_key: str = 'Disp(mm)', force_key: str = 'Force(kN)') -> DataItem:
+def correct_friction_PSC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0',
+                         hf_key: str = 'h_f', b0_key: str = 'b_0', bf_key: str = 'b_f',
+                         w_key: str = 'w', spread_exponent_key: str = 'spread_exponent',
+                         disp_key: str = 'Displacement_mm', force_key: str = 'Force_kN') -> DataItem:
+    # get info
     mu = di.info[mu_key]  # friction coefficient
     h_0 = di.info[h0_key]  # initial height in normal direction
     h_f = di.info[hf_key]  # final height in normal direction
     b_0 = di.info[b0_key]  # initial width in transverse direction
     b_f = di.info[bf_key]  # final width in transverse direction
+    w = di.info[w_key]  # initial width in rolling direction
+
+    # breadth spread correction
     n = di.info[spread_exponent_key]  # spread exponent
     C = (b_f/b_0 - 1)/(1 - (h_f/h_0)**n)  # breadth spread coefficient
     h = h_0 - di.data[disp_key]  # instantaneous height
     b = b_0*(1 + C*(1 - (h/h_0)**n))  # instantaneous breadth
-    w0 = di.info[w0_key]  # initial width in rolling direction
-    P = di.data[force_key]*1000/(b*w0)  # pressure (MPa)
-    di.data['Pressure(MPa)'] = P
-    z_0 = (h/(2*mu))*np.log(1/(2*mu))  # sticking-sliding transition distance from centre (mm)
 
+    # calculate strains
+    eps_3 = np.log(h/h_0)  # normal strain
+    eps_2 = np.log(b/b_0)  # transverse strain
+    eps_bar = 2*(eps_2**2 + eps_2*eps_3 + eps_3**2)/np.sqrt(3)  # equivalent strain
+    di.data['Normal_Strain'] = eps_3
+    di.data['Transverse_Strain'] = eps_2
+    di.data['Equivalent_Strain'] = eps_bar
+
+    # calculate spread factor
+    f = -eps_bar/eps_3
+
+    # calculate average pressure
+    P = di.data[force_key]*1000/(b*w)  # pressure (MPa)
+    di.data['Pressure_MPa'] = P
+
+    # calculate shear yield stress
+    z_0 = (h/(2*mu))*np.log(1/(2*mu))  # sticking-sliding transition distance from centre (mm)
+    if 2*z_0 > w:  # transition distance is greater than the width, full sliding
+        k = P/2*((2*h**2/mu**2 + (b - w)*h/mu)*(np.exp(mu*w/h) - 1)/b*w - 2*h/mu*b)  # shear yield stress (MPa)
+    elif w > 2*z_0 > 0:  # transition distance is less than the width, partial sliding
+        k = P/2*((w/2 - z_0)/mu*w + (w/2 - z_0)**2/h*w + h*(1/2*mu - 1)/mu*w + (z_0**2 - 4*z_0**3/3*w - w**2/12)/h*b
+                 + (2*z_0**2/w - z_0 - 2*h*z_0/mu*w + h/2*mu - h + h**2/w*mu**2 - 2*h**2/mu*w)/mu*b)
+    elif 0 > 2*z_0:  # transition distance is less than zero, full sticking
+        k = P/2*(1 + w/4*h - w**2/12*h*b)
+    else:
+        raise ValueError('Invalid value for z_0, the friction transition distance.'
+                         '\nConsider changing the sign of the displacement and force data.')
+
+    di.data['Shear_Yield_Stress_MPa'] = k  # shear yield stress (MPa)
+
+    # calculate equivalent flow stress
+    di.data['Equivalent_Stress_MPa'] = 2*k/f  # corrected stress
+
+    return di
 
 
 def smooth_load_cell_ringing(di: DataItem):
@@ -241,9 +271,6 @@ def correct_compliance(di: DataItem):
 
 def correct_thermal_expansion(di: DataItem):
     return di
-
-
-
 
 
 def trim_leading_data():
