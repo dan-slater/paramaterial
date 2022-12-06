@@ -11,7 +11,7 @@ theme:
     - navigation.sections
     - navigation.expand
     - toc.integrate
-    - navigation.top
+#    - navigation.top
     - search.suggest
     - search.highlight
     - navigation.instant
@@ -27,6 +27,12 @@ plugins:
 
 nav:
   - Home: index.md
+  - How-To Guides:
+      - how_to_guides/apply_proc_op.md
+      - how_to_guides/fit_model.md
+      - how_to_guides/make_repr_data.md
+      - how_to_guides/use_screening_pdf.md
+      - how_to_guides/zener_holloman_eg.ipynb
   - Example:
       - Data Preparation: example/01 preparation.ipynb
   - Reference:

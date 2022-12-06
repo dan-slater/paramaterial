@@ -72,11 +72,6 @@ def make_experimental_matrix(info_table: pd.DataFrame, index: Union[str, List[st
     return info_table.groupby(index + columns).size().unstack(columns).fillna(0).astype(int)
 
 
-def copy_and_rename_by_test_id(old_dir: str, new_dir: str, info_path: str):
-    info_df = pd.read_excel(info_path)
-    for old_name, new_name in zip(info_df['old filename'], info_df['test id']):
-        os.rename(f'{old_dir}/{old_name}.csv', f'{new_dir}/{new_name}.csv')
-
 
 def convert_files_in_directory_to_csv(directory_path: str):
     for file in os.listdir(directory_path):

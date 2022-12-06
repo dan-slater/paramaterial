@@ -23,6 +23,7 @@ def configure_plt_formatting():
     plt.rc('ytick', labelsize=9)
     plt.rc('legend', fontsize=9)
     plt.rc('figure', titlesize=13)
+    mpl.rcParams.update({"axes.grid": True})
 
 
 configure_plt_formatting()
@@ -382,10 +383,14 @@ def subplot_wrapper(
 
 def plot_ZH_regression(
         ds: DataSet,
-        group_by: str|None = None,
-        flow_stress_key: str = 'flow_stress_MPa_1',
-        temperature_key: str = 'mean_temp_K',
+        flow_stress_key: str = 'flow_stress_MPa',
+        temperature_key: str = 'temperature_K',
+        lnZ_key: str = 'lnZ',
+        m_key: str = 'lnZ_fit_m',
+        c_key: str = 'lnZ_fit_c',
         ZH_key: str = 'ZH_parameter',
+        group_by: str|None = None,
+        color_by: str|None = None,
         ax: Optional[plt.axes] = None,
         **kwargs
 ):
@@ -408,15 +413,15 @@ def plot_ZH_regression(
     if ax is None:
         fig, ax = plt.subplots()
 
-    if group_by is None:
-        pass
+
+
 
     # plot the Zener-Holloman regression
     info = ds.info_table
-    ax.plot(info[temperature_key], info[flow_stress_key], 'o', label='data')
+    ax.plot(info[lnZ_key], info[flow_stress_key], 'o', label='data')
 
     # plot the Zener-Holloman regression
-    x = np.linspace(info[temperature_key].min(), info[temperature_key].max(), len(info))
+    x = np.linspace(info[lnZ_key].min(), info[lnZ_key].max(), len(info))
     y = info['lnZ_fit_m']*x + info['lnZ_fit_c']
     ax.plot(x, y, label='regression', ls='--')
 
