@@ -169,32 +169,6 @@ def find_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str =
     return di
 
 
-def calculate_ZH_parameter(di: DataItem, temperature_key: str = 'temperature_K', rate_key: str = 'rate_s-1',
-                           Q_key: str = 'Q_activation', gas_constant: float = 8.1345,
-                           ZH_key: str = 'ZH_parameter') -> DataItem:
-    """Calculate the Zener-Holloman parameter using
-
-    $$
-    Z = \\dot{\\varepsilon} \\exp \\left(\\frac{Q}{RT}\\right)
-    $$
-
-    where $\\dot{\\varepsilon}$ is the strain rate, $Q$ is the activation energy, $R$ is the gas constant,
-    and $T$ is the temperature.
-
-    Args:
-        di: DataItem object with $\\dot{\\varepsilon}$, $Q$, $R$, and $T$ in info.
-        temperature_key: Info key for mean temperature
-        rate_key: Info key for mean strain-rate rate
-        Q_key: Info key for activation energy
-        gas_constant: Universal gas constant
-        ZH_key: Key for Zener-Holloman parameter
-
-    Returns: DataItem with Zener-Holloman parameter added to info.
-    """
-    di.info[ZH_key] = di.info[rate_key]*np.exp(
-        di.info[Q_key]/(gas_constant*di.info[temperature_key]))
-    return di
-
 
 def correct_foot(di: DataItem):
     UPL = di.info['UPL_0'], di.info['UPL_1']
