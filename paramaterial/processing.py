@@ -144,7 +144,8 @@ def find_fracture_point(di: DataItem, strain_key: str = 'Strain', stress_key: st
 
 
 def find_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
-                     flow_stress_key: str = 'flow_stress_MPa', flow_strain: float|None = None) -> DataItem:
+                     flow_strain_key: str = 'flow_strain', flow_stress_key: str = 'flow_stress_MPa',
+                     flow_strain: float|None = None) -> DataItem:
     """Find the flow stress of a stress-strain curve, defined as the point at which the stress is maximum,
     or as the point at a specified strain.
 
@@ -152,6 +153,7 @@ def find_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str =
         di: DataItem with stress-strain curve
         strain_key: Data key for reading strain.
         stress_key: Data key for reading stress.
+        flow_strain_key: Info key for writing flow strain.
         flow_stress_key: Info key for storing flow stress.
         flow_strain: Strain at which to find the flow stress. If None, the maximum stress is used.
 
@@ -159,15 +161,15 @@ def find_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str =
     """
     if flow_strain is None:
         idx_max = di.data[stress_key].idxmax()
-        di.info[f'{flow_stress_key}_0'] = di.data[strain_key][idx_max]
-        di.info[f'{flow_stress_key}_1'] = di.data[stress_key][idx_max]
+        di.info[f'{flow_strain_key}'] = di.data[strain_key][idx_max]
+        di.info[f'{flow_stress_key}'] = di.data[stress_key][idx_max]
     else:
-        di.info[f'{flow_stress_key}_0'] = flow_strain
-        di.info[f'{flow_stress_key}_1'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
+        di.info[f'{flow_strain_key}'] = flow_strain
+        di.info[f'{flow_stress_key}'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
     return di
 
 
-def calculate_ZH_parameter(di: DataItem, temperature_key: str = 'mean_temp_K', rate_key: str = 'mean_rate_s-1',
+def calculate_ZH_parameter(di: DataItem, temperature_key: str = 'temperature_K', rate_key: str = 'rate_s-1',
                            Q_key: str = 'Q_activation', gas_constant: float = 8.1345,
                            ZH_key: str = 'ZH_parameter') -> DataItem:
     """Calculate the Zener-Holloman parameter using

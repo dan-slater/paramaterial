@@ -15,7 +15,7 @@ from tqdm import tqdm
 from paramaterial.plug import DataItem, DataSet
 
 
-def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa_1', ZH_key: str = 'ZH_parameter'):
+def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ZH_key: str = 'ZH_parameter'):
     """Do a linear regression for LnZ vs flow stress. #todo link
 
     Args:
@@ -29,7 +29,7 @@ def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa_1',
     assert flow_stress_key in ds.info_table.columns, f'flow_stress_key {flow_stress_key} not in info table'
     info_table = ds.info_table.copy()
     info_table['lnZ'] = np.log(info_table[ZH_key].values.astype(np.float64))
-    m, c = np.polyfit(info_table[flow_stress_key].values.astype(np.float64), info_table['lnZ'], 1)
+    m, c = op.curve_fit(lambda x, m, c: m * x + c, info_table['lnZ'], info_table[flow_stress_key])[0]
     info_table['lnZ_fit_m'] = m
     info_table['lnZ_fit_c'] = c
     ds.info_table = info_table
