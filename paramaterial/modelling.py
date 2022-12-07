@@ -64,7 +64,7 @@ def make_representative_data(
     # make representative curves and take means of info table columns
     for repr_id, subset_filter in zip(repr_ids, subset_filters):
         # get representative subset
-        repr_subset = ds[subset_filter]
+        repr_subset = ds.subset(subset_filter)
         if repr_subset.info_table.empty:
             continue
         # add row to repr_info_table

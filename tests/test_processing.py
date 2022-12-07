@@ -16,7 +16,8 @@ class TestProcessing(unittest.TestCase):
     """Tests for the processing module."""
 
     def setUp(self):
-        self.ds = DataSet('test data/01 prepared data', 'test info/01 prepared info.xlsx')
+        self.ds = DataSet('processing test data/test data/01 prepared data',
+                          'processing test data/test info/01 prepared info.xlsx')
 
     def test_find_upl_and_lpl(self):
         """Test the find_upl_and_lpl function."""
