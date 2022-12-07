@@ -52,7 +52,7 @@ def make_screening_pdf(
         form = pdf_canvas.acroForm
         pdf_canvas.setFont("Courier", plt.rcParams['font.size'] + 6)
 
-        # add test id
+        # add test_id
         pdf_canvas.drawString(0.05*pagesize[0], 0.95*pagesize[1], f'{di.test_id}')
 
         # add checkbox
@@ -68,7 +68,7 @@ def make_screening_pdf(
                        borderColor=magenta, fillColor=pink, textColor=black, forceBorder=True, fieldFlags='multiline')
 
         # add page to canvas and close plot
-        # make name of page the test id
+        # make name of page the test_id
         pdf_canvas.showPage()
         plt.close()
 
@@ -105,7 +105,7 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     comment_fields = [field for field in pdf_fields if 'comment' in field]
     reject_fields = [field for field in pdf_fields if 'reject' in field]
 
-    # get test ids from comment fields
+    # get test_ids from comment fields
     test_ids = [field_name[-11:] for field_name in comment_fields]
 
     # get comments and rejects

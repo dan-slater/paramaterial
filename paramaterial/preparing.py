@@ -10,23 +10,23 @@ import pandas as pd
 from paramaterial.plug import DataSet
 
 
-def copy_data_and_rename_by_test_id(data_in: str, data_out: str, info_table: pd.DataFrame, test_id_col='test id'):
-    """Rename files in data directory by test id in info table."""
+def copy_data_and_rename_by_test_id(data_in: str, data_out: str, info_table: pd.DataFrame, test_id_col='test_id'):
+    """Rename files in data directory by test_id in info table."""
     # make data directory if it doesn't exist
     if not os.path.exists(data_out):
         os.mkdir(data_out)
 
     # check info table
-    if 'old filename' not in info_table.columns:
-        raise ValueError(f'There is no "old filename" column in the info table.')
+    if 'old_filename' not in info_table.columns:
+        raise ValueError(f'There is no "old_filename" column in the info table.')
     if test_id_col not in info_table.columns:
         raise ValueError(f'There is no "{test_id_col}" column in the info table.')
     if info_table[test_id_col].duplicated().any():
-        raise ValueError(f'There are duplicate test ids.')
-    if info_table['old filename'].duplicated().any():
-        raise ValueError(f'There are duplicate old filenames.')
+        raise ValueError(f'There are duplicate test_ids.')
+    if info_table['old_filename'].duplicated().any():
+        raise ValueError(f'There are duplicate old_filenames.')
 
-    for filename, test_id in zip(info_table['old filename'], info_table[test_id_col]):
+    for filename, test_id in zip(info_table['old_filename'], info_table[test_id_col]):
         # check that file exists
         if not os.path.exists(f'{data_in}/{filename}'):
             raise FileNotFoundError(f'File {filename} does not exist in {data_in}.')
@@ -37,10 +37,13 @@ def copy_data_and_rename_by_test_id(data_in: str, data_out: str, info_table: pd.
 
 
 def check_column_headers(data_dir: str):
-    """Check that all files in a directory have the same column headers."""
+    """Check that all files in a directory have the same column headers and that column headers don't contain spaces."""
     file_list = os.listdir(data_dir)
     first_file = pd.read_csv(f'{data_dir}/{file_list[0]}')
     print("Checking column headers...")
+    for column_header in first_file.columns:
+        if len(column_header.split(' ')) > 1:
+            raise ValueError(f'Column header "{column_header}" contains a space.')
     print(f'First file headers:\n\t{list(first_file.columns)}')
     for file in file_list[1:]:
         df = pd.read_csv(f'{data_dir}/{file}')

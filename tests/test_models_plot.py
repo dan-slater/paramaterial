@@ -19,15 +19,15 @@ def main():
 
     data_dir = './test_data'
     info_path = './test_data/info.xlsx'
-    test_id_key = 'test id'
+    test_id_key = 'test_id'
 
     data1 = pd.DataFrame({'x': x1, 'y': y1})
     data2 = pd.DataFrame({'x': x2, 'y': y2})
 
-    info1 = pd.Series({'test id': 'id_001', 'a': 1, 'b': 4})
-    info2 = pd.Series({'test id': 'id_002', 'a': 2, 'b': 5})
+    info1 = pd.Series({'test_id': 'id_001', 'a': 1, 'b': 4})
+    info2 = pd.Series({'test_id': 'id_002', 'a': 2, 'b': 5})
 
-    info_table = pd.DataFrame({'test id': ['id_001', 'id_002'], 'a': [1, 2], 'b': [4, 5]})
+    info_table = pd.DataFrame({'test_id': ['id_001', 'id_002'], 'a': [1, 2], 'b': [4, 5]})
     data_items = list(map(DataItem, ['id_001', 'id_002'], [data1, data2], [info1, info2]))
 
     if os.path.exists(data_dir):

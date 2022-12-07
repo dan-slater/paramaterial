@@ -32,7 +32,7 @@ class DataItem:
 
 
 class DataSet:
-    def __init__(self, data_dir: str, info_path: str, test_id_key: str = 'test id'):
+    def __init__(self, data_dir: str, info_path: str, test_id_key: str = 'test_id'):
         """Initialize the ds.
         Args:
             data_dir: The directory containing the data.
@@ -51,11 +51,22 @@ class DataSet:
         self.data_map = self.data_map = map(DataItem.read_data_from_csv, self.file_paths)
         self.data_map = map(lambda di: di.read_info_from_table(self._info_table, self.test_id_key), self.data_map)
         self.applied_funcs = []
+        # check that the data map is the same length as the info table
+        assert len(list(self.data_items)) == len(self.info_table)
+        # check that the test_ids are the same
+        assert all([di.test_id == test_id for di, test_id in zip(self.data_items, self.info_table[self.test_id_key])])
+        # check that the info table is the same
+        assert all([di.info.equals(self.info_table.loc[self.info_table[self.test_id_key] == di.test_id].squeeze())
+                    for di in self.data_items])
+        # check that info table columns are valid, return a list of invalid columns
+        assert all([not any([c in col for c in [' ', '.']]) for col in self.info_table.columns]), \
+            ValueError(f'Info table columns cannot contain spaces or full stops. Got '
+                       f'{[col for col in self.info_table.columns if any([c in col for c in [" ", "."]])]}')
 
     def update_data_map(self) -> None:
         self.file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self._info_table[self.test_id_key]]
         self.data_map = map(DataItem.read_data_from_csv, self.file_paths)
-        self.data_map = map(lambda di: di.read_info_from_table(self.info_table, self.test_id_key), self.data_map)
+        self.data_map = map(lambda di: di.read_info_from_table(self._info_table, self.test_id_key), self.data_map)
         # map the applied functions to the new data map
         for func in self.applied_funcs:
             self.data_map = map(func, self.data_map)
@@ -79,18 +90,17 @@ class DataSet:
         """Apply a function to every dataitem in a copy of the ds and return the copy."""
 
         def wrapped_func(di: DataItem):
-            try:
-                di = func(di, **kwargs)
-                di.data.reset_index(drop=True, inplace=True)
-                assert self.test_id_key in di.info.index
-                return di
-            except Exception as e:
-                print(f'Error applying {func.__name__} to {di.test_id}: {e}')
-                return di
+            di = func(di, **kwargs)
+            di.data.reset_index(drop=True, inplace=True)
+            # assert self.test_id_key in di.info.index
+            return di
 
         new_ds = self.copy()
         new_ds.applied_funcs.append(wrapped_func)
-        new_ds.update_data_map()
+        # read info table from the dataitems
+        b = self.info_table
+        a = pd.concat([di.info for di in new_ds.data_items], axis=1).T.reset_index(drop=True)
+        new_ds.info_table = pd.concat([di.info for di in new_ds.data_items], axis=1).T.reset_index(drop=True)
         return new_ds
 
     def write_output(self, data_dir: str, info_path: str) -> None:
@@ -99,20 +109,22 @@ class DataSet:
             data_dir: The directory to write the data to.
             info_path: The path to write the info table to.
         """
+        self.update_data_map()
+        # make the output directory if it doesn't exist
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
-
+        # write the data files
         for dataitem in self:
             dataitem.write_data_to_csv(data_dir)
-
+        # write the info table
         if info_path.endswith('.xlsx'):
-            self.info_table.to_excel(info_path, index=False)
+            self._info_table.to_excel(info_path, index=False)
         elif info_path.endswith('.csv'):
-            self.info_table.to_csv(info_path, index=False)
+            self._info_table.to_csv(info_path, index=False)
         else:
             raise ValueError(f'Info table must be a csv or xlsx file. Got {info_path}')
 
-    def sort_by(self, column: str | List[str], ascending: bool = True) -> 'DataSet':
+    def sort_by(self, column: str|List[str], ascending: bool = True) -> 'DataSet':
         """Sort a copy of the ds by a column in the info table and return the copy."""
         new_ds = self.copy()
         new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending)
@@ -146,6 +158,8 @@ class DataSet:
                 raise ValueError(f'Invalid filter key: {key}')
             if not isinstance(value, list):
                 filter_dict[key] = [value]
+            if len(key.split(' ')) > 1:
+                raise ValueError(f'Info table column names cannot contain spaces. Got {key}')
         query_string = ' and '.join([f'{key} in {str(values)}' for key, values in filter_dict.items()])
         try:
             new_ds.info_table = self.info_table.query(query_string)

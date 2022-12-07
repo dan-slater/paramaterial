@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\tests\zener-holloman\info\04 ZH parameter info.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\tests\zener-holloman\info\04 ZH regression info.csv">
           <value>
             <Attribute>

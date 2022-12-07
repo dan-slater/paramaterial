@@ -142,8 +142,8 @@ class ModelItem:
 
     @property
     def test_id(self) -> str:
-        """Return the test id of the corresponding DataItem."""
-        return self.info['test id']
+        """Return the test_id of the corresponding DataItem."""
+        return self.info['test_id']
 
     def write_data_to_csv(self, output_dir: str):
         """Write the generated data to a csv file."""
