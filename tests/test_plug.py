@@ -143,6 +143,7 @@ class TestDataSet(unittest.TestCase):
         dataset = dataset.apply(apply_func)
         new_ds = dataset.apply(apply_func)
         self.assertTrue(new_ds[0].info['new'] == 1)
+        self.assertTrue('new' in new_ds.info_table.columns)
         self.assertTrue(new_ds.info_table['new'][0] == 1)
 
         self.assertEqual(dataset.data_items[0].test_id, 'id_001')
