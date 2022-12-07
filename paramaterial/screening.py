@@ -106,7 +106,7 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     reject_fields = [field for field in pdf_fields if 'reject' in field]
 
     # get test ids from comment fields
-    test_ids = [field_name[-11:] for field_name in comment_fields]
+    test_ids = ['_'.join(field_name.split('_')[2:]) for field_name in comment_fields]
 
     # get comments and rejects
     comments = [pdf_fields[field]['/V'] for field in comment_fields]
@@ -128,7 +128,7 @@ def remove_rejected_items(ds: DataSet, screening_pdf_path: str) -> DataSet:
     """Reject data items that were marked as reject in the screening pdf."""
     new_ds = ds.copy()
     screened_ds = read_screening_pdf_fields(new_ds, screening_pdf_path)
-    screened_ds.info_table = screened_ds.info_table[screened_ds.info_table['reject'] != 'Yes']
+    screened_ds.info_table = screened_ds.info_table[screened_ds.info_table['reject'] != '/Yes']
     return screened_ds
 
 

@@ -90,7 +90,8 @@ class DataSet:
 
         new_ds = self.copy()
         new_ds.applied_funcs.append(wrapped_func)
-        new_ds.update_data_map()
+        # read info table from the dataitems
+        new_ds.info_table = pd.concat([di.info for di in new_ds.data_map], axis=1).T.reset_index(drop=True)
         return new_ds
 
     def write_output(self, data_dir: str, info_path: str) -> None:

@@ -135,11 +135,15 @@ class TestDataSet(unittest.TestCase):
         def apply_func(di: DataItem) -> DataItem:
             di.data['x'] = di.data['x'] + 1
             di.data['z'] = di.data['x'] + di.data['y']
+            di.info['new'] = 1
             di.info['a'] = di.info['a'] + 1
             di.info['c'] = di.info['a'] + di.info['b']
             return di
 
         dataset = dataset.apply(apply_func)
+        new_ds = dataset.apply(apply_func)
+        self.assertTrue(new_ds[0].info['new'] == 1)
+        self.assertTrue(new_ds.info_table['new'][0] == 1)
 
         self.assertEqual(dataset.data_items[0].test_id, 'id_001')
         self.assertTrue(np.equal(dataset.data_items[0].data['x'], self.data1['x'] + 1).all())
@@ -186,9 +190,7 @@ class TestDataSet(unittest.TestCase):
                            'b': [9, 5, 6]})
         dataset.info_table = df
         dataset = dataset.sort_by('a')
-        print(dataset.info_table)
         df = df.sort_values('a')
-        print(df)
         self.assertTrue(dataset.info_table.convert_dtypes().equals(df.convert_dtypes()))
         self.assertTrue(type(dataset.data_map) is map)
         self.assertEqual(dataset.data_items[0].test_id, 'id_002')
