@@ -272,13 +272,13 @@ def dataset_subplots(
     # loop through the grid of axes and plot the subsets
     if rows_by == cols_by:
         for ax, row_val in zip(axs.flat, row_vals):
-            subset = ds[{rows_by: row_val}]
+            subset = ds.subset({rows_by: row_val})
             dataset_plot(subset, styler=styler, ax=ax, **kwargs)
     else:
         for row, row_val in enumerate(row_vals):
             for col, col_val in enumerate(col_vals):
                 ax = axs[row, col]
-                subset = ds[{cols_by: col_val, rows_by: row_val}]
+                subset = ds.subset({cols_by: col_val, rows_by: row_val})
                 dataset_plot(subset, styler=styler, ax=ax, **kwargs)
 
     if subplot_cbar:
@@ -351,14 +351,14 @@ def subplot_wrapper(
     if rows_by == cols_by:
         for ax, row_val in zip(axs.flat, row_vals):
             kwargs['ax'] = ax
-            subset = ds[{rows_by: row_val}]
+            subset = ds.subset({rows_by: row_val})
             for di in subset:
                 plot_func(di, **kwargs)
     else:
         for row, row_val in enumerate(row_vals):
             for col, col_val in enumerate(col_vals):
                 kwargs['ax'] = axs[row, col]
-                subset = ds[{cols_by: col_val, rows_by: row_val}]
+                subset = ds.subset({cols_by: col_val, rows_by: row_val})
                 for di in subset:
                     plot_func(di, **kwargs)
 

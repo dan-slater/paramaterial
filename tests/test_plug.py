@@ -14,7 +14,12 @@ class TestDataItem(unittest.TestCase):
     """Tests for the DataItem class."""
 
     def setUp(self):
-        os.mkdir('./test_data')
+        # create test data if it does not exist, otherwise overwrite it
+        if not os.path.exists('./test_data'):
+            os.mkdir('./test_data')
+        else:
+            shutil.rmtree('./test_data')
+            os.mkdir('./test_data')
         self.test_id = 'id_001'
         self.data = pd.DataFrame({'x': [1, 2, 3], 'y': [2, 3, 4]})
         self.info = pd.Series({'test id': 'id_001', 'a': 1, 'b': 2})
@@ -50,6 +55,13 @@ class TestDataSet(unittest.TestCase):
     """Tests for the DataSet class."""
 
     def setUp(self):
+        # create test data if it does not exist, otherwise overwrite it
+        if not os.path.exists('./test_data'):
+            os.mkdir('./test_data')
+        else:
+            shutil.rmtree('./test_data')
+            os.mkdir('./test_data')
+
         self.data_dir = './test_data'
         self.info_path = './test_data/info.xlsx'
         self.test_id_key = 'test id'
@@ -70,8 +82,6 @@ class TestDataSet(unittest.TestCase):
                                   ['id_001', 'id_002', 'id_003'],
                                   [self.data1, self.data2, self.data3],
                                   [self.info1, self.info2, self.info3]))
-
-        os.mkdir('./test_data')
 
         self.info_table.to_excel('./test_data/info.xlsx', index=False)
 
@@ -172,15 +182,18 @@ class TestDataSet(unittest.TestCase):
     def test_sort_by(self):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
         df = pd.DataFrame({'test id': ['id_001', 'id_002', 'id_003'],
-                                           'a': [9, 2, 3],
-                                           'b': [9, 5, 6]})
+                           'a': [9, 2, 3],
+                           'b': [9, 5, 6]})
         dataset.info_table = df
         dataset = dataset.sort_by('a')
+        print(dataset.info_table)
         df = df.sort_values('a')
-        self.assertTrue(dataset.info_table.convert_dtypes().equals(df.convert_dtypes().reset_index(drop=True)))
+        print(df)
+        self.assertTrue(dataset.info_table.convert_dtypes().equals(df.convert_dtypes()))
         self.assertTrue(type(dataset.data_map) is map)
         self.assertEqual(dataset.data_items[0].test_id, 'id_002')
         self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data2.convert_dtypes()))
+
         # test if an applied function is still applied after sorting
         def test(di: DataItem):
             di.data = di.data[:-1]
@@ -189,7 +202,6 @@ class TestDataSet(unittest.TestCase):
         dataset = dataset.apply(test)
         dataset = dataset.sort_by('a')
         self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data2[:-1].convert_dtypes()))
-
 
     def test_iter(self):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
@@ -205,6 +217,24 @@ class TestDataSet(unittest.TestCase):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
         self.assertEqual(len(dataset), 3)
 
+    def test_subset(self):
+        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+
+        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4]}).data_items[0].data.convert_dtypes().equals(
+            self.data1.convert_dtypes()))
+
+        self.assertTrue(type(dataset.subset({'a': [1, 2], 'b': [4]}) is DataSet))
+        self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4]})) == 1)
+        self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4, 5]})) == 2)
+
+        def trim(di: DataItem) -> DataItem:
+            di.data = di.data[:-1]
+            return di
+
+        dataset = dataset.apply(trim)
+        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4, 5]}).data_items[0].data.convert_dtypes().equals(
+            self.data1[:-1].convert_dtypes()))
+
     def test_getitem(self):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
 
@@ -215,19 +245,19 @@ class TestDataSet(unittest.TestCase):
         self.assertTrue(dataset[1:].data_items[0].data.convert_dtypes().equals(self.data2.convert_dtypes()))
 
         self.assertTrue(type(dataset[:1]) is DataSet)
-        self.assertTrue(dataset[{'a': [1, 2], 'b': [4]}].data_items[0].data.convert_dtypes().equals(
+        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4]}).data_items[0].data.convert_dtypes().equals(
             self.data1.convert_dtypes()))
 
-        self.assertTrue(type(dataset[{'a': [1, 2], 'b': [4]}]) is DataSet)
-        self.assertTrue(len(dataset[{'a': [1, 2], 'b': [4]}]) == 1)
-        self.assertTrue(len(dataset[{'a': [1, 2], 'b': [4,5]}]) == 2)
+        self.assertTrue(type(dataset.subset({'a': [1, 2], 'b': [4]})) is DataSet)
+        self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4]})) == 1)
+        self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4, 5]})) == 2)
 
         def trim(di: DataItem) -> DataItem:
             di.data = di.data[:-1]
             return di
 
         dataset = dataset.apply(trim)
-        self.assertTrue(dataset[{'a': [1, 2], 'b': [4,5]}].data_items[0].data.convert_dtypes().equals(
+        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4, 5]}).data_items[0].data.convert_dtypes().equals(
             self.data1[:-1].convert_dtypes()))
 
     def test_copy(self):
@@ -242,23 +272,3 @@ class TestDataSet(unittest.TestCase):
         dataset_copy = dataset.copy()
         self.assertTrue(dataset_copy.data_items[0].data.convert_dtypes().equals(
             self.data1[:-1].convert_dtypes()))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
