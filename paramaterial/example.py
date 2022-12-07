@@ -47,8 +47,8 @@ def download_example_data():
     info_table = pd.DataFrame(info_lists,
                               columns=['old filename', 'test type', 'temperature', 'lot', 'number']
                               ).sort_values(by='test type', ascending=False)
-    info_table['test id'] = [f'test_ID_{i + 1:03d}' for i in range(len(info_table))]
-    info_table = info_table.set_index('test id').reset_index()
+    info_table['test_id'] = [f'test_ID_{i + 1:03d}' for i in range(len(info_table))]
+    info_table = info_table.set_index('test_id').reset_index()
     info_table['test type'] = info_table['test type'].replace('T', 'UT')
     info_table['test type'] = info_table['test type'].replace('P', 'PST')
     info_table['rate'] = 8.66e-4  # units (/s) and all tests performed at same rate

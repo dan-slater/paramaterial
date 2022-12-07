@@ -22,7 +22,7 @@ class TestDataItem(unittest.TestCase):
             os.mkdir('./test_data')
         self.test_id = 'id_001'
         self.data = pd.DataFrame({'x': [1, 2, 3], 'y': [2, 3, 4]})
-        self.info = pd.Series({'test id': 'id_001', 'a': 1, 'b': 2})
+        self.info = pd.Series({'test_id': 'id_001', 'a': 1, 'b': 2})
         self.data.to_csv('./test_data/id_001.csv', index=False)
 
     def tearDown(self):
@@ -37,8 +37,8 @@ class TestDataItem(unittest.TestCase):
     def test_update_info_from_table(self):
         file_path = './test_data/id_001.csv'
         dataitem = DataItem.read_data_from_csv(file_path)
-        info_table = pd.DataFrame({'test id': ['id_001'], 'a': [1], 'b': [2]})
-        dataitem.read_info_from_table(info_table, 'test id')
+        info_table = pd.DataFrame({'test_id': ['id_001'], 'a': [1], 'b': [2]})
+        dataitem.read_info_from_table(info_table, 'test_id')
         self.assertTrue(dataitem.info.equals(self.info))
 
     def test_write_data_to_csv(self):
@@ -64,17 +64,17 @@ class TestDataSet(unittest.TestCase):
 
         self.data_dir = './test_data'
         self.info_path = './test_data/info.xlsx'
-        self.test_id_key = 'test id'
+        self.test_id_key = 'test_id'
 
         self.data1 = pd.DataFrame({'x': [1.1, 2, 3], 'y': [4.1, 5, 6]})
         self.data2 = pd.DataFrame({'x': [1, 2.2, 3], 'y': [4, 5.2, 6]})
         self.data3 = pd.DataFrame({'x': [1, 2, 3.3], 'y': [4, 5, 6.3]})
 
-        self.info1 = pd.Series({'test id': 'id_001', 'a': 1, 'b': 4})
-        self.info2 = pd.Series({'test id': 'id_002', 'a': 2, 'b': 5})
-        self.info3 = pd.Series({'test id': 'id_003', 'a': 3, 'b': 6})
+        self.info1 = pd.Series({'test_id': 'id_001', 'a': 1, 'b': 4})
+        self.info2 = pd.Series({'test_id': 'id_002', 'a': 2, 'b': 5})
+        self.info3 = pd.Series({'test_id': 'id_003', 'a': 3, 'b': 6})
 
-        self.info_table = pd.DataFrame({'test id': ['id_001', 'id_002', 'id_003'],
+        self.info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
                                         'a': [1, 2, 3],
                                         'b': [4, 5, 6]})
 
@@ -114,7 +114,7 @@ class TestDataSet(unittest.TestCase):
 
     def test_set_info_table(self):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
-        info_table = pd.DataFrame({'test id': ['id_001', 'id_002', 'id_003'],
+        info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
                                    'a': [9, 2, 3],
                                    'b': [9, 5, 6]})
         dataset.info_table = info_table
@@ -181,7 +181,7 @@ class TestDataSet(unittest.TestCase):
 
     def test_sort_by(self):
         dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
-        df = pd.DataFrame({'test id': ['id_001', 'id_002', 'id_003'],
+        df = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
                            'a': [9, 2, 3],
                            'b': [9, 5, 6]})
         dataset.info_table = df
