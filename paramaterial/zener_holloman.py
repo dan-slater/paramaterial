@@ -98,7 +98,7 @@ def plot_ZH_regression(
     if group_by is not None:
         groups = []
         for group in ds.info_table[group_by].unique():
-            group_ds = ds[{group_by: [group]}]
+            group_ds = ds.subset({group_by: [group]})
             group_ds = apply_ZH_regression(group_ds) if calculate else group_ds
             groups.append(group_ds)
     else:

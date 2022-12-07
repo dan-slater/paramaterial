@@ -72,9 +72,6 @@ def make_screening_pdf(
         pdf_canvas.showPage()
         plt.close()
 
-    # save document
-    if os.path.exists(pdf_path):
-        pdf_path = pdf_path[:-4] + '_2.pdf'
     pdf_canvas.save()
     print(f'Screening pdf saved to {pdf_path}.')
 
@@ -127,9 +124,18 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     return new_ds
 
 
-def reject_screened_items(ds: DataSet, screening_pdf_path: str) -> DataSet:
+def remove_rejected_items(ds: DataSet, screening_pdf_path: str) -> DataSet:
     """Reject data items that were marked as reject in the screening pdf."""
     new_ds = ds.copy()
     screened_ds = read_screening_pdf_fields(new_ds, screening_pdf_path)
     screened_ds.info_table = screened_ds.info_table[screened_ds.info_table['reject'] != 'Yes']
     return screened_ds
+
+
+if __name__ == '__main__':
+    ds = DataSet(r'C:\Users\DS\msc-case-studies\baron study\data\01 raw data',
+                 r'C:\Users\DS\msc-case-studies\baron study\info\01 raw info.xlsx')
+    ds2 = read_screening_pdf_fields(
+        ds,
+        r'C:\Users\DS\msc-case-studies\baron study\data\04 trimmed data screening marked 7Dec22.pdf')
+    print(ds2.info_table.reject.unique())
