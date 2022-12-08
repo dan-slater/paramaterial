@@ -28,27 +28,12 @@ class TestDataItem(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree('./test_data')
 
-    def test_read_data_from_csv(self):
-        file_path = './test_data/id_001.csv'
-        dataitem = DataItem.read_data_from_csv(file_path)
-        self.assertEqual(dataitem.test_id, self.test_id)
-        self.assertTrue(dataitem.data.equals(self.data))
-
     def test_update_info_from_table(self):
         file_path = './test_data/id_001.csv'
-        dataitem = DataItem.read_data_from_csv(file_path)
+        dataitem = DataItem('id_001', self.info, self.data)
         info_table = pd.DataFrame({'test_id': ['id_001'], 'a': [1], 'b': [2]})
-        dataitem.read_info_from_table(info_table, 'test_id')
+        dataitem.read_info_from(info_table, 'test_id')
         self.assertTrue(dataitem.info.equals(self.info))
-
-    def test_write_data_to_csv(self):
-        file_path = './test_data/id_001.csv'
-        dataitem = DataItem.read_data_from_csv(file_path)
-        os.remove(file_path)
-        dataitem.write_data_to_csv('./test_data')
-        self.assertTrue(Path('./test_data/id_001.csv').exists())
-        data = pd.read_csv('./test_data/id_001.csv')
-        self.assertTrue(data.equals(self.data))
 
 
 class TestDataSet(unittest.TestCase):
@@ -93,7 +78,7 @@ class TestDataSet(unittest.TestCase):
         shutil.rmtree('./test_data')
 
     def test_init(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
         self.assertEqual(dataset.data_dir, self.data_dir)
         self.assertEqual(dataset.info_path, self.info_path)
         self.assertEqual(dataset.test_id_key, self.test_id_key)
@@ -113,7 +98,7 @@ class TestDataSet(unittest.TestCase):
         self.assertTrue(dataset.info_table.convert_dtypes().equals(self.info_table.convert_dtypes()))
 
     def test_set_info_table(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
         info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
                                    'a': [9, 2, 3],
                                    'b': [9, 5, 6]})
@@ -130,7 +115,7 @@ class TestDataSet(unittest.TestCase):
         self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data1[:-1].convert_dtypes()))
 
     def test_apply(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
 
         def apply_func(di: DataItem) -> DataItem:
             di.data['x'] = di.data['x'] + 1
@@ -156,7 +141,7 @@ class TestDataSet(unittest.TestCase):
         self.assertEqual(dataset.data_items[0].info['c'], self.info1['a'] + self.info1['b'] + 1)
 
     def test_write_output(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
 
         def apply_func(di: DataItem) -> DataItem:
             di.data['x'] = di.data['x'] + 1
@@ -166,7 +151,7 @@ class TestDataSet(unittest.TestCase):
             return di
 
         dataset = dataset.apply(apply_func)
-        dataset.write_output('./test_data/output', './test_data/output/info.xlsx')
+        dataset.write_output('./test_data/output/info.xlsx', './test_data/output')
 
         self.assertTrue(os.path.exists('./test_data/output'))
         self.assertTrue(os.path.exists('./test_data/output/info.xlsx'))
@@ -180,20 +165,25 @@ class TestDataSet(unittest.TestCase):
             dataset.data_items[1].data.convert_dtypes()))
         self.assertTrue(pd.read_csv('./test_data/output/id_003.csv').convert_dtypes().equals(
             dataset.data_items[2].data.convert_dtypes()))
+        print(pd.read_excel('./test_data/output/info.xlsx').convert_dtypes())
+        print(dataset.info_table.convert_dtypes())
 
         self.assertTrue(pd.read_excel('./test_data/output/info.xlsx').convert_dtypes().equals(
             dataset.info_table.convert_dtypes()))
 
     def test_sort_by(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
         df = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
                            'a': [9, 2, 3],
                            'b': [9, 5, 6]})
         dataset.info_table = df
+        print(dataset.info_table)
         dataset = dataset.sort_by('a')
-        df = df.sort_values('a')
+        print(dataset.info_table)
+        print(df)
+        df = df.sort_values('a').reset_index(drop=True)
+        print(df)
         self.assertTrue(dataset.info_table.convert_dtypes().equals(df.convert_dtypes()))
-        self.assertTrue(type(dataset.data_map) is map)
         self.assertEqual(dataset.data_items[0].test_id, 'id_002')
         self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data2.convert_dtypes()))
 
@@ -207,7 +197,7 @@ class TestDataSet(unittest.TestCase):
         self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data2[:-1].convert_dtypes()))
 
     def test_iter(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
 
         info_table = dataset.info_table
         info_table['c'] = [7, 8, 9]
@@ -217,11 +207,11 @@ class TestDataSet(unittest.TestCase):
             self.assertTrue(di.info['c'] in [7, 8, 9])
 
     def test_len(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
         self.assertEqual(len(dataset), 3)
 
     def test_subset(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
 
         self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4]}).data_items[0].data.convert_dtypes().equals(
             self.data1.convert_dtypes()))
@@ -239,7 +229,7 @@ class TestDataSet(unittest.TestCase):
             self.data1[:-1].convert_dtypes()))
 
     def test_getitem(self):
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
 
         self.assertTrue(dataset[0].data.convert_dtypes().equals(self.data1.convert_dtypes()))
         self.assertTrue(dataset[1].info.convert_dtypes().equals(self.info2.convert_dtypes()))
@@ -265,7 +255,7 @@ class TestDataSet(unittest.TestCase):
 
     def test_copy(self):
         # test if an applied function is still applied after copying
-        dataset = DataSet(self.data_dir, self.info_path, self.test_id_key)
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
 
         def trim(di: DataItem) -> DataItem:
             di.data = di.data[:-1]

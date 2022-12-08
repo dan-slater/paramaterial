@@ -5,7 +5,7 @@ import numpy as np
 from paramaterial import DataItem, DataSet, ModelSet
 import matplotlib.pyplot as plt
 
-prepared_ds = DataSet('data/01 prepared data', 'info/01 prepared info.xlsx').sort_by(['temperature', 'lot'])
+prepared_ds = DataSet('info/01 prepared info.xlsx', 'data/01 prepared data').sort_by(['temperature', 'lot'])
 styler = pam.plotting.Styler(color_by='temperature', cmap='plasma', color_by_label='(°C)',
                              plot_kwargs=dict(grid=True)).style_to(prepared_ds)
 subplot_cfg = dict(shape=(3, 3), figsize=(8, 6), hspace=0.2,
@@ -41,8 +41,9 @@ trim_small_ds = DataSet('data/02 trimmed large data', 'info/02 trimmed large inf
 properties_ds = trim_small_ds.apply(pam.find_upl_and_lpl,
                                     preload=36, preload_key='Stress_MPa',  # Stress at which to start searching for UPL
                                     suppress_numpy_warnings=True)
-properties_ds.write_output('data/02 properties data', 'info/02 properties info.xlsx')
-properties_ds = DataSet('data/02 properties data', 'info/02 properties info.xlsx')
+
+properties_ds.write_output('data/02 properties data', 'info/02 properties info.csv')
+properties_ds = DataSet('data/02 properties data', 'info/02 properties info.csv')
 
 
 def plot_upl_and_lpl(di, ax):  # to use the subplot wrapper, DataItem and plt.axes arguments are required
@@ -69,3 +70,4 @@ def pl_plots(ds):
 
 pl_plots(properties_ds)
 plt.show()
+#
