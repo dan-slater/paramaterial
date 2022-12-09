@@ -55,9 +55,6 @@ class DataSet:
         assert all(
             [di.info.equals(self._info_table.loc[self._info_table[self.test_id_key] == di.test_id].squeeze()) for di in
              self.data_items])
-        assert all([not any([c in col for c in [' ', '.']]) for col in self._info_table.columns]), ValueError(
-            f'Info table columns cannot contain spaces or full stops. Got '
-            f'{[col for col in self._info_table.columns if any([c in col for c in [" ", "."]])]}')
 
     @property
     def info_table(self) -> pd.DataFrame:
@@ -142,9 +139,7 @@ class DataSet:
                 raise ValueError(f'Invalid filter key: {key}')
             if not isinstance(value, list):
                 filter_dict[key] = [value]
-            if len(key.split(' ')) > 1:
-                raise ValueError(f'Info table column names cannot contain spaces. Got {key}')
-        query_string = ' and '.join([f'{key} in {str(values)}' for key, values in filter_dict.items()])
+        query_string = ' and '.join([f"'{key}' in {str(values)}" for key, values in filter_dict.items()])
         try:
             new_ds.info_table = self._info_table.query(query_string)
         except Exception as e:
