@@ -21,7 +21,7 @@ class DataItem:
 
 
 class DataSet:
-    def __init__(self, info_path: str, data_dir: str, test_id_key: str = 'test_id'):
+    def __init__(self, info_path: str|None = None, data_dir: str|None = None, test_id_key: str = 'test_id'):
         """Initialize the ds.
         Args:
             info_path: The path to the info table file.
@@ -33,6 +33,12 @@ class DataSet:
         self.info_path = info_path
         self.data_dir = data_dir
         self.test_id_key = test_id_key
+
+        # if empty inputs, create empty ds
+        if info_path is None and data_dir is None:
+            self._info_table = pd.DataFrame()
+            self.data_items = []
+            return
 
         # read the info table
         if self.info_path.endswith('.xlsx'):
@@ -139,7 +145,7 @@ class DataSet:
                 raise ValueError(f'Invalid filter key: {key}')
             if not isinstance(value, list):
                 filter_dict[key] = [value]
-        query_string = ' and '.join([f"'{key}' in {str(values)}" for key, values in filter_dict.items()])
+        query_string = ' and '.join([f"`{key}` in {str(values)}" for key, values in filter_dict.items()])
         try:
             new_ds.info_table = self._info_table.query(query_string)
         except Exception as e:
