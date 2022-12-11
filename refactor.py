@@ -18,7 +18,7 @@ def swap_dataset_inputs(path: str):
             if info.startswith("'data"):
                 pass
             else:
-                lines[i] = line.replace(f'DataSet({data}, {info})', f'DataSet({info}, {data})')
+                lines[i] = line.replace(f'DataSet({data}, {info}', f'DataSet({info}, {data}')
                 print(f'Line {i} changed from {line} to {lines[i]}')
         if 'write_output(' in line:
             data = line.split('write_output(')[1].split(',')[0]
@@ -36,7 +36,7 @@ def swap_dataset_inputs(path: str):
 
 def main():
     """Run the main function."""
-    swap_dataset_inputs('example/02 processing.ipynb')
+    swap_dataset_inputs('example/03 modelling.ipynb')
 
 
 if __name__ == '__main__':
