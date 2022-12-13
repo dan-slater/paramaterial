@@ -5,6 +5,7 @@ from typing import Optional, Tuple, List, Any, Dict, Callable
 
 import matplotlib.patches as mpatches
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -46,7 +47,7 @@ class Styler:
     cmap: str = 'plasma'
     handles: Optional[List[mpatches.Patch]] = None
     linestyles: List[str] = field(default_factory=lambda: ['-', '--', ':', '-.'])
-    markers: List[str] = field(default_factory=lambda: ['o', 's', 'v', '^'])
+    markers: List[str] = field(default_factory=lambda: ['s', 'v', 'D', 'p', 'X', 'o', 'd', 'h', 'H', '8', 'P', 'x'])
     color_dict: Optional[Dict[str|int|float, str]] = None
     linestyle_dict: Optional[Dict[str|int|float, str]] = None
     marker_dict: Optional[Dict[str|int|float, str]] = None
@@ -199,6 +200,55 @@ def dataset_plot(
         cbar.set_label(styler.cbar_label) if styler.cbar_label is not None else None
         cbar.ax.yaxis.set_ticks_position('right')
         cbar.ax.yaxis.set_label_position('right')
+
+    return ax
+
+
+def info_plot(
+        ds: DataSet,
+        x: str,
+        y: str,
+        styler: Optional[Styler] = None,
+        ax: Optional[plt.Axes] = None,
+        plot_legend: bool = True,
+        **kwargs
+) -> plt.Axes:
+    """Make a single combined plot from the info of every dataitem in the dataset using pandas.DataFrame.plot.
+
+    Args:
+        ds: The dataset to plot.
+        x: The column to plot on the x-axis.
+        y: The column to plot on the y-axis.
+        styler: The styler to use for the plot.
+        ax: The axis to plot on.
+        plot_legend: Whether to plot the legend.
+        **kwargs: Additional keyword arguments to pass to the pandas.DataFrame.plot function.
+
+    Returns: The axis the plot was made on.
+    """
+    if ax is None:
+        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
+    kwargs['ax'] = ax
+
+    if ax.get_legend() is not None and plot_legend:
+        ax.get_legend().remove()
+
+    kwargs = {**styler.plot_kwargs, **kwargs}
+
+    # plot the dataitems
+    for di in ds:
+        # plot the curve
+        df = pd.DataFrame([[di.info[x], di.info[y]]], columns=[x, y])
+        ax = df.plot(x=x,y=y,**styler.curve_formatters(di), **kwargs)
+        # ax = di.info.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
+
+    # add the legend
+    handles = styler.legend_handles(ds)
+    if len(handles) > 0 and plot_legend:
+        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
+                  handletextpad=0.05)  # , labelspacing=0.1)
+        ax.get_legend().set_zorder(2000)
+    # colorbar
 
     return ax
 
