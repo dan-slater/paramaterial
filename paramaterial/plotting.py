@@ -19,10 +19,10 @@ def configure_plt_formatting():
     mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
     mpl.rcParams["font.family"] = "Times New Roman"
     plt.rc('font', size=11)
-    plt.rc('axes', titlesize=11, labelsize=11)
-    plt.rc('xtick', labelsize=9)
-    plt.rc('ytick', labelsize=9)
-    plt.rc('legend', fontsize=9)
+    plt.rc('axes', titlesize=12, labelsize=11)
+    plt.rc('xtick', labelsize=10)
+    plt.rc('ytick', labelsize=10)
+    plt.rc('legend', fontsize=11)
     plt.rc('figure', titlesize=13)
     mpl.rcParams.update({"axes.grid": True})
 
@@ -125,21 +125,21 @@ class Styler:
             return handles
 
         if self.color_by_label is not None:
-            handles.append(mpatches.Patch(label=self.color_by_label, alpha=0))
+            handles.append(mpatches.Patch(label=self.color_by_label.title(), alpha=0))
 
         if self.color_by is not None:
             for color_val in ds.info_table[self.color_by].unique():
                 handles.append(Line2D([], [], label=color_val, color=self.color_dict[color_val], marker='o', ls=''))
 
         if self.linestyle_by_label is not None:
-            handles.append(mpatches.Patch(label='\n' + self.linestyle_by_label, alpha=0))
+            handles.append(mpatches.Patch(label='\n' + self.linestyle_by_label.title(), alpha=0))
 
         if self.linestyle_by is not None:
             for ls_val in ds.info_table[self.linestyle_by].unique():
                 handles.append(Line2D([], [], label=ls_val, ls=self.linestyle_dict[ls_val], c='k', marker=''))
 
         if self.marker_by_label is not None:
-            handles.append(mpatches.Patch(label='\n' + self.marker_by_label, alpha=0))
+            handles.append(mpatches.Patch(label='\n' + self.marker_by_label.title(), alpha=0))
 
         if self.marker_by is not None:
             for marker_val in ds.info_table[self.marker_by].unique():
@@ -309,7 +309,7 @@ def dataset_subplots(
     if row_titles is not None:
         for ax, row_title in zip(axs[:, 0], row_titles):
             ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
-                        textcoords='offset points', ha='right', va='center', rotation=90)
+                        textcoords='offset points', ha='right', va='center', rotation=90, fontsize=12)
 
     if col_titles is not None:
         for ax, column_title in zip(axs[0, :], col_titles):
@@ -341,7 +341,7 @@ def dataset_subplots(
             cbar.set_label(styler.cbar_label)
 
     if subplot_legend:
-        plt.subplots_adjust(right=0.85)
+        plt.subplots_adjust(right=0.835)
         axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', frameon=True,
                                         bbox_to_anchor=(0.925, 0.5), markerfirst=False, handletextpad=0.05)
 
