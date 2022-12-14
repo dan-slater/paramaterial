@@ -1,21 +1,23 @@
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any, Tuple, List, Union
 
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from paramaterial import DataItem, DataSet, Styler
 
 
 def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ZH_key: str = 'ZH_parameter',
-                        group_by: str|None = None) -> DataSet:
+                        group_by: str|List[str] = None) -> DataSet:
     """Do a linear regression for LnZ vs flow stress. #todo link
 
     Args:
         ds: DataSet to be fitted.
         flow_stress_key: Info key for the flow stress value.
         ZH_key: Info key for the ZH parameter value.
+        group_by: Info key(s) to group by.
 
     Returns:
         The DataSet with the Zener-Holloman parameter and regression parameters added to the info table.
@@ -26,9 +28,10 @@ def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', Z
             group_by = [group_by]
         groups = []
         for group_by_val in group_by:
-            for group in ds.info_table[group_by_val].unique():
-                group_ds = ds.subset({group_by_val: [group]})
+            for group_key in ds.info_table[group_by_val].unique():
+                group_ds = ds.subset({group_by_val: [group_key]})
                 group_ds = apply_ZH_regression(group_ds, flow_stress_key=flow_stress_key)
+                group_ds.info_table['ZH_fit_group'] = group_key
                 groups.append(group_ds)
     else:
         groups = [ds]
@@ -45,7 +48,6 @@ def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', Z
         info_table['ZH_fit'] = np.exp(info_table['lnZ_fit'])
         info_table['ZH_fit_error'] = info_table['ZH_fit'] - info_table[ZH_key]
         info_table['ZH_fit_error_percent'] = info_table['ZH_fit_error']/info_table[ZH_key]
-        info_table['ZH_fit_group'] = group_ds.info_table[group_by].unique()[0] if group_by is not None else 'All'
         group_ds.info_table = info_table
     group_info_tables = [group_ds.info_table for group_ds in groups]
     info_table = pd.concat(group_info_tables)
@@ -86,24 +88,24 @@ def plot_ZH_regression(
         temperature_key: str = 'temperature_K',
         calculate: bool = True,
         figsize: Tuple[float, float] = (6, 4),
-        ax: plt.Axes|None = None,
-        scatter_kwargs: Dict[str, Any]|None = None,
-        fit_kwargs: Dict[str, Any]|None = None,
+        ax: plt.Axes = None,
+        scatter_kwargs: Dict[str, Any] = None,
+        fit_kwargs: Dict[str, Any] = None,
         cmap: str = 'plasma',
-        styler: Styler|None = None,
+        styler: Styler = None,
         plot_legend: bool = True,
         group_by: str|List[str] = None,
-        color_by: str|None = None,
-        marker_by: str|None = None,
-        linestyle_by: str|None = None
+        color_by: str = None,
+        marker_by: str = None,
+        linestyle_by: str = None
 ):
     """Plot the Zener-Holloman regression of the flow stress vs. temperature."""
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     if styler is None:
-        styler = Styler(color_by=color_by, color_by_label=color_by.title(), cmap=cmap,
-                        marker_by=marker_by, marker_by_label=marker_by.title(),
+        styler = Styler(color_by=color_by, color_by_label=color_by, cmap=cmap,
+                        marker_by=marker_by, marker_by_label=marker_by,
                         linestyle_by=linestyle_by, linestyle_by_label=linestyle_by
                         ).style_to(ds)
 
@@ -122,22 +124,33 @@ def plot_ZH_regression(
 
     ax.set_prop_cycle(None)  # reset ax color cycle
 
-    # make a line plot of the regression for each group
+    # make dataset filters for unique combinations of group_by keys
     if group_by is not None:
         if isinstance(group_by, str):
             group_by = [group_by]
+        subset_filters = []
+        value_lists = [ds.info_table[col].unique() for col in group_by]
+        for i in range(len(value_lists[0])):
+            subset_filters.append({group_by[0]: [value_lists[0][i]]})
+        for i in range(1, len(group_by)):
+            new_filters = []
+            for fltr in subset_filters:
+                for value in value_lists[i]:
+                    new_filter = fltr.copy()
+                    new_filter[group_by[i]] = [value]
+                    new_filters.append(new_filter)
+            subset_filters = new_filters
         groups = []
-        for group_by_val in group_by:
-            for group in ds.info_table[group_by_val].unique():
-                group_ds = ds.subset({group_by_val: [group]})
-                group_ds = apply_ZH_regression(group_ds, flow_stress_key=flow_stress_key) if calculate else group_ds
-                groups.append(group_ds)
+        for fltr in subset_filters:
+            group_ds = ds.subset(fltr)
+            group_ds = apply_ZH_regression(group_ds, flow_stress_key=flow_stress_key) if calculate else group_ds
+            groups.append(group_ds)
     else:
         group_ds = apply_ZH_regression(ds, flow_stress_key=flow_stress_key) if calculate else ds
         groups = [group_ds]
+
+    # plot the regression lines
     for group_ds in groups:
-        for di in group_ds:
-            di.info['ZH_fit_group'] = di.info[group_by] if group_by is not None else 'all'
         x = np.linspace(group_ds.info_table['lnZ'].min(), group_ds.info_table['lnZ'].max(), 10)
         di = group_ds[0]
         y = di.info['lnZ_fit_m']*x + di.info['lnZ_fit_c']
@@ -171,3 +184,36 @@ def make_ZH_regression_table(ds: DataSet, flow_stress_key: str = 'flow_stress_MP
     table.columns = ['Group', 'Slope', 'Intercept', 'R2']
     table = table.drop_duplicates().reset_index(drop=True)
     return table
+
+
+def make_quality_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], columns: Union[str, List[str]],
+                        flow_stress_key: str = 'flow_stress_MPa',
+                        as_heatmap: bool = False, title: str = None,
+                        xlabel: str = None, ylabel: str = None, tick_params: Dict = None,
+                        **kwargs) -> pd.DataFrame|plt.Axes:
+    if isinstance(index, str):
+        index = [index]
+    if isinstance(columns, str):
+        columns = [columns]
+
+    def calculate_quality(df):
+        df['quality'] = df['lnZ_fit_residual'].abs().sum()/(
+                    df['lnZ_fit_residual'].count()*df[flow_stress_key].mean())
+        return df
+
+    quality_matrix = info_table.groupby(index + columns).apply(
+        calculate_quality).groupby(index + columns)['quality'].mean().unstack(columns).fillna(0)
+
+    if not as_heatmap:
+        return quality_matrix
+    else:
+        ax = sns.heatmap(quality_matrix, **kwargs)
+        if title:
+            ax.set_title(title)
+        if xlabel:
+            ax.set_xlabel(xlabel)
+        if ylabel:
+            ax.set_ylabel(ylabel)
+        if tick_params:
+            ax.tick_params(**tick_params)
+        return ax

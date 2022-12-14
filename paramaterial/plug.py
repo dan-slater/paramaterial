@@ -146,7 +146,7 @@ class DataSet:
         else:
             raise ValueError(f'Invalid ds[specifier] specifier type: {type(specifier)}')
 
-    def subset(self, filter_dict: Dict[str, List[Any]]) -> 'DataSet':
+    def subset(self, filter_dict: Dict[str, str|List[Any]]) -> 'DataSet':
         self._update_data_items()
         new_ds = self.copy()
         for key, value in filter_dict.items():
