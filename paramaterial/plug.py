@@ -21,7 +21,7 @@ class DataItem:
 
 
 class DataSet:
-    def __init__(self, info_path: str, data_dir: str, test_id_key: str = 'test_id'):
+    def __init__(self, info_path: str|None = None, data_dir: str|None = None, test_id_key: str = 'test_id'):
         """Initialize the ds.
         Args:
             info_path: The path to the info table file.
@@ -33,6 +33,12 @@ class DataSet:
         self.info_path = info_path
         self.data_dir = data_dir
         self.test_id_key = test_id_key
+
+        # if empty inputs, create empty ds
+        if info_path is None and data_dir is None:
+            self._info_table = pd.DataFrame()
+            self.data_items = []
+            return
 
         # read the info table
         if self.info_path.endswith('.xlsx'):
@@ -55,28 +61,29 @@ class DataSet:
         assert all(
             [di.info.equals(self._info_table.loc[self._info_table[self.test_id_key] == di.test_id].squeeze()) for di in
              self.data_items])
-        assert all([not any([c in col for c in [' ', '.']]) for col in self._info_table.columns]), ValueError(
-            f'Info table columns cannot contain spaces or full stops. Got '
-            f'{[col for col in self._info_table.columns if any([c in col for c in [" ", "."]])]}')
 
     @property
     def info_table(self) -> pd.DataFrame:
+        """Return the info table."""
         return self._info_table
 
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
+        self._info_table = info_table
+        self._update_data_items()
+
+    def _update_data_items(self):
         # update the list of dataitems
-        new_test_ids = info_table[self.test_id_key].tolist()
+        new_test_ids = self._info_table[self.test_id_key].tolist()
         old_test_ids = [di.test_id for di in self.data_items]
         self.data_items = [self.data_items[old_test_ids.index(new_test_id)] for new_test_id in new_test_ids]
-        # set the internal copy of the info table
-        self._info_table = info_table
         # update the info in the data items
         self.data_items = list(map(lambda di: di.read_info_from(self._info_table, self.test_id_key),
                                    self.data_items))
 
     def apply(self, func: Callable[[DataItem, ...], DataItem], **kwargs) -> 'DataSet':
         """Apply a function to every dataitem in a copy of the ds and return the copy."""
+        self._update_data_items()
 
         def wrapped_func(di: DataItem):
             di = func(di, **kwargs)
@@ -96,6 +103,7 @@ class DataSet:
             out_info_path: The path to write the info table to.
         """
         # make the output directory if it doesn't exist
+        self._update_data_items()
         if not os.path.exists(out_data_dir):
             os.makedirs(out_data_dir)
         # write the info table
@@ -112,18 +120,21 @@ class DataSet:
 
     def sort_by(self, column: str | List[str], ascending: bool = True) -> 'DataSet':
         """Sort a copy of the ds by a column in the info table and return the copy."""
+        self._update_data_items()
         new_ds = self.copy()
         new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending).reset_index(drop=True)
         return new_ds
 
     def __iter__(self):
         """Iterate over the ds."""
+        self._update_data_items()
         for dataitem in tqdm(self.copy().data_items, unit='DataItems', leave=False):
             yield dataitem
 
     def __getitem__(self, specifier: Union[int, str, slice, Dict[str, List[Any]]]) -> Union['DataSet', DataItem]:
         """Get a subset of the ds using a dictionary of column names and lists of values or using normal list
         indexing. """
+        self._update_data_items()
         if isinstance(specifier, int):
             return self.data_items[specifier]
         elif isinstance(specifier, str):
@@ -135,16 +146,15 @@ class DataSet:
         else:
             raise ValueError(f'Invalid ds[specifier] specifier type: {type(specifier)}')
 
-    def subset(self, filter_dict: Dict[str, List[Any]]) -> 'DataSet':
+    def subset(self, filter_dict: Dict[str, str|List[Any]]) -> 'DataSet':
+        self._update_data_items()
         new_ds = self.copy()
         for key, value in filter_dict.items():
             if key not in new_ds.info_table.columns:
                 raise ValueError(f'Invalid filter key: {key}')
             if not isinstance(value, list):
                 filter_dict[key] = [value]
-            if len(key.split(' ')) > 1:
-                raise ValueError(f'Info table column names cannot contain spaces. Got {key}')
-        query_string = ' and '.join([f'{key} in {str(values)}' for key, values in filter_dict.items()])
+        query_string = ' and '.join([f"`{key}` in {str(values)}" for key, values in filter_dict.items()])
         try:
             new_ds.info_table = self._info_table.query(query_string)
         except Exception as e:
@@ -153,9 +163,11 @@ class DataSet:
 
     def copy(self) -> 'DataSet':
         """Return a copy of the ds."""
+        self._update_data_items()
         return copy.deepcopy(self)
 
     def __repr__(self):
+        self._update_data_items()
         repr_string = f'DataSet with {len(self._info_table)} DataItems containing\n'
         repr_string += f'\tinfo: columns -> {", ".join(self._info_table.columns)}\n'
         repr_string += f'\tdata: len = {len(self.data_items[0].data)}, columns -> {", ".join(self.data_items[0].data.columns)}\n'
@@ -163,9 +175,11 @@ class DataSet:
 
     def __len__(self):
         """Get the number of dataitems in the ds."""
+        self._update_data_items()
         if len(self._info_table) != len(self.data_items):
             raise ValueError('Length of info table and datamap are different.')
         return len(self._info_table)
 
     def __hash__(self):
+        self._update_data_items()
         return hash(tuple(map(hash, self.data_items)))

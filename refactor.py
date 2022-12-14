@@ -14,11 +14,10 @@ def swap_dataset_inputs(path: str):
         if 'DataSet(' in line:
             data = line.split('DataSet(')[1].split(',')[0]
             info = line.split('DataSet(')[1].split(', ')[1].split(')')[0]
-            print(info)
             if info.startswith("'data"):
-                pass
+                print(info)
             else:
-                lines[i] = line.replace(f'DataSet({data}, {info})', f'DataSet({info}, {data})')
+                lines[i] = line.replace(f'DataSet({data}, {info}', f'DataSet({info}, {data}')
                 print(f'Line {i} changed from {line} to {lines[i]}')
         if 'write_output(' in line:
             data = line.split('write_output(')[1].split(',')[0]
@@ -34,10 +33,19 @@ def swap_dataset_inputs(path: str):
         f.writelines(lines)
 
 
+def command_line_main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Refactor python file to swap data and info arguments.')
+    parser.add_argument("file_path", help="Path to the file to refactor.")
+    args = parser.parse_args()
+    swap_dataset_inputs(args.file_path)
+
+
 def main():
     """Run the main function."""
-    swap_dataset_inputs('example/02 processing.ipynb')
+    swap_dataset_inputs('tensile study/03 modelling.ipynb')
 
 
 if __name__ == '__main__':
-    main()
+    command_line_main()
+    # main()

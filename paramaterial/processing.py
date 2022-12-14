@@ -1,6 +1,7 @@
 """Module with functions for processing materials test data. This includes functionality for finding properties
 like yield strength Young's modulus from stress-strain curves, as well as post-processing functions for cleaning
 and correcting experimental measurements."""
+from typing import Tuple
 
 import numpy as np
 
@@ -143,9 +144,9 @@ def find_fracture_point(di: DataItem, strain_key: str = 'Strain', stress_key: st
     return di
 
 
-def find_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
-                     flow_strain_key: str = 'flow_strain', flow_stress_key: str = 'flow_stress_MPa',
-                     flow_strain: float|None = None) -> DataItem:
+def find_flow_stress_values(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
+                            temperature_key: str = None, rate_key: str = None,
+                            flow_strain: float|Tuple[float, float] = None) -> DataItem:
     """Find the flow stress of a stress-strain curve, defined as the point at which the stress is maximum,
     or as the point at a specified strain.
 
@@ -160,14 +161,44 @@ def find_flow_stress(di: DataItem, strain_key: str = 'Strain', stress_key: str =
     Returns: DataItem with flow stress added to info.
     """
     if flow_strain is None:
-        idx_max = di.data[stress_key].idxmax()
-        di.info[f'{flow_strain_key}'] = di.data[strain_key][idx_max]
-        di.info[f'{flow_stress_key}'] = di.data[stress_key][idx_max]
-    else:
-        di.info[f'{flow_strain_key}'] = flow_strain
-        di.info[f'{flow_stress_key}'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
+        flow_strain = di.data[strain_key].max()
+    if type(flow_strain) is float:
+        di.info[f'flow_{strain_key}'] = flow_strain
+        di.info[f'flow_{stress_key}'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
+        if temperature_key is not None:
+            di.info[f'flow_{temperature_key}'] = di.data[temperature_key][di.data[strain_key] <= flow_strain].max()
+        if rate_key is not None:
+            di.info[f'flow_{rate_key}'] = di.data[rate_key][di.data[strain_key] <= flow_strain].max()
+    elif type(flow_strain) is tuple:
+        # average the flow stress over a range of strains
+        di.info[f'flow_{strain_key}'] = np.mean(flow_strain)
+        di.info[f'flow_{stress_key}'] = di.data[stress_key][
+            (di.data[strain_key] >= flow_strain[0])&(di.data[strain_key] <= flow_strain[1])].mean()
+        if temperature_key is not None:
+            di.info[f'flow_{temperature_key}'] = di.data[temperature_key][
+                (di.data[strain_key] >= flow_strain[0])&(di.data[strain_key] <= flow_strain[1])].mean()
+        if rate_key is not None:
+            di.info[f'flow_{rate_key}'] = di.data[rate_key][
+                (di.data[strain_key] >= flow_strain[0])&(di.data[strain_key] <= flow_strain[1])].mean()
     return di
 
+
+def calculate_strain_rate(di: DataItem, strain_key: str = 'Strain', time_key: str = 'Time_s',
+                          strain_rate_key: str = 'Strain_Rate') -> DataItem:
+    """Calculate the strain rate of a stress-strain curve.
+
+    Args:
+        di: DataItem with stress-strain curve
+        strain_key: Key for strain data
+        time_key: Key for time data
+        strain_rate_key: Key for strain rate data
+
+    Returns: DataItem with strain rate added to data.
+    """
+    gradient = np.gradient(di.data[strain_key], di.data[time_key])
+    di.data[strain_rate_key] = gradient
+    di.data[f'Smoothed_{strain_rate_key}'] = np.convolve(gradient, np.ones(5)/5, mode='same')
+    return di
 
 
 def correct_foot(di: DataItem):
@@ -210,7 +241,17 @@ def correct_friction_UC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0', D
 def correct_friction_PSC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0',
                          hf_key: str = 'h_f', b0_key: str = 'b_0', bf_key: str = 'b_f',
                          w_key: str = 'w', spread_exponent_key: str = 'spread_exponent',
-                         disp_key: str = 'Displacement_mm', force_key: str = 'Force_kN') -> DataItem:
+                         disp_key: str = 'Displacement_mm', force_key: str = 'Force_kN',
+                         stress_key: str = 'Stress_MPa') -> DataItem:
+    # store uncorrected stress
+    di.data[f'Uncorrected_{stress_key}'] = di.data[stress_key]
+
+    # calculate final height if not in info
+    try:
+        di.info[hf_key]
+    except KeyError:
+        di.info[hf_key] = di.info[h0_key] - di.data[disp_key].max()
+
     # get info
     mu = di.info[mu_key]  # friction coefficient
     h_0 = di.info[h0_key]  # initial height in normal direction
@@ -234,7 +275,8 @@ def correct_friction_PSC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0',
     di.data['Equivalent_Strain'] = eps_bar
 
     # calculate spread factor
-    f = -eps_bar/eps_3
+    f = 1 + eps_bar/eps_3
+    di.data['Spread_Factor'] = f
 
     # calculate average pressure
     P = di.data[force_key]*1000/(b*w)  # pressure (MPa)
@@ -242,21 +284,27 @@ def correct_friction_PSC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0',
 
     # calculate shear yield stress
     z_0 = (h/(2*mu))*np.log(1/(2*mu))  # sticking-sliding transition distance from centre (mm)
-    if 2*z_0 > w:  # transition distance is greater than the width, full sliding
-        k = P/2*((2*h**2/mu**2 + (b - w)*h/mu)*(np.exp(mu*w/h) - 1)/b*w - 2*h/mu*b)  # shear yield stress (MPa)
-    elif w > 2*z_0 > 0:  # transition distance is less than the width, partial sliding
-        k = P/2*((w/2 - z_0)/mu*w + (w/2 - z_0)**2/h*w + h*(1/2*mu - 1)/mu*w + (z_0**2 - 4*z_0**3/3*w - w**2/12)/h*b
-                 + (2*z_0**2/w - z_0 - 2*h*z_0/mu*w + h/2*mu - h + h**2/w*mu**2 - 2*h**2/mu*w)/mu*b)
-    elif 0 > 2*z_0:  # transition distance is less than zero, full sticking
-        k = P/2*(1 + w/4*h - w**2/12*h*b)
-    else:
-        raise ValueError('Invalid value for z_0, the friction transition distance.'
-                         '\nConsider changing the sign of the displacement and force data.')
+    k = np.zeros(len(di.data))  # shear yield stress (MPa)
+    for i in range(len(di.data)):
+        if i < 50:
+            continue
+        if 2*z_0[i] > w:  # transition distance is greater than the width, full sliding
+            k[i] = P[i]/2*((2*h[i]**2/mu**2 + (b[i] - w)*h[i]/mu)*(np.exp(mu*w/h[i]) - 1)/b[i]*w - 2*h[i]/mu*b[i])
+        elif w > 2*z_0[i] > 0:  # transition distance is less than the width, partial sliding
+            k[i] = P[i]/2*((w/2 - z_0[i])/mu*w + (w/2 - z_0[i])**2/h[i]*w + h[i]*(1/2*mu - 1)/mu*w
+                           + (z_0[i]**2 - 4*z_0[i]**3/3*w - w**2/12)/h[i]*b
+                           + (2*z_0[i]**2/w - z_0[i] - 2*h*z_0[i]/mu*w
+                              + h[i]/2*mu - h[i] + h[i]**2/w*mu**2 - 2*h[i]**2/mu*w)/mu*b[i])
+        elif 0 > 2*z_0[i]:  # transition distance is less than zero, full sticking
+            k[i] = P[i]/2*(1 + w/4*h[i] - w**2/12*h[i]*b[i])
+        else:
+            raise ValueError('Invalid value for z_0, the friction transition distance.'
+                             '\nConsider changing the sign of the displacement and force data.')
 
     di.data['Shear_Yield_Stress_MPa'] = k  # shear yield stress (MPa)
 
     # calculate equivalent flow stress
-    di.data['Equivalent_Stress_MPa'] = 2*k/f  # corrected stress
+    di.data[stress_key] = 2*k/f  # corrected stress
 
     return di
 

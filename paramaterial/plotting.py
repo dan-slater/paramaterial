@@ -5,6 +5,7 @@ from typing import Optional, Tuple, List, Any, Dict, Callable
 
 import matplotlib.patches as mpatches
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
@@ -18,10 +19,10 @@ def configure_plt_formatting():
     mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
     mpl.rcParams["font.family"] = "Times New Roman"
     plt.rc('font', size=11)
-    plt.rc('axes', titlesize=11, labelsize=11)
-    plt.rc('xtick', labelsize=9)
-    plt.rc('ytick', labelsize=9)
-    plt.rc('legend', fontsize=9)
+    plt.rc('axes', titlesize=12, labelsize=11)
+    plt.rc('xtick', labelsize=10)
+    plt.rc('ytick', labelsize=10)
+    plt.rc('legend', fontsize=11)
     plt.rc('figure', titlesize=13)
     mpl.rcParams.update({"axes.grid": True})
 
@@ -46,7 +47,7 @@ class Styler:
     cmap: str = 'plasma'
     handles: Optional[List[mpatches.Patch]] = None
     linestyles: List[str] = field(default_factory=lambda: ['-', '--', ':', '-.'])
-    markers: List[str] = field(default_factory=lambda: ['o', 's', 'v', '^'])
+    markers: List[str] = field(default_factory=lambda: ['s', 'v', 'D', 'p', 'X', 'o', 'd', 'h', 'H', '8', 'P', 'x'])
     color_dict: Optional[Dict[str|int|float, str]] = None
     linestyle_dict: Optional[Dict[str|int|float, str]] = None
     marker_dict: Optional[Dict[str|int|float, str]] = None
@@ -124,21 +125,21 @@ class Styler:
             return handles
 
         if self.color_by_label is not None:
-            handles.append(mpatches.Patch(label=self.color_by_label, alpha=0))
+            handles.append(mpatches.Patch(label=self.color_by_label.title(), alpha=0))
 
         if self.color_by is not None:
             for color_val in ds.info_table[self.color_by].unique():
                 handles.append(Line2D([], [], label=color_val, color=self.color_dict[color_val], marker='o', ls=''))
 
         if self.linestyle_by_label is not None:
-            handles.append(mpatches.Patch(label='\n' + self.linestyle_by_label, alpha=0))
+            handles.append(mpatches.Patch(label='\n' + self.linestyle_by_label.title(), alpha=0))
 
         if self.linestyle_by is not None:
             for ls_val in ds.info_table[self.linestyle_by].unique():
                 handles.append(Line2D([], [], label=ls_val, ls=self.linestyle_dict[ls_val], c='k', marker=''))
 
         if self.marker_by_label is not None:
-            handles.append(mpatches.Patch(label='\n' + self.marker_by_label, alpha=0))
+            handles.append(mpatches.Patch(label='\n' + self.marker_by_label.title(), alpha=0))
 
         if self.marker_by is not None:
             for marker_val in ds.info_table[self.marker_by].unique():
@@ -203,6 +204,55 @@ def dataset_plot(
     return ax
 
 
+def info_plot(
+        ds: DataSet,
+        x: str,
+        y: str,
+        styler: Optional[Styler] = None,
+        ax: Optional[plt.Axes] = None,
+        plot_legend: bool = True,
+        **kwargs
+) -> plt.Axes:
+    """Make a single combined plot from the info of every dataitem in the dataset using pandas.DataFrame.plot.
+
+    Args:
+        ds: The dataset to plot.
+        x: The column to plot on the x-axis.
+        y: The column to plot on the y-axis.
+        styler: The styler to use for the plot.
+        ax: The axis to plot on.
+        plot_legend: Whether to plot the legend.
+        **kwargs: Additional keyword arguments to pass to the pandas.DataFrame.plot function.
+
+    Returns: The axis the plot was made on.
+    """
+    if ax is None:
+        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
+    kwargs['ax'] = ax
+
+    if ax.get_legend() is not None and plot_legend:
+        ax.get_legend().remove()
+
+    kwargs = {**styler.plot_kwargs, **kwargs}
+
+    # plot the dataitems
+    for di in ds:
+        # plot the curve
+        df = pd.DataFrame([[di.info[x], di.info[y]]], columns=[x, y])
+        ax = df.plot(x=x,y=y,**styler.curve_formatters(di), **kwargs)
+        # ax = di.info.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
+
+    # add the legend
+    handles = styler.legend_handles(ds)
+    if len(handles) > 0 and plot_legend:
+        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
+                  handletextpad=0.05)  # , labelspacing=0.1)
+        ax.get_legend().set_zorder(2000)
+    # colorbar
+
+    return ax
+
+
 def dataset_subplots(
         ds: DataSet,
         shape: Tuple[int, int],
@@ -259,7 +309,7 @@ def dataset_subplots(
     if row_titles is not None:
         for ax, row_title in zip(axs[:, 0], row_titles):
             ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
-                        textcoords='offset points', ha='right', va='center', rotation=90)
+                        textcoords='offset points', ha='right', va='center', rotation=90, fontsize=12)
 
     if col_titles is not None:
         for ax, column_title in zip(axs[0, :], col_titles):
@@ -291,7 +341,7 @@ def dataset_subplots(
             cbar.set_label(styler.cbar_label)
 
     if subplot_legend:
-        plt.subplots_adjust(right=0.85)
+        plt.subplots_adjust(right=0.835)
         axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', frameon=True,
                                         bbox_to_anchor=(0.925, 0.5), markerfirst=False, handletextpad=0.05)
 
