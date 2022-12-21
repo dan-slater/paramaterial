@@ -15,15 +15,10 @@ from tqdm import tqdm
 from paramaterial.plug import DataItem, DataSet
 
 
-
-
-
-def make_representative_data(
-        ds: DataSet, data_dir: str, info_path: str,
-        repr_col: str, repr_by_cols: List[str],
-        interp_by: str, interp_res: int = 200, min_interp_val: float = 0., interp_end: str = 'max_all',
-        group_info_cols: List[str]|None = None
-):
+def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repr_col: str, repr_by_cols: List[str],
+                             interp_by: str, interp_res: int = 200, min_interp_val: float = 0.,
+                             interp_end: str = 'max_all',
+                             group_info_cols: List[str]|None = None):
     """Make representative curves of the ds and save them to a directory.
 
     Args:
@@ -74,8 +69,8 @@ def make_representative_data(
         # add means of group info columns to repr_info_table
         if group_info_cols is not None:
             for col in group_info_cols:
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'mean_' + col] \
-                    = repr_subset.info_table[col].mean()
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'mean_' + col] = repr_subset.info_table[
+                    col].mean()
 
         # find minimum of maximum interp_by vals in subset
         if interp_end == 'max_all':
@@ -115,8 +110,6 @@ def make_representative_data(
         repr_data[f'q1_{repr_col}'] = interp_data.quantile(0.25, axis=1)
         repr_data[f'q3_{repr_col}'] = interp_data.quantile(0.75, axis=1)
 
-        # make representative info from subset info
-
         # write the representative data and info
         repr_data.to_csv(os.path.join(data_dir, f'{repr_id}.csv'), index=False)
         repr_info_table.to_excel(info_path, index=False)
@@ -145,22 +138,15 @@ class ModelItem:
         """Return the test_id of the corresponding DataItem."""
         return self.info['test_id']
 
-    def write_data_to_csv(self, output_dir: str):
-        """Write the generated data to a csv file."""
-        output_path = output_dir + '/' + self.model_id + '.csv'
-        self.data.to_csv(output_path, index=False)
-        return self
-
     @staticmethod
-    def _from_results_dict(results_dict: Dict[str, Any]):
+    def from_results_dict(results_dict: Dict[str, Any]):
         model_id = results_dict['model_id']
         info = pd.Series(results_dict['info'])
         params = results_dict['params']
         param_names = results_dict['param_names']
         variables = results_dict['variables']
         variable_names = results_dict['variable_names']
-        info = pd.concat([info,
-                          pd.Series(variables, index=variable_names, dtype=float),
+        info = pd.concat([info, pd.Series(variables, index=variable_names, dtype=float),
                           pd.Series(params, index=param_names, dtype=float)])
         info['model_id'] = model_id
         model_func = results_dict['model_func']
@@ -170,9 +156,16 @@ class ModelItem:
         info['x_min'] = x_min
         info['x_max'] = x_max
         input_params = np.hstack([variables, params]) if variable_names is not None else params
+        # drop duplicate columns from info
+        info = info.loc[~info.index.duplicated(keep='first')]
         return ModelItem(model_id, info, input_params, model_func, x_min, x_max)
 
-    def _read_row_from_params_table(self, params_table: pd.DataFrame, model_id_key: str):
+    def read_info_from(self, info_table: pd.DataFrame, test_id_key: str):
+        self.info = info_table.loc[info_table[test_id_key] == self.test_id].squeeze()
+        self.info.name = None
+        return self
+
+    def read_row_from_params_table(self, params_table: pd.DataFrame, model_id_key: str):
         self.params = params_table.loc[params_table[model_id_key] == self.model_id].squeeze()
         self.params.name = None
         return self
@@ -181,18 +174,12 @@ class ModelItem:
 class ModelSet:
     """Class that acts as model DataSet."""
 
-    def __init__(
-            self,
-            model_func: Callable[[np.ndarray, List[float]], np.ndarray],
-            param_names: List[str],
-            var_names: List[str]|None = None,
-            bounds: List[Tuple[float, float]]|None = None,
-            initial_guess: np.ndarray|None = None,
-            scipy_func: str = 'minimize',
-            scipy_kwargs: Dict[str, Any]|None = None,
-    ):
+    def __init__(self, model_func: Callable[[np.ndarray, List[float]], np.ndarray], param_names: List[str],
+                 var_names: List[str]|None = None, bounds: List[Tuple[float, float]]|None = None,
+                 initial_guess: np.ndarray|None = None, scipy_func: str = 'minimize',
+                 scipy_kwargs: Dict[str, Any]|None = None, ):
         self.model_func = model_func
-        self.params_table = pd.DataFrame(columns=['model id'] + param_names)
+        self.params_table = pd.DataFrame(columns=['model_id'] + param_names)
         self.results_dict_list = []
         self.param_names = param_names
         self.var_names = var_names
@@ -204,18 +191,11 @@ class ModelSet:
         self.fitted_ds: DataSet|None = None
         self.x_key: str|None = None
         self.y_key: str|None = None
-        self.model_map: map|None = None
-
-    @property
-    def model_items(self) -> List[ModelItem]:
-        """Return a list of ModelItem objects."""
-        return [mi for mi in copy.deepcopy(self.model_map)]
+        self.model_items: List|None = None
 
     @staticmethod
-    def from_info_table(info_table: pd.DataFrame,
-                        model_func: Callable[[np.ndarray, List[float]], np.ndarray],
-                        param_names: List[str],
-                        model_id_key: str = 'model_id') -> 'ModelSet':
+    def from_info_table(info_table: pd.DataFrame, model_func: Callable[[np.ndarray, List[float]], np.ndarray],
+                        param_names: List[str], model_id_key: str = 'model_id') -> 'ModelSet':
         """Create a ModelSet from an info table."""
         model_ids = info_table[model_id_key].values
         info_rows = [info_table.drop(columns=param_names).iloc[i] for i in range(len(info_table))]
@@ -225,7 +205,8 @@ class ModelSet:
         x_maxs = [info_table['x_max'].iloc[i] for i in range(len(info_table))]
         resolutions = [info_table['resolution'].iloc[i] for i in range(len(info_table))]
         ms = ModelSet(model_func, param_names)
-        ms.model_map = map(ModelItem, model_ids, info_rows, params_lists, model_funcs, x_mins, x_maxs, resolutions)
+        ms.model_items = list(
+            map(ModelItem, model_ids, info_rows, params_lists, model_funcs, x_mins, x_maxs, resolutions))
         return ms
 
     def fit_to(self, ds: DataSet, x_key: str, y_key: str, sample_size: int = 50) -> None:
@@ -245,7 +226,7 @@ class ModelSet:
         self.sample_size = sample_size
         for _ in tqdm(map(self._fit_item, ds.data_items), unit='fits', leave=False):
             pass
-        self.model_map = map(ModelItem._from_results_dict, self.results_dict_list)
+        self.model_items = list(map(ModelItem.from_results_dict, self.results_dict_list))
 
     def predict(self, resolution: int = 50) -> DataSet:
         """Return a ds with generated data with optimised model parameters added to the info table.
@@ -257,13 +238,19 @@ class ModelSet:
         """
         predict_ds = DataSet()
 
+        # predict_ds.test_id_key = 'model_id'
+
         def update_resolution(mi: ModelItem):
             mi.resolution = resolution
             mi.info['resolution'] = resolution
             return mi
 
-        self.model_map = map(lambda mi: update_resolution(mi), self.model_map)
-        predict_ds.data_map = copy.deepcopy(self.model_map)
+        self.model_items = list(map(lambda mi: update_resolution(mi), self.model_items))
+        predict_ds.data_items = copy.deepcopy(self.model_items)
+        for di in predict_ds.data_items:
+            di.info['test_id'] = di.info['model_id']
+        predict_ds.info_table = pd.DataFrame([di.info for di in predict_ds.data_items])
+
         return predict_ds
 
     def _objective_function(self, params: List[float], di: DataItem) -> float:
@@ -284,68 +271,29 @@ class ModelSet:
 
     def _fit_item(self, di: DataItem) -> None:
         if self.scipy_func == 'minimize':
-            result = op.minimize(
-                self._objective_function,
-                self.initial_guess,
-                args=(di,),
-                bounds=self.bounds,
-                **self.scipy_kwargs
-            )
+            result = op.minimize(self._objective_function, self.initial_guess, args=(di,), bounds=self.bounds,
+                                 **self.scipy_kwargs)
         elif self.scipy_func == 'differential_evolution':
-            result = op.differential_evolution(
-                self._objective_function,
-                self.bounds,
-                args=(di,),
-                **self.scipy_kwargs
-            )
+            result = op.differential_evolution(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
         elif self.scipy_func == 'basinhopping':
-            result = op.basinhopping(
-                self._objective_function,
-                self.initial_guess,
-                minimizer_kwargs=dict(
-                    args=(di,),
-                    bounds=self.bounds,
-                    **self.scipy_kwargs
-                )
-            )
+            result = op.basinhopping(self._objective_function, self.initial_guess,
+                                     minimizer_kwargs=dict(args=(di,), bounds=self.bounds, **self.scipy_kwargs))
         elif self.scipy_func == 'dual_annealing':
-            result = op.dual_annealing(
-                self._objective_function,
-                self.bounds,
-                args=(di,),
-                **self.scipy_kwargs
-            )
+            result = op.dual_annealing(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
         elif self.scipy_func == 'shgo':
-            result = op.shgo(
-                self._objective_function,
-                self.bounds,
-                args=(di,),
-                **self.scipy_kwargs
-            )
+            result = op.shgo(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
         elif self.scipy_func == 'brute':
-            result = op.brute(
-                self._objective_function,
-                self.bounds,
-                args=(di,),
-                **self.scipy_kwargs
-            )
+            result = op.brute(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
         else:
-            raise ValueError(
-                f'Invalid scipy_func: {self.scipy_func}\nMust be one of:'
-                f' minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute')
+            raise ValueError(f'Invalid scipy_func: {self.scipy_func}\nMust be one of:'
+                             f' minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute')
         model_id = 'model_' + str(di.info[0])
-        results_dict = {
-            'model_id': model_id,
-            'info': di.info,
-            'params': result.x,
-            'param_names': self.param_names,
-            'variables': [di.info[var_name] for var_name in self.var_names] if self.var_names is not None else None,
-            'variable_names': self.var_names,
-            'model_func': self.model_func,
-            'x_min': di.data[self.x_key].min(),
-            'x_max': di.data[self.x_key].max(),
-        }
+        results_dict = {'model_id': model_id, 'info': di.info, 'params': result.x, 'param_names': self.param_names,
+                        'variables': [di.info[var_name] for var_name in
+                                      self.var_names] if self.var_names is not None else None,
+                        'variable_names': self.var_names, 'model_func': self.model_func,
+                        'x_min': di.data[self.x_key].min(),
+                        'x_max': di.data[self.x_key].max(), }
         self.results_dict_list.append(results_dict)
-        self.params_table = pd.concat([self.params_table,
-                                       pd.DataFrame([[model_id] + list(result.x)],
-                                                    columns=['model id'] + self.param_names)])
+        self.params_table = pd.concat(
+            [self.params_table, pd.DataFrame([[model_id] + list(result.x)], columns=['model_id'] + self.param_names)])
