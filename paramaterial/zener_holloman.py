@@ -24,18 +24,31 @@ def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', Z
         The DataSet with the Zener-Holloman parameter and regression parameters added to the info table.
     """
     assert flow_stress_key in ds.info_table.columns, f'flow_stress_key {flow_stress_key} not in info table'
+
+    # make dataset filters for unique combinations of group_by keys
     if group_by is not None:
         if isinstance(group_by, str):
             group_by = [group_by]
+        subset_filters = []
+        value_lists = [ds.info_table[col].unique() for col in group_by]
+        for i in range(len(value_lists[0])):
+            subset_filters.append({group_by[0]: [value_lists[0][i]]})
+        for i in range(1, len(group_by)):
+            new_filters = []
+            for fltr in subset_filters:
+                for value in value_lists[i]:
+                    new_filter = fltr.copy()
+                    new_filter[group_by[i]] = [value]
+                    new_filters.append(new_filter)
+            subset_filters = new_filters
         groups = []
-        for group_by_val in group_by:
-            for group_key in ds.info_table[group_by_val].unique():
-                group_ds = ds.subset({group_by_val: [group_key]})
-                group_ds = apply_ZH_regression(group_ds, flow_stress_key=flow_stress_key)
-                group_ds.info_table['ZH_fit_group'] = group_key
-                groups.append(group_ds)
+        for fltr in subset_filters:
+            group_ds = ds.subset(fltr)
+            groups.append(group_ds)
     else:
         groups = [ds]
+
+    # apply regression to each group
     for group_ds in groups:
         info_table = group_ds.info_table.copy()
         info_table['lnZ'] = np.log(info_table[ZH_key].values.astype(np.float64))
@@ -50,6 +63,7 @@ def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', Z
         info_table['ZH_fit_error'] = info_table['ZH_fit'] - info_table[ZH_key]
         info_table['ZH_fit_error_percent'] = info_table['ZH_fit_error']/info_table[ZH_key]
         group_ds.info_table = info_table
+
     group_info_tables = [group_ds.info_table for group_ds in groups]
     info_table = pd.concat(group_info_tables)
     ds.info_table = info_table
@@ -83,10 +97,12 @@ def calculate_ZH_parameter(di: DataItem, temperature_key: str = 'temperature_K',
 
 
 def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', rate_key: str = 'rate_s-1',
-        temperature_key: str = 'temperature_K', calculate: bool = True, figsize: Tuple[float, float] = (6, 4),
-        ax: plt.Axes = None, cmap: str = 'plasma', styler: Styler = None, plot_legend: bool = True,
-        group_by: str|List[str] = None, color_by: str = None, marker_by: str = None, linestyle_by: str = None,
-        scatter_kwargs: Dict[str, Any] = None, fit_kwargs: Dict[str, Any] = None, ):
+                       temperature_key: str = 'temperature_K', calculate: bool = True,
+                       figsize: Tuple[float, float] = (6, 4),
+                       ax: plt.Axes = None, cmap: str = 'plasma', styler: Styler = None, plot_legend: bool = True,
+                       group_by: str|List[str] = None, color_by: str = None, marker_by: str = None,
+                       linestyle_by: str = None,
+                       scatter_kwargs: Dict[str, Any] = None, fit_kwargs: Dict[str, Any] = None, ):
     """Plot the Zener-Holloman regression of the flow stress vs. temperature."""
     configure_plt_formatting()
     if ax is None:
@@ -94,8 +110,8 @@ def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ra
 
     if styler is None:
         styler = Styler(color_by=color_by, color_by_label=color_by, cmap=cmap, marker_by=marker_by,
-                        marker_by_label=marker_by, linestyle_by=linestyle_by, linestyle_by_label=linestyle_by).style_to(
-            ds)
+                        marker_by_label=marker_by, linestyle_by=linestyle_by, linestyle_by_label=linestyle_by
+                        ).style_to(ds)
 
     # Calculate ZH parameter
     if calculate:
@@ -103,12 +119,11 @@ def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ra
 
     # make a scatter plot of lnZ vs flow stress using the styler
     for di in ds:
-        info = di.info
         updated_scatter_kwargs = styler.curve_formatters(di)
         updated_scatter_kwargs.update(scatter_kwargs) if scatter_kwargs is not None else None
         updated_scatter_kwargs.pop('linestyle') if 'linestyle' in updated_scatter_kwargs else None
         updated_scatter_kwargs.update({'color': 'k'}) if color_by is None else None
-        ax.scatter(np.log(info['ZH_parameter']), info[flow_stress_key], **updated_scatter_kwargs)
+        ax.scatter(np.log(di.info['ZH_parameter']), di.info[flow_stress_key], **updated_scatter_kwargs)
 
     ax.set_prop_cycle(None)  # reset ax color cycle
 
@@ -159,7 +174,10 @@ def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ra
     ax.set_title('Zener-Holloman Regression Plot')
 
     # add annotation to bottom right of axes with the regression equation
-    heights = reversed([0.05 + 0.1*i for i in range(len(groups))])
+    if figsize == (6, 4):
+        heights = reversed([0.05 + 0.1*i for i in range(len(groups))])
+    else:
+        heights = reversed([0.05 + 0.07*i for i in range(len(groups))])
     for group_ds, height in zip(groups, heights):
         di = group_ds[0]
         color = styler.color_dict[di.info[color_by]] if color_by is not None else 'k'

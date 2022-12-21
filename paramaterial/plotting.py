@@ -22,7 +22,7 @@ def configure_plt_formatting():
     plt.rc('axes', titlesize=11, labelsize=11)
     plt.rc('xtick', labelsize=10)
     plt.rc('ytick', labelsize=10)
-    plt.rc('legend', fontsize=11)
+    plt.rc('legend', fontsize=10)
     plt.rc('figure', titlesize=11)
     mpl.rcParams.update({"axes.grid": True})
 
