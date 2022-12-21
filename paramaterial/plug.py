@@ -14,174 +14,172 @@ class DataItem:
     info: pd.Series
     data: pd.DataFrame
 
-    @staticmethod
-    def read_data_from_csv(file_path: str):
-        test_id = os.path.split(file_path)[1].split('.')[0]
-        data = pd.read_csv(file_path)
-        return DataItem(test_id, pd.Series(dtype=object), data)
-
-    def read_info_from_table(self, info_table: pd.DataFrame, test_id_key: str):
+    def read_info_from(self, info_table: pd.DataFrame, test_id_key: str):
         self.info = info_table.loc[info_table[test_id_key] == self.test_id].squeeze()
         self.info.name = None
         return self
 
-    def write_data_to_csv(self, output_dir: str):
-        output_path = output_dir + '/' + self.test_id + '.csv'
-        self.data.to_csv(output_path, index=False)
-        return self
-
 
 class DataSet:
-    def __init__(self, data_dir: str, info_path: str, test_id_key: str = 'test_id'):
+    def __init__(self, info_path: str|None = None, data_dir: str|None = None, test_id_key: str = 'test_id'):
         """Initialize the ds.
         Args:
-            data_dir: The directory containing the data.
-            info_path: The path to the info table.
+            info_path: The path to the info table file.
+            data_dir: The directory containing the data files.
+            test_id_key: The column name in the info table that contains the test ids.
         """
-        self.data_dir = data_dir
+
+        # store initialization parameters
         self.info_path = info_path
+        self.data_dir = data_dir
         self.test_id_key = test_id_key
+
+        # if empty inputs, create empty ds
+        if info_path is None and data_dir is None:
+            self._info_table = pd.DataFrame()
+            self.data_items = []
+            return
+
+        # read the info table
         if self.info_path.endswith('.xlsx'):
             self._info_table = pd.read_excel(self.info_path)
         elif self.info_path.endswith('.csv'):
             self._info_table = pd.read_csv(self.info_path)
         else:
             raise ValueError(f'Info table must be a csv or xlsx file path. Got {self.info_path}')
-        self.file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self._info_table[self.test_id_key]]
-        self.data_map = self.data_map = map(DataItem.read_data_from_csv, self.file_paths)
-        self.data_map = map(lambda di: di.read_info_from_table(self._info_table, self.test_id_key), self.data_map)
-        self.applied_funcs = []
-        # check that the data map is the same length as the info table
-        assert len(list(self.data_items)) == len(self.info_table)
-        # check that the test_ids are the same
-        assert all([di.test_id == test_id for di, test_id in zip(self.data_items, self.info_table[self.test_id_key])])
-        # check that the info table is the same
-        assert all([di.info.equals(self.info_table.loc[self.info_table[self.test_id_key] == di.test_id].squeeze())
-                    for di in self.data_items])
-        # check that info table columns are valid, return a list of invalid columns
-        assert all([not any([c in col for c in [' ', '.']]) for col in self.info_table.columns]), \
-            ValueError(f'Info table columns cannot contain spaces or full stops. Got '
-                       f'{[col for col in self.info_table.columns if any([c in col for c in [" ", "."]])]}')
 
-    def update_data_map(self) -> None:
-        self.file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in self._info_table[self.test_id_key]]
-        self.data_map = map(DataItem.read_data_from_csv, self.file_paths)
-        self.data_map = map(lambda di: di.read_info_from_table(self._info_table, self.test_id_key), self.data_map)
-        # map the applied functions to the new data map
-        for func in self.applied_funcs:
-            self.data_map = map(func, self.data_map)
+        # read the data files to a list of data-items
+        test_ids = self._info_table[test_id_key].tolist()
+        file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in test_ids]
+        self.data_items = [DataItem(test_id, pd.Series(dtype=object), pd.read_csv(file_path)) for test_id, file_path in
+                           zip(test_ids, file_paths)]
+        self.data_items = list(map(lambda di: di.read_info_from(self._info_table, self.test_id_key), self.data_items))
+
+        # run checks
+        assert len(list(self.data_items)) == len(self._info_table)
+        assert all([di.test_id == test_id for di, test_id in zip(self.data_items, self._info_table[self.test_id_key])])
+        assert all(
+            [di.info.equals(self._info_table.loc[self._info_table[self.test_id_key] == di.test_id].squeeze()) for di in
+             self.data_items])
 
     @property
     def info_table(self) -> pd.DataFrame:
-        """Assemble the info table from the dataitems."""
+        """Return the info table."""
         return self._info_table
 
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
-        """Distribute the info table in the dataitems."""
         self._info_table = info_table
-        self.update_data_map()
+        self._update_data_items()
 
-    @property
-    def data_items(self) -> List[DataItem]:
-        return list(copy.deepcopy(self.data_map))
+    def _update_data_items(self):
+        # update the list of dataitems
+        new_test_ids = self._info_table[self.test_id_key].tolist()
+        old_test_ids = [di.test_id for di in self.data_items]
+        self.data_items = [self.data_items[old_test_ids.index(new_test_id)] for new_test_id in new_test_ids]
+        # update the info in the data items
+        self.data_items = list(map(lambda di: di.read_info_from(self._info_table, self.test_id_key),
+                                   self.data_items))
 
     def apply(self, func: Callable[[DataItem, ...], DataItem], **kwargs) -> 'DataSet':
         """Apply a function to every dataitem in a copy of the ds and return the copy."""
+        self._update_data_items()
 
         def wrapped_func(di: DataItem):
             di = func(di, **kwargs)
             di.data.reset_index(drop=True, inplace=True)
-            # assert self.test_id_key in di.info.index
+            assert self.test_id_key in di.info.index
             return di
 
         new_ds = self.copy()
-        new_ds.applied_funcs.append(wrapped_func)
-        # read info table from the dataitems
-        b = self.info_table
-        a = pd.concat([di.info for di in new_ds.data_items], axis=1).T.reset_index(drop=True)
-        new_ds.info_table = pd.concat([di.info for di in new_ds.data_items], axis=1).T.reset_index(drop=True)
+        new_ds.data_items = list(map(wrapped_func, new_ds.data_items))
+        new_ds.info_table = pd.DataFrame([di.info for di in new_ds.data_items])
         return new_ds
 
-    def write_output(self, data_dir: str, info_path: str) -> None:
+    def write_output(self, out_info_path: str, out_data_dir: str) -> None:
         """Execute the processing operations and write the output of the ds to a directory.
         Args:
-            data_dir: The directory to write the data to.
-            info_path: The path to write the info table to.
+            out_data_dir: The directory to write the data to.
+            out_info_path: The path to write the info table to.
         """
-        self.update_data_map()
         # make the output directory if it doesn't exist
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
-        # write the data files
-        for dataitem in self:
-            dataitem.write_data_to_csv(data_dir)
+        self._update_data_items()
+        if not os.path.exists(out_data_dir):
+            os.makedirs(out_data_dir)
         # write the info table
-        if info_path.endswith('.xlsx'):
-            self._info_table.to_excel(info_path, index=False)
-        elif info_path.endswith('.csv'):
-            self._info_table.to_csv(info_path, index=False)
+        if out_info_path.endswith('.xlsx'):
+            self._info_table.to_excel(out_info_path, index=False)
+        elif out_info_path.endswith('.csv'):
+            self._info_table.to_csv(out_info_path, index=False)
         else:
-            raise ValueError(f'Info table must be a csv or xlsx file. Got {info_path}')
+            raise ValueError(f'Info table must be a csv or xlsx file. Got {out_info_path}')
+        # write the data files
+        for di in self.data_items:
+            output_path = out_data_dir + '/' + di.test_id + '.csv'
+            di.data.to_csv(output_path, index=False)
 
-    def sort_by(self, column: str|List[str], ascending: bool = True) -> 'DataSet':
+    def sort_by(self, column: str | List[str], ascending: bool = True) -> 'DataSet':
         """Sort a copy of the ds by a column in the info table and return the copy."""
+        self._update_data_items()
         new_ds = self.copy()
-        new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending)
-        new_ds.update_data_map()
+        new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending).reset_index(drop=True)
         return new_ds
 
     def __iter__(self):
         """Iterate over the ds."""
-        for dataitem in tqdm(self.copy().data_map, unit='DataItems', leave=False):
+        self._update_data_items()
+        for dataitem in tqdm(self.copy().data_items, unit='DataItems', leave=False):
             yield dataitem
 
     def __getitem__(self, specifier: Union[int, str, slice, Dict[str, List[Any]]]) -> Union['DataSet', DataItem]:
         """Get a subset of the ds using a dictionary of column names and lists of values or using normal list
         indexing. """
+        self._update_data_items()
         if isinstance(specifier, int):
             return self.data_items[specifier]
         elif isinstance(specifier, str):
-            return self.data_items[self.info_table[self.test_id_key].tolist().index(specifier)]
+            return self.data_items[self._info_table[self.test_id_key].tolist().index(specifier)]
         elif isinstance(specifier, slice):
             new_ds = self.copy()
             new_ds.info_table = new_ds.info_table.iloc[specifier]
-            new_ds.update_data_map()
             return new_ds
         else:
             raise ValueError(f'Invalid ds[specifier] specifier type: {type(specifier)}')
 
-    def subset(self, filter_dict: Dict[str, List[Any]]) -> 'DataSet':
+    def subset(self, filter_dict: Dict[str, str|List[Any]]) -> 'DataSet':
+        self._update_data_items()
         new_ds = self.copy()
         for key, value in filter_dict.items():
-            if key not in self.info_table.columns:
+            if key not in new_ds.info_table.columns:
                 raise ValueError(f'Invalid filter key: {key}')
             if not isinstance(value, list):
                 filter_dict[key] = [value]
-            if len(key.split(' ')) > 1:
-                raise ValueError(f'Info table column names cannot contain spaces. Got {key}')
-        query_string = ' and '.join([f'{key} in {str(values)}' for key, values in filter_dict.items()])
+        query_string = ' and '.join([f"`{key}` in {str(values)}" for key, values in filter_dict.items()])
         try:
-            new_ds.info_table = self.info_table.query(query_string)
+            new_ds.info_table = self._info_table.query(query_string)
         except Exception as e:
             print(f'Error applying query "{query_string}" to info table: {e}')
         return new_ds
 
     def copy(self) -> 'DataSet':
         """Return a copy of the ds."""
+        self._update_data_items()
         return copy.deepcopy(self)
 
     def __repr__(self):
-        repr_string = f'DataSet with {len(self.info_table)} DataItems containing\n'
-        repr_string += f'\tinfo: columns -> {", ".join(self.info_table.columns)}\n'
+        self._update_data_items()
+        repr_string = f'DataSet with {len(self._info_table)} DataItems containing\n'
+        repr_string += f'\tinfo: columns -> {", ".join(self._info_table.columns)}\n'
         repr_string += f'\tdata: len = {len(self.data_items[0].data)}, columns -> {", ".join(self.data_items[0].data.columns)}\n'
         return repr_string
 
     def __len__(self):
         """Get the number of dataitems in the ds."""
-        if len(self.info_table) != len(self.data_items):
+        self._update_data_items()
+        if len(self._info_table) != len(self.data_items):
             raise ValueError('Length of info table and datamap are different.')
-        return len(self.info_table)
+        return len(self._info_table)
 
     def __hash__(self):
+        self._update_data_items()
         return hash(tuple(map(hash, self.data_items)))
