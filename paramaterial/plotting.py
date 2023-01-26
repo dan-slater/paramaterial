@@ -8,22 +8,22 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
+import matplotlib as mpl
 
 from paramaterial.plug import DataItem, DataSet
 
 
 def configure_plt_formatting():
-    import matplotlib as mpl
     plt.style.use('seaborn-dark')
     mpl.rcParams['text.usetex'] = False
     mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
     mpl.rcParams["font.family"] = "Times New Roman"
     plt.rc('font', size=11)
-    plt.rc('axes', titlesize=12, labelsize=11)
+    plt.rc('axes', titlesize=11, labelsize=11)
     plt.rc('xtick', labelsize=10)
     plt.rc('ytick', labelsize=10)
-    plt.rc('legend', fontsize=11)
-    plt.rc('figure', titlesize=13)
+    plt.rc('legend', fontsize=10)
+    plt.rc('figure', titlesize=11)
     mpl.rcParams.update({"axes.grid": True})
 
 
@@ -47,7 +47,7 @@ class Styler:
     cmap: str = 'plasma'
     handles: Optional[List[mpatches.Patch]] = None
     linestyles: List[str] = field(default_factory=lambda: ['-', '--', ':', '-.'])
-    markers: List[str] = field(default_factory=lambda: ['s', 'v', 'D', 'p', 'X', 'o', 'd', 'h', 'H', '8', 'P', 'x'])
+    markers: List[str] = field(default_factory=lambda: ['s', 'H', 'd', 'v', 'D', 'p', 'X', 'o', 'd', 'h', 'H', '8', 'P', 'x'])
     color_dict: Optional[Dict[str|int|float, str]] = None
     linestyle_dict: Optional[Dict[str|int|float, str]] = None
     marker_dict: Optional[Dict[str|int|float, str]] = None
@@ -56,6 +56,7 @@ class Styler:
 
     def __post_init__(self):
         self.plot_kwargs['legend'] = False
+        self.plot_kwargs.update({'markeredgecolor': 'white', 'markersize':8})
 
         # todo: use pandas in-built color bar
         # if self.cbar:

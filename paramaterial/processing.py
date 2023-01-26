@@ -197,7 +197,7 @@ def calculate_strain_rate(di: DataItem, strain_key: str = 'Strain', time_key: st
     """
     gradient = np.gradient(di.data[strain_key], di.data[time_key])
     di.data[strain_rate_key] = gradient
-    di.data[f'Smoothed_{strain_rate_key}'] = np.convolve(gradient, np.ones(5)/5, mode='same')
+    di.data[f'Smoothed_{strain_rate_key}'] = np.convolve(gradient, np.ones(5)/60, mode='same')
     return di
 
 
