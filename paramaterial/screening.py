@@ -7,7 +7,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from PyPDF2 import PdfFileReader
+from PyPDF2 import PdfReader
 from reportlab.graphics import renderPDF
 from reportlab.lib.colors import black
 from reportlab.lib.colors import magenta, pink, blue
@@ -99,7 +99,7 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     screening_df = pd.DataFrame(columns=[test_id_key, 'reject', 'comment'])
 
     with open(screening_pdf_path, 'rb') as f:
-        pdf_fields = PdfFileReader(f).get_fields()
+        pdf_fields = PdfReader(f).get_fields()
 
     # get comment and reject fields
     comment_fields = [field for field in pdf_fields if 'comment' in field]
@@ -129,6 +129,10 @@ def remove_rejected_items(ds: DataSet, screening_pdf_path: str) -> DataSet:
     new_ds = ds.copy()
     screened_ds = read_screening_pdf_fields(new_ds, screening_pdf_path)
     screened_ds.info_table = screened_ds.info_table[screened_ds.info_table['reject'] != '/Yes']
+    # print a list of the rejected items with a detailed message
+    rejected_items = screened_ds.info_table[screened_ds.info_table['reject'] == '/Yes']
+    for i, row in rejected_items.iterrows():
+        print(f'Item {row[screened_ds.test_id_key]} was rejected because {row["comment"]}')
     return screened_ds
 
 
