@@ -69,8 +69,15 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repr_co
         # add means of group info columns to repr_info_table
         if group_info_cols is not None:
             for col in group_info_cols:
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'mean_' + col] = repr_subset.info_table[
-                    col].mean()
+                df_col = repr_subset.info_table[col]
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, '' + col] = df_col.mean()
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'std_' + col] = df_col.std()
+                repr_info_table.loc[
+                    repr_info_table['repr id'] == repr_id, 'upstd_' + col] = df_col.mean() + df_col.std()
+                repr_info_table.loc[
+                    repr_info_table['repr id'] == repr_id, 'downstd_' + col] = df_col.mean() - df_col.std()
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'max_' + col] = df_col.max()
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'min_' + col] = df_col.min()
 
         # find minimum of maximum interp_by vals in subset
         if interp_end == 'max_all':
@@ -96,15 +103,15 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repr_co
 
         # make representative data from stats of interpolated data
         interp_data = interp_data.drop(columns=[interp_by])
-        repr_data = pd.DataFrame({f'interp_{interp_by}': interp_vec})
-        repr_data[f'mean_{repr_col}'] = interp_data.mean(axis=1)
+        repr_data = pd.DataFrame({f'{interp_by}': interp_vec})
+        repr_data[f'{repr_col}'] = interp_data.mean(axis=1)
         repr_data[f'std_{repr_col}'] = interp_data.std(axis=1)
-        repr_data[f'up_std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + repr_data[f'std_{repr_col}']
-        repr_data[f'down_std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - repr_data[f'std_{repr_col}']
-        repr_data[f'up_2std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + 2*repr_data[f'std_{repr_col}']
-        repr_data[f'down_2std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - 2*repr_data[f'std_{repr_col}']
-        repr_data[f'up_3std_{repr_col}'] = repr_data[f'mean_{repr_col}'] + 3*repr_data[f'std_{repr_col}']
-        repr_data[f'down_3std_{repr_col}'] = repr_data[f'mean_{repr_col}'] - 3*repr_data[f'std_{repr_col}']
+        repr_data[f'up_std_{repr_col}'] = repr_data[f'{repr_col}'] + repr_data[f'std_{repr_col}']
+        repr_data[f'down_std_{repr_col}'] = repr_data[f'{repr_col}'] - repr_data[f'std_{repr_col}']
+        repr_data[f'up_2std_{repr_col}'] = repr_data[f'{repr_col}'] + 2*repr_data[f'std_{repr_col}']
+        repr_data[f'down_2std_{repr_col}'] = repr_data[f'{repr_col}'] - 2*repr_data[f'std_{repr_col}']
+        repr_data[f'up_3std_{repr_col}'] = repr_data[f'{repr_col}'] + 3*repr_data[f'std_{repr_col}']
+        repr_data[f'down_3std_{repr_col}'] = repr_data[f'{repr_col}'] - 3*repr_data[f'std_{repr_col}']
         repr_data[f'min_{repr_col}'] = interp_data.min(axis=1)
         repr_data[f'max_{repr_col}'] = interp_data.max(axis=1)
         repr_data[f'q1_{repr_col}'] = interp_data.quantile(0.25, axis=1)
@@ -115,6 +122,56 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repr_co
         repr_info_table.to_excel(info_path, index=False)
 
 
+def make_representative_info(ds: DataSet, repr_by_cols: List[str], group_info_cols: List[str] = None):
+    """Make a table of representative info for each group in a DataSet.
+
+    Args:
+        ds: DataSet to make representative info for.
+        info_path: Path to save representative info table to.
+        repr_by_cols: Columns to group by and make representative info for.
+        group_info_cols: Columns to include in representative info table.
+    """
+    subset_filters = []
+    value_lists = [ds.info_table[col].unique() for col in repr_by_cols]
+    for i in range(len(value_lists[0])):
+        subset_filters.append({repr_by_cols[0]: [value_lists[0][i]]})
+    for i in range(1, len(repr_by_cols)):
+        new_filters = []
+        for fltr in subset_filters:
+            for value in value_lists[i]:
+                new_filter = fltr.copy()
+                new_filter[repr_by_cols[i]] = [value]
+                new_filters.append(new_filter)
+        subset_filters = new_filters
+
+    # make list of repr_ids and initialise info table for the representative data
+    repr_ids = [f'repr_id_{i + 1:0>4}' for i in range(len(subset_filters))]
+    repr_info_table = pd.DataFrame(columns=['repr id'] + repr_by_cols)
+
+    for fltr, repr_id in zip(subset_filters, repr_ids):
+        # get representative subset
+        repr_subset = ds.subset(fltr)
+        if repr_subset.info_table.empty:
+            continue
+        # add row to repr_info_table
+        repr_info_table = pd.concat(
+            [repr_info_table, pd.DataFrame({'repr id': [repr_id], **fltr, 'nr averaged': [len(repr_subset)]})])
+
+        # add means of group info columns to repr_info_table
+        if group_info_cols is not None:
+            for col in group_info_cols:
+                df_col = repr_subset.info_table[col]
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, '' + col] = df_col.mean()
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'std_' + col] = df_col.std()
+                repr_info_table.loc[
+                    repr_info_table['repr id'] == repr_id, 'upstd_' + col] = df_col.mean() + df_col.std()
+                repr_info_table.loc[
+                    repr_info_table['repr id'] == repr_id, 'downstd_' + col] = df_col.mean() - df_col.std()
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'max_' + col] = df_col.max()
+                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'min_' + col] = df_col.min()
+
+    return repr_info_table
+
 @dataclass
 class ModelItem:
     """Class that acts as a model DataItem."""
@@ -122,6 +179,8 @@ class ModelItem:
     info: pd.Series
     params: List[float]
     model_func: Callable[[np.ndarray, List[float]], np.ndarray]
+    x_key: str
+    y_key: str
     x_min: float
     x_max: float
     resolution: int = 50
@@ -131,7 +190,8 @@ class ModelItem:
         """Generate the model data and return as a DataFrame."""
         x = np.linspace(self.x_min, self.x_max, self.resolution)
         y = self.model_func(x, self.params)
-        return pd.DataFrame({'x': x, 'y': y})
+        # return pd.DataFrame({'Strain': x, 'Stress(MPa)': y})
+        return pd.DataFrame({self.x_key: x, self.y_key: y})
 
     @property
     def test_id(self) -> str:
@@ -144,13 +204,18 @@ class ModelItem:
         info = pd.Series(results_dict['info'])
         params = results_dict['params']
         param_names = results_dict['param_names']
+        error = results_dict['error']
         variables = results_dict['variables']
         variable_names = results_dict['variable_names']
-        info = pd.concat([info, pd.Series(variables, index=variable_names, dtype=float),
-                          pd.Series(params, index=param_names, dtype=float)])
+        var_vals = pd.Series(variables, index=variable_names, dtype=float)
+        param_vals = pd.Series(params, index=param_names, dtype=float)
+        param_vals['error'] = error
+        info = pd.concat([info, var_vals, param_vals])
         info['model_id'] = model_id
         model_func = results_dict['model_func']
         info['model_name'] = model_func.__name__
+        x_key = results_dict['x_key']
+        y_key = results_dict['y_key']
         x_min = results_dict['x_min']
         x_max = results_dict['x_max']
         info['x_min'] = x_min
@@ -158,7 +223,7 @@ class ModelItem:
         input_params = np.hstack([variables, params]) if variable_names is not None else params
         # drop duplicate columns from info
         info = info.loc[~info.index.duplicated(keep='first')]
-        return ModelItem(model_id, info, input_params, model_func, x_min, x_max)
+        return ModelItem(model_id, info, input_params, model_func, x_key, y_key, x_min, x_max)
 
     def read_info_from(self, info_table: pd.DataFrame, test_id_key: str):
         self.info = info_table.loc[info_table[test_id_key] == self.test_id].squeeze()
@@ -193,21 +258,23 @@ class ModelSet:
         self.y_key: str|None = None
         self.model_items: List|None = None
 
-    @staticmethod
-    def from_info_table(info_table: pd.DataFrame, model_func: Callable[[np.ndarray, List[float]], np.ndarray],
-                        param_names: List[str], model_id_key: str = 'model_id') -> 'ModelSet':
-        """Create a ModelSet from an info table."""
-        model_ids = info_table[model_id_key].values
-        info_rows = [info_table.drop(columns=param_names).iloc[i] for i in range(len(info_table))]
-        params_lists = [info_table[param_names].iloc[i].values for i in range(len(info_table))]
-        model_funcs = [model_func for _ in range(len(info_table))]
-        x_mins = [info_table['x_min'].iloc[i] for i in range(len(info_table))]
-        x_maxs = [info_table['x_max'].iloc[i] for i in range(len(info_table))]
-        resolutions = [info_table['resolution'].iloc[i] for i in range(len(info_table))]
-        ms = ModelSet(model_func, param_names)
-        ms.model_items = list(
-            map(ModelItem, model_ids, info_rows, params_lists, model_funcs, x_mins, x_maxs, resolutions))
-        return ms
+    # @staticmethod
+    # def from_info_table(info_table: pd.DataFrame, model_func: Callable[[np.ndarray, List[float]], np.ndarray],
+    #                     param_names: List[str], model_id_key: str = 'model_id') -> 'ModelSet':
+    #     """Create a ModelSet from an info table."""
+    #     model_ids = info_table[model_id_key].values
+    #     info_rows = [info_table.drop(columns=param_names).iloc[i] for i in range(len(info_table))]
+    #     params_lists = [info_table[param_names].iloc[i].values for i in range(len(info_table))]
+    #     model_funcs = [model_func for _ in range(len(info_table))]
+    #     x
+    #     x_mins = [info_table['x_min'].iloc[i] for i in range(len(info_table))]
+    #     x_maxs = [info_table['x_max'].iloc[i] for i in range(len(info_table))]
+    #     resolutions = [info_table['resolution'].iloc[i] for i in range(len(info_table))]
+    #     ms = ModelSet(model_func, param_names)
+    #     ms.model_items = list(
+    #         map(ModelItem, model_ids, info_rows, params_lists, model_funcs, x_keys, y_keys, x_mins, x_maxs,
+    #             resolutions))
+    #     return ms
 
     def fit_to(self, ds: DataSet, x_key: str, y_key: str, sample_size: int = 50) -> None:
         """Fit the model to the DataSet.
@@ -228,7 +295,7 @@ class ModelSet:
             pass
         self.model_items = list(map(ModelItem.from_results_dict, self.results_dict_list))
 
-    def predict(self, resolution: int = 50) -> DataSet:
+    def predict(self, resolution: int = 50, xmin=None, xmax=None) -> DataSet:
         """Return a ds with generated data with optimised model parameters added to the info table.
 
         Args:
@@ -243,6 +310,8 @@ class ModelSet:
         def update_resolution(mi: ModelItem):
             mi.resolution = resolution
             mi.info['resolution'] = resolution
+            mi.info['x_min'] = xmin if xmin is not None else mi.info['x_min']
+            mi.info['x_max'] = xmax if xmax is not None else mi.info['x_max']
             return mi
 
         self.model_items = list(map(lambda mi: update_resolution(mi), self.model_items))
@@ -267,7 +336,7 @@ class ModelSet:
         y_data = y_data[::sampling_stride]
         y_model = self.model_func(x_data, params)
         # return max((y_data - y_model)/np.sqrt(len(y_data)))
-        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data)))**2
+        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data))) ** 2
 
     def _fit_item(self, di: DataItem) -> None:
         if self.scipy_func == 'minimize':
@@ -289,11 +358,20 @@ class ModelSet:
                              f' minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute')
         model_id = 'model_' + str(di.info[0])
         results_dict = {'model_id': model_id, 'info': di.info, 'params': result.x, 'param_names': self.param_names,
+                        'error': result.fun,
                         'variables': [di.info[var_name] for var_name in
                                       self.var_names] if self.var_names is not None else None,
                         'variable_names': self.var_names, 'model_func': self.model_func,
+                        'x_key': self.x_key, 'y_key': self.y_key,
                         'x_min': di.data[self.x_key].min(),
                         'x_max': di.data[self.x_key].max(), }
         self.results_dict_list.append(results_dict)
         self.params_table = pd.concat(
-            [self.params_table, pd.DataFrame([[model_id] + list(result.x)], columns=['model_id'] + self.param_names)])
+            [self.params_table, pd.DataFrame([[model_id] + list(result.x) + [result.fun]],
+                                             columns=['model_id'] + self.param_names + ['fitting error'])])
+
+    @property
+    def fitting_results(self) -> pd.DataFrame:
+        """Return a DataFrame with the results of the fitting."""
+        # get the fitted parameters and make a table with them and include only the relevant info and the fitting error
+        return self.params_table.merge(self.fitted_ds.info_table, on='model_id')
