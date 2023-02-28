@@ -26,14 +26,14 @@ def iso_return_map(yield_stress_func: Callable, return_vec: str = 'stress'):
         y_yield: callable = yield_stress_func(mat_params)  # yield stress
         E = mat_params[0]  # elastic modulus
 
-        if not np.isclose(x[0], 0):
-            y_trial_0 = E*(x[1])
-            f_trial_0 = np.abs(y_trial_0) - y_yield(0)
-            if f_trial_0 <= 0:
-                y[0] = E*x[0]
-            else:
-                d_aps = op.root(lambda d: f_trial_0 - d*E - y_yield(d) + y_yield(0), 0).x[0]
-                y[0] = y_trial_0*(1 - d_aps*E/np.abs(y_trial_0))
+        # if not np.isclose(x[0], 0):
+        #     y_trial_0 = E*(x[1])
+        #     f_trial_0 = np.abs(y_trial_0) - y_yield(0)
+        #     if f_trial_0 <= 0:
+        #         y[0] = E*x[0]
+        #     else:
+        #         d_aps = op.root(lambda d: f_trial_0 - d*E - y_yield(d) + y_yield(0), 0).x[0]
+        #         y[0] = y_trial_0*(1 - d_aps*E/np.abs(y_trial_0))
 
         for i in range(len(x) - 1):
             y_trial = E*(x[i + 1] - x_p[i])

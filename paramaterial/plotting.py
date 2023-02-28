@@ -20,18 +20,21 @@ def configure_plt_formatting():
     mpl.rcParams['text.usetex'] = False
     mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
     mpl.rcParams["font.family"] = "Times New Roman"
-    plt.rc('font', size=11)
-    plt.rc('axes', titlesize=11, labelsize=11)
-    plt.rc('xtick', labelsize=10)
-    plt.rc('ytick', labelsize=10)
-    plt.rc('legend', fontsize=10)
-    plt.rc('figure', titlesize=12)
+    FONTSIZE = 11
+    plt.rc('font', size=FONTSIZE)
+    plt.rc('axes', titlesize=FONTSIZE, labelsize=FONTSIZE)
+    plt.rc('xtick', labelsize=FONTSIZE - 1)
+    plt.rc('ytick', labelsize=FONTSIZE - 1)
+    plt.rc('legend', fontsize=FONTSIZE - 1)
+    plt.rc('figure', titlesize=FONTSIZE + 1)
     mpl.rcParams.update({"axes.grid": True})
-    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (85/255, 49/255, 0)])
-    mpl.rcParams['axes.facecolor'] = cmap(0.1)
-    mpl.rcParams['legend.facecolor'] = "white"
+    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (85/255, 49/255, 0)])
+    # mpl.rcParams['axes.facecolor'] = cmap(0.1)
+    # mpl.rcParams['legend.facecolor'] = "white"
     # mpl.rcParams["grid.linewidth"] = 1
-    mpl.rcParams["text.color"] = (40/255, 40/255, 40/255)
+    # mpl.rcParams["text.color"] = (40/255, 40/255, 40/255)
+    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (0.2124, 0.3495, 0.1692)])
+    mpl.rcParams["axes.facecolor"]= cmap(0.1)
 
 
 configure_plt_formatting()
@@ -277,7 +280,7 @@ def dataset_subplots(
         col_vals: List[List[Any]],
         styler: Optional[Styler] = None,
         axs: Optional[np.ndarray] = None,
-        figsize: Tuple[float, float] = (12, 8),
+        figsize: Tuple[float, float] = (9, 6),
         sharex: str = 'col',
         sharey: str = 'row',
         wspace: float = 0.05,
@@ -326,6 +329,10 @@ def dataset_subplots(
     elif shape[1] == 1:
         axs = np.array([[ax] for ax in axs])
 
+    if styler is None:
+        styler = Styler()
+
+    # set the titles of the rows and columns
     if row_titles is not None:
         for ax, row_title in zip(axs[:, 0], row_titles):
             ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
@@ -338,6 +345,10 @@ def dataset_subplots(
     if plot_titles is not None:
         for ax, subplot_title in zip(axs.flat, plot_titles):
             ax.set_title(subplot_title)
+
+    # default kwargs
+    if 'plot_legend' not in kwargs:
+        kwargs['plot_legend'] = False
 
     # loop through the grid of axes and plot the subsets
     if rows_by == cols_by:
@@ -363,7 +374,7 @@ def dataset_subplots(
     if subplot_legend:
         plt.subplots_adjust(right=0.835 + subplots_adjust)
         axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', frameon=False,
-                                        bbox_to_anchor=(0.925, 0.5), markerfirst=True)
+                                        bbox_to_anchor=(0.925, 0.5), markerfirst=True, handletextpad=0.05)
 
     return axs
 

@@ -54,7 +54,7 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repr_co
 
     # make list of repr_ids and initialise info table for the representative data
     repr_ids = [f'repr_id_{i + 1:0>4}' for i in range(len(subset_filters))]
-    repr_info_table = pd.DataFrame(columns=['repr id'] + repr_by_cols)
+    repr_info_table = pd.DataFrame(columns=['repr_id'] + repr_by_cols)
 
     # make representative curves and take means of info table columns
     for repr_id, subset_filter in zip(repr_ids, subset_filters):
@@ -64,20 +64,20 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repr_co
             continue
         # add row to repr_info_table
         repr_info_table = pd.concat(
-            [repr_info_table, pd.DataFrame({'repr id': [repr_id], **subset_filter, 'nr averaged': [len(repr_subset)]})])
+            [repr_info_table, pd.DataFrame({'repr_id': [repr_id], **subset_filter, 'nr averaged': [len(repr_subset)]})])
 
         # add means of group info columns to repr_info_table
         if group_info_cols is not None:
             for col in group_info_cols:
                 df_col = repr_subset.info_table[col]
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, '' + col] = df_col.mean()
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'std_' + col] = df_col.std()
+                repr_info_table.loc[repr_info_table['repr_id'] == repr_id, '' + col] = df_col.mean()
+                repr_info_table.loc[repr_info_table['repr_id'] == repr_id, 'std_' + col] = df_col.std()
                 repr_info_table.loc[
-                    repr_info_table['repr id'] == repr_id, 'upstd_' + col] = df_col.mean() + df_col.std()
+                    repr_info_table['repr_id'] == repr_id, 'upstd_' + col] = df_col.mean() + df_col.std()
                 repr_info_table.loc[
-                    repr_info_table['repr id'] == repr_id, 'downstd_' + col] = df_col.mean() - df_col.std()
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'max_' + col] = df_col.max()
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'min_' + col] = df_col.min()
+                    repr_info_table['repr_id'] == repr_id, 'downstd_' + col] = df_col.mean() - df_col.std()
+                repr_info_table.loc[repr_info_table['repr_id'] == repr_id, 'max_' + col] = df_col.max()
+                repr_info_table.loc[repr_info_table['repr_id'] == repr_id, 'min_' + col] = df_col.min()
 
         # find minimum of maximum interp_by vals in subset
         if interp_end == 'max_all':
@@ -86,6 +86,7 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repr_co
             max_interp_val = min([max(dataitem.data[interp_by]) for dataitem in repr_subset])
         else:
             raise ValueError(f'interp_end must be "max_all" or "min_of_maxes", not {interp_end}')
+        
         # make monotonically increasing vector to interpolate by
         interp_vec = np.linspace(min_interp_val, max_interp_val, interp_res)
 
@@ -98,8 +99,8 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repr_co
             data = data[(data[interp_by] <= max_interp_val)&(data[interp_by] >= min_interp_val)]
             # interpolate the repr_by column and add to interp_data
             # add 0 to start of data to ensure interpolation starts at origin
-            interp_data[f'interp_{repr_col}_{n}'] = np.interp(interp_vec, [0] + data[interp_by].tolist(),
-                                                              [0] + data[repr_col].tolist())
+            interp_data[f'interp_{repr_col}_{n}'] = np.interp(interp_vec, data[interp_by].tolist(),
+                                                              data[repr_col].tolist())
 
         # make representative data from stats of interpolated data
         interp_data = interp_data.drop(columns=[interp_by])
@@ -146,7 +147,7 @@ def make_representative_info(ds: DataSet, repr_by_cols: List[str], group_info_co
 
     # make list of repr_ids and initialise info table for the representative data
     repr_ids = [f'repr_id_{i + 1:0>4}' for i in range(len(subset_filters))]
-    repr_info_table = pd.DataFrame(columns=['repr id'] + repr_by_cols)
+    repr_info_table = pd.DataFrame(columns=['repr_id'] + repr_by_cols)
 
     for fltr, repr_id in zip(subset_filters, repr_ids):
         # get representative subset
@@ -155,22 +156,23 @@ def make_representative_info(ds: DataSet, repr_by_cols: List[str], group_info_co
             continue
         # add row to repr_info_table
         repr_info_table = pd.concat(
-            [repr_info_table, pd.DataFrame({'repr id': [repr_id], **fltr, 'nr averaged': [len(repr_subset)]})])
+            [repr_info_table, pd.DataFrame({'repr_id': [repr_id], **fltr, 'nr averaged': [len(repr_subset)]})])
 
         # add means of group info columns to repr_info_table
         if group_info_cols is not None:
             for col in group_info_cols:
                 df_col = repr_subset.info_table[col]
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, '' + col] = df_col.mean()
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'std_' + col] = df_col.std()
+                repr_info_table.loc[repr_info_table['repr_id'] == repr_id, '' + col] = df_col.mean()
+                repr_info_table.loc[repr_info_table['repr_id'] == repr_id, 'std_' + col] = df_col.std()
                 repr_info_table.loc[
-                    repr_info_table['repr id'] == repr_id, 'upstd_' + col] = df_col.mean() + df_col.std()
+                    repr_info_table['repr_id'] == repr_id, 'upstd_' + col] = df_col.mean() + df_col.std()
                 repr_info_table.loc[
-                    repr_info_table['repr id'] == repr_id, 'downstd_' + col] = df_col.mean() - df_col.std()
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'max_' + col] = df_col.max()
-                repr_info_table.loc[repr_info_table['repr id'] == repr_id, 'min_' + col] = df_col.min()
+                    repr_info_table['repr_id'] == repr_id, 'downstd_' + col] = df_col.mean() - df_col.std()
+                repr_info_table.loc[repr_info_table['repr_id'] == repr_id, 'max_' + col] = df_col.max()
+                repr_info_table.loc[repr_info_table['repr_id'] == repr_id, 'min_' + col] = df_col.min()
 
     return repr_info_table
+
 
 @dataclass
 class ModelItem:
@@ -336,7 +338,7 @@ class ModelSet:
         y_data = y_data[::sampling_stride]
         y_model = self.model_func(x_data, params)
         # return max((y_data - y_model)/np.sqrt(len(y_data)))
-        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data))) ** 2
+        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data)))**2
 
     def _fit_item(self, di: DataItem) -> None:
         if self.scipy_func == 'minimize':
