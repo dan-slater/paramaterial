@@ -103,9 +103,9 @@ def find_upl_and_lpl(di: DataItem, strain_key: str = 'Strain', stress_key: str =
     return di
 
 
-def find_UTS(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', max_strain: float|None = None,
-                suppress_numpy_warnings: bool = False) -> DataItem:
-    """Find the ultimate tensile strength (UTS) of a stress-strain curve.
+def find_UTS(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', max_strain: float|None = None,
+                suppress_numpy_warnings: bool = False) -> DataSet:
+    """Find the ultimate tensile strength (UTS) of an engineering stress-strain curve.
 
     Args:
         di: DataItem with stress-strain curve
@@ -120,17 +120,21 @@ def find_UTS(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress
     if suppress_numpy_warnings:
         np.seterr(all="ignore")
 
-    data = di.data[di.data[strain_key] <= max_strain] if max_strain is not None else di.data
+    ds = ds.copy()
 
-    x = data[strain_key].values
-    y = data[stress_key].values
+    def find_di_UTS(di):     
+        data = di.data[di.data[strain_key] <= max_strain] if max_strain is not None else di.data
+        x = data[strain_key].values
+        y = data[stress_key].values
+        di.info['UTS_1'] = np.max(y)
+        di.info['UTS_0'] = x[np.argmax(y)]
+        return di
+    
+    return ds.apply(find_di_UTS)
 
-    di.info['UTS'] = np.max(y)
-    return di
 
-
-def find_proof_stress(di: DataItem, proof_strain: float = 0.002, strain_key: str = 'Strain',
-                      stress_key: str = 'Stress_MPa') -> DataItem:
+def find_proof_stress(ds: DataSet, proof_strain: float = 0.002, strain_key: str = 'Strain',
+                      stress_key: str = 'Stress_MPa', E_key: str='E') -> DataSet:
     """Find the proof stress of a stress-strain curve.
 
     Args:
@@ -141,23 +145,26 @@ def find_proof_stress(di: DataItem, proof_strain: float = 0.002, strain_key: str
 
     Returns: DataItem with proof stress added to info.
     """
-    E = di.info['E']
-    x_data = di.data[strain_key].values
-    y_data = di.data[stress_key].values
-    x_shift = proof_strain
-    y_line = E*(x_data - x_shift)
-    cut = np.where(np.diff(np.sign(y_line - y_data)) != 0)[0][-1]
-    m = (y_data[cut + 1] - y_data[cut])/(x_data[cut + 1] - x_data[cut])
-    xl = x_data[cut]
-    yl = y_line[cut]
-    xd = x_data[cut]
-    yd = y_data[cut]
-    K = np.array([[1, -E], [1, -m]])
-    f = np.array([[yl - E*xl], [yd - m*xd]])
-    d = np.linalg.solve(K, f).flatten()
-    di.info[f'YP_{proof_strain}_0'] = d[1]
-    di.info[f'YP_{proof_strain}_1'] = d[0]
-    return di
+    def find_di_proof_stress(di):
+        E = di.info[E_key]
+        x_data = di.data[strain_key].values
+        y_data = di.data[stress_key].values
+        x_shift = proof_strain
+        y_line = E*(x_data - x_shift)
+        cut = np.where(np.diff(np.sign(y_line - y_data)) != 0)[0][-1]
+        m = (y_data[cut + 1] - y_data[cut])/(x_data[cut + 1] - x_data[cut])
+        xl = x_data[cut]
+        yl = y_line[cut]
+        xd = x_data[cut]
+        yd = y_data[cut]
+        K = np.array([[1, -E], [1, -m]])
+        f = np.array([[yl - E*xl], [yd - m*xd]])
+        d = np.linalg.solve(K, f).flatten()
+        di.info[f'PS_{proof_strain}_0'] = d[1]
+        di.info[f'PS_{proof_strain}_1'] = d[0]
+        return di
+    
+    return ds.apply(find_di_proof_stress)
 
 
 def find_ultimate_strength(di: DataItem, force_key: str = 'Force_kN', strain_key: str = 'Strain',
@@ -178,20 +185,25 @@ def find_ultimate_strength(di: DataItem, force_key: str = 'Force_kN', strain_key
     return di
 
 
-def find_fracture_point(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa') -> DataItem:
+def find_fracture_point(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa') -> DataSet:
     """Find the fracture point of a stress-strain curve, defined as the point at which the strain is maximum.
 
     Args:
-        di: DataItem with stress-strain curve
+        ds: DataSet with stress-strain curves
         strain_key: Key for strain data
         stress_key: Key for stress data
 
-    Returns: DataItem with fracture point added to info.
+    Returns: DataSet with fracture points added to info_table.
     """
-    idx_max = di.data[strain_key].idxmax()
-    di.info['Fracture_Point_0'] = di.data[strain_key][idx_max]
-    di.info['Fracture_Point_1'] = di.data[stress_key][idx_max]
-    return di
+    ds = ds.copy()
+    
+    def find_di_fracture_point(di):
+        idx_max = di.data[strain_key].idxmax()
+        di.info['FP_0'] = di.data[strain_key][idx_max]
+        di.info['FP_1'] = di.data[stress_key][idx_max]
+        return di
+    
+    return ds.apply(find_di_fracture_point)
 
 
 def find_flow_stress_values(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
@@ -377,3 +389,7 @@ def trim_leading_data():
 
 def trim_trailing_data():
     pass
+
+def trim_after_max_force(di: DataItem, force_key: str = 'Force_kN'):
+    di.data = di.data.loc[:di.data[force_key].idxmax()]
+    return di
