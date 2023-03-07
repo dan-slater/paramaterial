@@ -111,6 +111,41 @@
     
     
     
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
     
   </nav>
   
@@ -120,6 +155,75 @@
       
       
         
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../how_to_guides/apply_proc_op/" class="md-tabs__link">
+        How-To Guides
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../01%20preparation/" class="md-tabs__link">
+        Example
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../preparing/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
           
         
       
@@ -133,8 +237,12 @@
                   <div class="md-sidebar__inner">
                     
 
+  
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../.." title="Paramaterial Documentation" class="md-nav__button md-logo" aria-label="Paramaterial Documentation" data-md-component="logo">
       
@@ -172,18 +280,122 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
       
         <label class="md-nav__link" for="__nav_2">
+          How-To Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="How-To Guides" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          How-To Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to_guides/apply_proc_op/" class="md-nav__link">
+        Apply proc op
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to_guides/fit_model.md" class="md-nav__link">
+        None
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to_guides/make_repr_data.md" class="md-nav__link">
+        None
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to_guides/use_screening_pdf.md" class="md-nav__link">
+        None
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to_guides/zener_holloman_eg/" class="md-nav__link">
+        Zener holloman eg
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
           Example
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Example" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           Example
         </label>
@@ -220,18 +432,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
       
       
       
       
-        <label class="md-nav__link" for="__nav_3">
+        <label class="md-nav__link" for="__nav_4">
           Reference
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Reference" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Reference
         </label>
@@ -333,115 +545,6 @@
                 </div>
               </div>
             
-            
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#data-processing" class="md-nav__link">
-    Data processing
-  </a>
-  
-    <nav class="md-nav" aria-label="Data processing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#trimming-trailing-data" class="md-nav__link">
-    Trimming trailing data
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#save-trimmed-data" class="md-nav__link">
-    Save trimmed data
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#find-proportional-limits-and-elastic-modulus" class="md-nav__link">
-    Find proportional limits and elastic modulus
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#apply-foot-correction" class="md-nav__link">
-    Apply foot correction
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#find-proof-stress" class="md-nav__link">
-    Find proof stress
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#apply-to-large-strain-data" class="md-nav__link">
-    Apply to large strain data
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#calculate-force-displacement-and-ultimate-tensile-strength" class="md-nav__link">
-    Calculate force, displacement, and ultimate tensile strength
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#calculate-true-stress-and-strain" class="md-nav__link">
-    Calculate true stress and strain
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#write-processed-data" class="md-nav__link">
-    Write processed data
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#make-report-plots" class="md-nav__link">
-    Make report plots
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
             
           
           
@@ -2012,20 +2115,20 @@ Each page will display the plot as well as a checkbox and comment box.</p>
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">screening_plot</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">test_id</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">test_id</span>
-    <span class="n">_ax</span> <span class="o">=</span> <span class="n">ds_plot</span><span class="p">(</span><span class="n">prepared_ds</span><span class="p">[{</span><span class="s1">&#39;test id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">test_id</span><span class="p">]}],</span>  <span class="c1"># we can use this syntax to filter the DataSet</span>
+    <span class="n">_ax</span> <span class="o">=</span> <span class="n">ds_plot</span><span class="p">(</span><span class="n">prepared_ds</span><span class="p">[{</span><span class="s1">&#39;test_id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">test_id</span><span class="p">]}],</span>  <span class="c1"># we can use this syntax to filter the DataSet</span>
                   <span class="o">**</span><span class="n">stress_strain_labels</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
                   <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>  <span class="c1"># this figsize matches the hard-coded pdf page size</span>
-    <span class="n">ds_plot</span><span class="p">(</span><span class="n">trim_trailing_ds</span><span class="p">[{</span><span class="s1">&#39;test id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">test_id</span><span class="p">]}],</span> <span class="o">**</span><span class="n">stress_strain_labels</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">_ax</span><span class="p">)</span>
+    <span class="n">ds_plot</span><span class="p">(</span><span class="n">trim_trailing_ds</span><span class="p">[{</span><span class="s1">&#39;test_id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">test_id</span><span class="p">]}],</span> <span class="o">**</span><span class="n">stress_strain_labels</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">_ax</span><span class="p">)</span>
 
 
 <span class="c1"># pam.processing.make_screening_pdf(trim_trailing_ds, screening_plot, &#39;info/02 trim trailing screening.pdf&#39;)</span>
 </pre></div>
 <div id="cell-7" class="clipboard-copy-txt">def screening_plot(di: DataItem) -> None:
     test_id = di.test_id
-    _ax = ds_plot(prepared_ds[{'test id': [test_id]}],  # we can use this syntax to filter the DataSet
+    _ax = ds_plot(prepared_ds[{'test_id': [test_id]}],  # we can use this syntax to filter the DataSet
                   **stress_strain_labels, alpha=0.2,
                   figsize=(10, 6))  # this figsize matches the hard-coded pdf page size
-    ds_plot(trim_trailing_ds[{'test id': [test_id]}], **stress_strain_labels, ax=_ax)
+    ds_plot(trim_trailing_ds[{'test_id': [test_id]}], **stress_strain_labels, ax=_ax)
 
 
 # pam.processing.make_screening_pdf(trim_trailing_ds, screening_plot, 'info/02 trim trailing screening.pdf')</div>
@@ -2130,7 +2233,7 @@ Name: comment, dtype: int64</pre>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>Once the comments are in the info_table, we can access them from the info attribute of a DataItem.
-The DataItem.info attribute is a pd.Series that corresponds to the row in the info_table with the DataItem's test id.
+The DataItem.info attribute is a pd.Series that corresponds to the row in the info_table with the DataItem's test_id.
 We can then define a function that interprets and applies the comment to a DataItem, and apply this function the DataSet.</p>
 
 </div>
@@ -2646,7 +2749,7 @@ We use a screening pdf to complete the procedure.</p>
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">properties_screening_plot</span><span class="p">(</span><span class="n">di</span><span class="p">):</span>
     <span class="n">test_id</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">test_id</span>
-    <span class="n">_ax</span> <span class="o">=</span> <span class="n">ds_plot</span><span class="p">(</span><span class="n">properties_ds</span><span class="p">[{</span><span class="s1">&#39;test id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">test_id</span><span class="p">]}],</span> <span class="o">**</span><span class="n">stress_strain_labels</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+    <span class="n">_ax</span> <span class="o">=</span> <span class="n">ds_plot</span><span class="p">(</span><span class="n">properties_ds</span><span class="p">[{</span><span class="s1">&#39;test_id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">test_id</span><span class="p">]}],</span> <span class="o">**</span><span class="n">stress_strain_labels</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
     <span class="n">plot_upl_and_lpl</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">_ax</span><span class="p">)</span>
 
 
@@ -2654,7 +2757,7 @@ We use a screening pdf to complete the procedure.</p>
 </pre></div>
 <div id="cell-14" class="clipboard-copy-txt">def properties_screening_plot(di):
     test_id = di.test_id
-    _ax = ds_plot(properties_ds[{'test id': [test_id]}], **stress_strain_labels, figsize=(10,6))
+    _ax = ds_plot(properties_ds[{'test_id': [test_id]}], **stress_strain_labels, figsize=(10,6))
     plot_upl_and_lpl(di, _ax)
 
 
@@ -4010,10 +4113,16 @@ class="
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate", "search.suggest", "search.highlight", "navigation.instant", "header.autohide"], "search": "../../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
       <script src="../../../assets/javascripts/bundle.d6c3db9e.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

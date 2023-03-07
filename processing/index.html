@@ -111,6 +111,41 @@
     
     
     
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
     
   </nav>
   
@@ -120,6 +155,77 @@
       
       
         
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href=".." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../how_to_guides/apply_proc_op/" class="md-tabs__link">
+        How-To Guides
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../example/01%20preparation/" class="md-tabs__link">
+        Example
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../preparing/" class="md-tabs__link md-tabs__link--active">
+        Reference
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
           
         
       
@@ -133,8 +239,12 @@
                   <div class="md-sidebar__inner">
                     
 
+  
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="Paramaterial Documentation" class="md-nav__button md-logo" aria-label="Paramaterial Documentation" data-md-component="logo">
       
@@ -172,18 +282,122 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
       
         <label class="md-nav__link" for="__nav_2">
+          How-To Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="How-To Guides" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          How-To Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to_guides/apply_proc_op/" class="md-nav__link">
+        Apply proc op
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to_guides/fit_model.md" class="md-nav__link">
+        None
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to_guides/make_repr_data.md" class="md-nav__link">
+        None
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to_guides/use_screening_pdf.md" class="md-nav__link">
+        None
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to_guides/zener_holloman_eg/" class="md-nav__link">
+        Zener holloman eg
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
           Example
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Example" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           Example
         </label>
@@ -222,18 +436,18 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
       
       
       
       
-        <label class="md-nav__link" for="__nav_3">
+        <label class="md-nav__link" for="__nav_4">
           Reference
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Reference" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Reference
         </label>
@@ -324,36 +538,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#paramaterial.processing.correct_uniaxial_compression_friction" class="md-nav__link">
-    correct_uniaxial_compression_friction()
+  <a href="#paramaterial.processing.correct_friction_UC" class="md-nav__link">
+    correct_friction_UC()
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#paramaterial.processing.determine_flow_stress" class="md-nav__link">
-    determine_flow_stress()
+  <a href="#paramaterial.processing.find_flow_stress" class="md-nav__link">
+    find_flow_stress()
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#paramaterial.processing.determine_fracture_point" class="md-nav__link">
-    determine_fracture_point()
+  <a href="#paramaterial.processing.find_fracture_point" class="md-nav__link">
+    find_fracture_point()
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#paramaterial.processing.determine_proof_stress" class="md-nav__link">
-    determine_proof_stress()
+  <a href="#paramaterial.processing.find_proof_stress" class="md-nav__link">
+    find_proof_stress()
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#paramaterial.processing.determine_ultimate_strength" class="md-nav__link">
-    determine_ultimate_strength()
+  <a href="#paramaterial.processing.find_ultimate_strength" class="md-nav__link">
+    find_ultimate_strength()
   </a>
   
 </li>
@@ -415,79 +629,6 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#paramaterial.processing" class="md-nav__link">
-    paramaterial.processing
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#paramaterial.processing.correct_uniaxial_compression_friction" class="md-nav__link">
-    correct_uniaxial_compression_friction()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#paramaterial.processing.determine_flow_stress" class="md-nav__link">
-    determine_flow_stress()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#paramaterial.processing.determine_fracture_point" class="md-nav__link">
-    determine_fracture_point()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#paramaterial.processing.determine_proof_stress" class="md-nav__link">
-    determine_proof_stress()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#paramaterial.processing.determine_ultimate_strength" class="md-nav__link">
-    determine_ultimate_strength()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#paramaterial.processing.find_upl_and_lpl" class="md-nav__link">
-    find_upl_and_lpl()
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           
             <div class="md-content" data-md-component="content">
@@ -504,7 +645,9 @@
 <a id="paramaterial.processing"></a>
   <div class="doc doc-contents first">
   
-      <p>Module with functions for modelling a stress-strain curve.</p>
+      <p>Module with functions for processing materials test data. This includes functionality for finding properties
+like yield strength Young's modulus from stress-strain curves, as well as post-processing functions for cleaning
+and correcting experimental measurements.</p>
 
   
 
@@ -522,8 +665,8 @@
 
 
 
-<h2 id="paramaterial.processing.correct_uniaxial_compression_friction" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">correct_uniaxial_compression_friction</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">mu_key</span><span class="o">=</span><span class="s1">&#39;mu&#39;</span><span class="p">,</span> <span class="n">h0_key</span><span class="o">=</span><span class="s1">&#39;h_0&#39;</span><span class="p">,</span> <span class="n">D0_key</span><span class="o">=</span><span class="s1">&#39;D_0&#39;</span><span class="p">,</span> <span class="n">disp_key</span><span class="o">=</span><span class="s1">&#39;Disp(mm)&#39;</span><span class="p">,</span> <span class="n">force_key</span><span class="o">=</span><span class="s1">&#39;Force(kN)&#39;</span><span class="p">)</span></code>
+<h2 id="paramaterial.processing.correct_friction_UC" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">correct_friction_UC</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">mu_key</span><span class="o">=</span><span class="s1">&#39;mu&#39;</span><span class="p">,</span> <span class="n">h0_key</span><span class="o">=</span><span class="s1">&#39;h_0&#39;</span><span class="p">,</span> <span class="n">D0_key</span><span class="o">=</span><span class="s1">&#39;D_0&#39;</span><span class="p">,</span> <span class="n">disp_key</span><span class="o">=</span><span class="s1">&#39;Disp(mm)&#39;</span><span class="p">,</span> <span class="n">force_key</span><span class="o">=</span><span class="s1">&#39;Force(kN)&#39;</span><span class="p">)</span></code>
 
 </h2>
 
@@ -608,10 +751,7 @@
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\processing.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span>
@@ -631,8 +771,11 @@
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
-<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">correct_uniaxial_compression_friction</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">mu_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;mu&#39;</span><span class="p">,</span> <span class="n">h0_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;h_0&#39;</span><span class="p">,</span> <span class="n">D0_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;D_0&#39;</span><span class="p">,</span>
-                                          <span class="n">disp_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Disp(mm)&#39;</span><span class="p">,</span> <span class="n">force_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Force(kN)&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">correct_friction_UC</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">mu_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;mu&#39;</span><span class="p">,</span> <span class="n">h0_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;h_0&#39;</span><span class="p">,</span> <span class="n">D0_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;D_0&#39;</span><span class="p">,</span>
+                        <span class="n">disp_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Disp(mm)&#39;</span><span class="p">,</span> <span class="n">force_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Force(kN)&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the pressure and corrected stress for a uniaxial compression test with friction.</span>
 
@@ -665,8 +808,8 @@
 
 
 
-<h2 id="paramaterial.processing.determine_flow_stress" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">determine_flow_stress</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">strain_key</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="o">=</span><span class="s1">&#39;Stress_MPa&#39;</span><span class="p">,</span> <span class="n">flow_strain</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<h2 id="paramaterial.processing.find_flow_stress" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">find_flow_stress</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">strain_key</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="o">=</span><span class="s1">&#39;Stress_MPa&#39;</span><span class="p">,</span> <span class="n">flow_strain_key</span><span class="o">=</span><span class="s1">&#39;flow_strain&#39;</span><span class="p">,</span> <span class="n">flow_stress_key</span><span class="o">=</span><span class="s1">&#39;flow_stress_MPa&#39;</span><span class="p">,</span> <span class="n">flow_strain</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 </h2>
 
@@ -702,7 +845,7 @@ or as the point at a specified strain.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Key for strain data</p></td>
+          <td><p>Data key for reading strain.</p></td>
           <td>
                 <code>&#39;Strain&#39;</code>
           </td>
@@ -712,9 +855,29 @@ or as the point at a specified strain.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Key for stress data</p></td>
+          <td><p>Data key for reading stress.</p></td>
           <td>
                 <code>&#39;Stress_MPa&#39;</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>flow_strain_key</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td><p>Info key for writing flow strain.</p></td>
+          <td>
+                <code>&#39;flow_strain&#39;</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>flow_stress_key</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td><p>Info key for storing flow stress.</p></td>
+          <td>
+                <code>&#39;flow_stress_MPa&#39;</code>
           </td>
         </tr>
         <tr>
@@ -732,7 +895,19 @@ or as the point at a specified strain.</p>
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\processing.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
@@ -743,35 +918,29 @@ or as the point at a specified strain.</p>
 <span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">determine_flow_stress</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">,</span>
-                          <span class="n">flow_strain</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
+<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">find_flow_stress</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">,</span>
+                     <span class="n">flow_strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;flow_strain&#39;</span><span class="p">,</span> <span class="n">flow_stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;flow_stress_MPa&#39;</span><span class="p">,</span>
+                     <span class="n">flow_strain</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Find the flow stress of a stress-strain curve, defined as the point at which the stress is maximum,</span>
 <span class="sd">    or as the point at a specified strain.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        di: DataItem with stress-strain curve</span>
-<span class="sd">        strain_key: Key for strain data</span>
-<span class="sd">        stress_key: Key for stress data</span>
+<span class="sd">        strain_key: Data key for reading strain.</span>
+<span class="sd">        stress_key: Data key for reading stress.</span>
+<span class="sd">        flow_strain_key: Info key for writing flow strain.</span>
+<span class="sd">        flow_stress_key: Info key for storing flow stress.</span>
 <span class="sd">        flow_strain: Strain at which to find the flow stress. If None, the maximum stress is used.</span>
 
 <span class="sd">    Returns: DataItem with flow stress added to info.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">flow_strain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">idx_max</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">stress_key</span><span class="p">]</span><span class="o">.</span><span class="n">idxmax</span><span class="p">()</span>
-        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;Flow_Stress_0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">strain_key</span><span class="p">][</span><span class="n">idx_max</span><span class="p">]</span>
-        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;Flow_Stress_1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">stress_key</span><span class="p">][</span><span class="n">idx_max</span><span class="p">]</span>
+        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">flow_strain_key</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">strain_key</span><span class="p">][</span><span class="n">idx_max</span><span class="p">]</span>
+        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">flow_stress_key</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">stress_key</span><span class="p">][</span><span class="n">idx_max</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;Flow_Stress_0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flow_strain</span>
-        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;Flow_Stress_1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">stress_key</span><span class="p">][</span><span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">strain_key</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">flow_strain</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">flow_strain_key</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flow_strain</span>
+        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">flow_stress_key</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">stress_key</span><span class="p">][</span><span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">strain_key</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">flow_strain</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">di</span>
 </code></pre></div></td></tr></table></div>
       </details>
@@ -783,8 +952,8 @@ or as the point at a specified strain.</p>
 
 
 
-<h2 id="paramaterial.processing.determine_fracture_point" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">determine_fracture_point</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">strain_key</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="o">=</span><span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span></code>
+<h2 id="paramaterial.processing.find_fracture_point" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">find_fracture_point</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">strain_key</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="o">=</span><span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span></code>
 
 </h2>
 
@@ -839,20 +1008,20 @@ or as the point at a specified strain.</p>
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\processing.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">determine_fracture_point</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">find_fracture_point</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Find the fracture point of a stress-strain curve, defined as the point at which the strain is maximum.</span>
 
 <span class="sd">    Args:</span>
@@ -876,8 +1045,8 @@ or as the point at a specified strain.</p>
 
 
 
-<h2 id="paramaterial.processing.determine_proof_stress" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">determine_proof_stress</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">proof_strain</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">strain_key</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="o">=</span><span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span></code>
+<h2 id="paramaterial.processing.find_proof_stress" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">find_proof_stress</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">proof_strain</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">strain_key</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="o">=</span><span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span></code>
 
 </h2>
 
@@ -942,7 +1111,19 @@ or as the point at a specified strain.</p>
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\processing.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
 <span class="normal"> 94</span>
 <span class="normal"> 95</span>
 <span class="normal"> 96</span>
@@ -958,20 +1139,8 @@ or as the point at a specified strain.</p>
 <span class="normal">106</span>
 <span class="normal">107</span>
 <span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">determine_proof_stress</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">proof_strain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.002</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span>
-                           <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
+<span class="normal">109</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">find_proof_stress</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">proof_strain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.002</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span>
+                      <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Find the proof stress of a stress-strain curve.</span>
 
 <span class="sd">    Args:</span>
@@ -1009,8 +1178,8 @@ or as the point at a specified strain.</p>
 
 
 
-<h2 id="paramaterial.processing.determine_ultimate_strength" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">determine_ultimate_strength</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">force_key</span><span class="o">=</span><span class="s1">&#39;Force_kN&#39;</span><span class="p">,</span> <span class="n">strain_key</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="o">=</span><span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span></code>
+<h2 id="paramaterial.processing.find_ultimate_strength" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">find_ultimate_strength</span><span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="n">force_key</span><span class="o">=</span><span class="s1">&#39;Force_kN&#39;</span><span class="p">,</span> <span class="n">strain_key</span><span class="o">=</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="o">=</span><span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span></code>
 
 </h2>
 
@@ -1075,23 +1244,23 @@ or as the point at a specified strain.</p>
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\processing.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">determine_ultimate_strength</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">force_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Force_kN&#39;</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span>
-                                <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">find_ultimate_strength</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">force_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Force_kN&#39;</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span>
+                           <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Find the ultimate strength of a stress-strain curve, defined as the strain and stress at the maximum force.</span>
 
 <span class="sd">    Args:</span>
@@ -1233,7 +1402,8 @@ The elastic modulus is the slope between the UPL and LPL.</p>
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\processing.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">11</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">10</span>
+<span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
@@ -1300,10 +1470,9 @@ The elastic modulus is the slope between the UPL and LPL.</p>
 <span class="normal">75</span>
 <span class="normal">76</span>
 <span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">find_upl_and_lpl</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">,</span> <span class="n">preload</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="n">preload_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">,</span> <span class="n">max_strain</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">suppress_numpy_warnings</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
+<span class="normal">78</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">find_upl_and_lpl</span><span class="p">(</span><span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">,</span> <span class="n">strain_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="n">stress_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">,</span> <span class="n">preload</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                     <span class="n">preload_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Stress_MPa&#39;</span><span class="p">,</span> <span class="n">max_strain</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">suppress_numpy_warnings</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataItem</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of a stress-strain curve.</span>
 <span class="sd">    The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.</span>
 <span class="sd">    The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL.</span>
@@ -1456,10 +1625,16 @@ The elastic modulus is the slope between the UPL and LPL.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate", "search.suggest", "search.highlight", "navigation.instant", "header.autohide"], "search": "../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.d6c3db9e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>
