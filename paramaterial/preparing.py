@@ -38,6 +38,10 @@ def copy_data_and_rename_by_test_id(data_in: str, data_out: str, info_table: pd.
     print(f'Copied {len(info_table)} files in {data_in} to {data_out}.')
 
 
+def check_data_formatting(ds: DataSet):
+    pass
+
+
 def check_column_headers(data_dir: str, exception_headers: List[str] = None):
     """Check that all files in a directory have the same column headers and that column headers don't contain spaces."""
     file_list = os.listdir(data_dir)

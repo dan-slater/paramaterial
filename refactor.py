@@ -41,11 +41,6 @@ def command_line_main():
     swap_dataset_inputs(args.file_path)
 
 
-def main():
-    """Run the main function."""
-    swap_dataset_inputs('tensile study/03 modelling.ipynb')
-
-
 if __name__ == '__main__':
     command_line_main()
     # main()
