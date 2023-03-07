@@ -9,22 +9,32 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 import matplotlib as mpl
+import seaborn as sns
 
 from paramaterial.plug import DataItem, DataSet
 
 
 def configure_plt_formatting():
     plt.style.use('seaborn-dark')
+    # mpl.rcParams['axes.facecolor'] = '#f0e6e6'
     mpl.rcParams['text.usetex'] = False
     mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
     mpl.rcParams["font.family"] = "Times New Roman"
-    plt.rc('font', size=11)
-    plt.rc('axes', titlesize=11, labelsize=11)
-    plt.rc('xtick', labelsize=10)
-    plt.rc('ytick', labelsize=10)
-    plt.rc('legend', fontsize=10)
-    plt.rc('figure', titlesize=11)
+    FONTSIZE = 11
+    plt.rc('font', size=FONTSIZE)
+    plt.rc('axes', titlesize=FONTSIZE, labelsize=FONTSIZE)
+    plt.rc('xtick', labelsize=FONTSIZE - 1)
+    plt.rc('ytick', labelsize=FONTSIZE - 1)
+    plt.rc('legend', fontsize=FONTSIZE - 1)
+    plt.rc('figure', titlesize=FONTSIZE + 1)
     mpl.rcParams.update({"axes.grid": True})
+    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (85/255, 49/255, 0)])
+    # mpl.rcParams['axes.facecolor'] = cmap(0.1)
+    # mpl.rcParams['legend.facecolor'] = "white"
+    # mpl.rcParams["grid.linewidth"] = 1
+    # mpl.rcParams["text.color"] = (40/255, 40/255, 40/255)
+    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (0.2124, 0.3495, 0.1692)])
+    mpl.rcParams["axes.facecolor"]= cmap(0.1)
 
 
 configure_plt_formatting()
@@ -47,7 +57,8 @@ class Styler:
     cmap: str = 'plasma'
     handles: Optional[List[mpatches.Patch]] = None
     linestyles: List[str] = field(default_factory=lambda: ['-', '--', ':', '-.'])
-    markers: List[str] = field(default_factory=lambda: ['s', 'H', 'd', 'v', 'D', 'p', 'X', 'o', 'd', 'h', 'H', '8', 'P', 'x'])
+    markers: List[str] = field(
+        default_factory=lambda: ['s', 'H', 'd', 'v', 'D', 'p', 'X', 'o', 'd', 'h', 'H', '8', 'P', 'x'])
     color_dict: Optional[Dict[str|int|float, str]] = None
     linestyle_dict: Optional[Dict[str|int|float, str]] = None
     marker_dict: Optional[Dict[str|int|float, str]] = None
@@ -56,7 +67,7 @@ class Styler:
 
     def __post_init__(self):
         self.plot_kwargs['legend'] = False
-        self.plot_kwargs.update({'markeredgecolor': 'white', 'markersize':8})
+        self.plot_kwargs.update({'markeredgecolor': 'white', 'markersize': 8})
 
         # todo: use pandas in-built color bar
         # if self.cbar:
@@ -155,6 +166,8 @@ def dataset_plot(
         ax: Optional[plt.Axes] = None,
         fill_between: Optional[Tuple[str, str]] = None,
         plot_legend: bool = True,
+        handletextpad: float = 0.05,
+        labelspacing: float = 0.1,
         **kwargs
 ) -> plt.Axes:
     """Make a single combined plot from the data of every dataitem in the dataset using pandas.DataFrame.plot.
@@ -170,7 +183,7 @@ def dataset_plot(
     Returns: The axis the plot was made on.
     """
     if ax is None:
-        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
+        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (4, 3)))
     kwargs['ax'] = ax
 
     if ax.get_legend() is not None and plot_legend:
@@ -190,8 +203,8 @@ def dataset_plot(
     # add the legend
     handles = styler.legend_handles(ds)
     if len(handles) > 0 and plot_legend:
-        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
-                  handletextpad=0.05)  # , labelspacing=0.1)
+        ax.legend(handles=handles, loc='best', frameon=False, markerfirst=True, handletextpad=handletextpad,
+                  labelspacing=labelspacing)  # handletextpad=0.05)  # , labelspacing=0.1)
         ax.get_legend().set_zorder(2000)
     # colorbar
     if styler.cbar and plot_legend:
@@ -212,6 +225,7 @@ def info_plot(
         styler: Optional[Styler] = None,
         ax: Optional[plt.Axes] = None,
         plot_legend: bool = True,
+        err_between: Optional[Tuple[str, str]] = None,
         **kwargs
 ) -> plt.Axes:
     """Make a single combined plot from the info of every dataitem in the dataset using pandas.DataFrame.plot.
@@ -240,8 +254,11 @@ def info_plot(
     for di in ds:
         # plot the curve
         df = pd.DataFrame([[di.info[x], di.info[y]]], columns=[x, y])
-        ax = df.plot(x=x,y=y,**styler.curve_formatters(di), **kwargs)
+        ax = df.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
         # ax = di.info.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
+        if err_between is not None:
+            ax = di.info.plot(x=x, y=y, yerr=[di.info[err_between[0]], di.info[err_between[1]]],
+                              **styler.curve_formatters(di), ax=ax)
 
     # add the legend
     handles = styler.legend_handles(ds)
@@ -263,7 +280,7 @@ def dataset_subplots(
         col_vals: List[List[Any]],
         styler: Optional[Styler] = None,
         axs: Optional[np.ndarray] = None,
-        figsize: Tuple[float, float] = (12, 8),
+        figsize: Tuple[float, float] = (9, 6),
         sharex: str = 'col',
         sharey: str = 'row',
         wspace: float = 0.05,
@@ -273,6 +290,7 @@ def dataset_subplots(
         plot_titles: Optional[List[str]] = None,
         subplot_legend: bool = True,
         subplot_cbar: bool = False,
+        subplots_adjust: float = 0.0,
         **kwargs
 ) -> plt.Axes:
     """Plot a dataset as a grid of subplots, split by the 'rows_by' and 'cols_by' columns in the info_table.
@@ -304,9 +322,17 @@ def dataset_subplots(
         fig, axs = plt.subplots(shape[0], shape[1], figsize=figsize, sharex=sharex, sharey=sharey)
         fig.subplots_adjust(wspace=wspace, hspace=hspace)
 
-    if axs.ndim == 1:
+    if shape[0] == 1 and shape[1] == 1:
+        axs = np.array([[axs]])
+    elif shape[0] == 1:
         axs = np.array([axs])
+    elif shape[1] == 1:
+        axs = np.array([[ax] for ax in axs])
 
+    if styler is None:
+        styler = Styler()
+
+    # set the titles of the rows and columns
     if row_titles is not None:
         for ax, row_title in zip(axs[:, 0], row_titles):
             ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
@@ -319,6 +345,10 @@ def dataset_subplots(
     if plot_titles is not None:
         for ax, subplot_title in zip(axs.flat, plot_titles):
             ax.set_title(subplot_title)
+
+    # default kwargs
+    if 'plot_legend' not in kwargs:
+        kwargs['plot_legend'] = False
 
     # loop through the grid of axes and plot the subsets
     if rows_by == cols_by:
@@ -342,9 +372,9 @@ def dataset_subplots(
             cbar.set_label(styler.cbar_label)
 
     if subplot_legend:
-        plt.subplots_adjust(right=0.835)
-        axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', frameon=True,
-                                        bbox_to_anchor=(0.925, 0.5), markerfirst=False, handletextpad=0.05)
+        plt.subplots_adjust(right=0.835 + subplots_adjust)
+        axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', frameon=False,
+                                        bbox_to_anchor=(0.925, 0.5), markerfirst=True, handletextpad=0.05)
 
     return axs
 
@@ -428,6 +458,44 @@ def subplot_wrapper(
     if plot_titles is not None:
         for ax, subplot_title in zip(axs.flat, plot_titles):
             ax.set_title(subplot_title)
+
+    return axs
+
+
+def matrix_plot(
+        ds: DataSet,
+        index: str,
+        columns: str,
+        x_label: str = '',
+        y_label: str = '',
+        titles: str|List[str] = None,
+        group_by: str = None,
+        group_by_vals: List[str] = None,
+        axs: plt.Axes = None,
+        heatmap_kwargs: Dict[str, Any] = None,
+) -> plt.Axes:
+    from paramaterial.preparing import make_experimental_matrix
+
+    if axs is None:
+        fig, axs = plt.subplots(1, len(group_by))
+
+    if group_by is not None:
+        ds_subsets = [ds.subset({group_by: val}) for val in group_by_vals]
+    else:
+        ds_subsets = [ds]
+
+    default_heatmap_kwargs = dict(linewidths=2, cbar=False, annot=True, annot_kws={'size': 10})
+    heatmap_kwargs = default_heatmap_kwargs.update(heatmap_kwargs)
+
+    for sub_ds in ds_subsets:
+        exp_matrix = make_experimental_matrix(sub_ds.info_table, index=index, columns=columns)
+        sns.heatmap(exp_matrix, **heatmap_kwargs)
+
+    for i, ax in enumerate(axs):
+        ax.set_xlabel(x_label)
+        if titles is not None:
+            axs[i].set_title(titles[i])
+
 
     return axs
 

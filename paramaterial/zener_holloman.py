@@ -102,7 +102,7 @@ def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ra
                        ax: plt.Axes = None, cmap: str = 'plasma', styler: Styler = None, plot_legend: bool = True,
                        group_by: str|List[str] = None, color_by: str = None, marker_by: str = None,
                        linestyle_by: str = None,
-                       scatter_kwargs: Dict[str, Any] = None, fit_kwargs: Dict[str, Any] = None, ):
+                       scatter_kwargs: Dict[str, Any] = None, fit_kwargs: Dict[str, Any] = None, eq_hscale=0.1):
     """Plot the Zener-Holloman regression of the flow stress vs. temperature."""
     configure_plt_formatting()
     if ax is None:
@@ -165,19 +165,15 @@ def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ra
     # add the legend
     handles = styler.legend_handles(ds)
     if len(handles) > 0 and plot_legend:
-        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
-                  handletextpad=0.05)  # , labelspacing=0.1)
+        ax.legend(handles=handles, loc='best', handletextpad=0.05, markerfirst=False)  # , labelspacing=0.1)
         ax.get_legend().set_zorder(2000)
 
     ax.set_xlabel('lnZ')
-    ax.set_ylabel('Flow stress (MPa)')
-    ax.set_title('Zener-Holloman Regression Plot')
+    ax.set_ylabel('Flow Stress (MPa)')
+    ax.set_title('Zener-Holloman Regression')
 
     # add annotation to bottom right of axes with the regression equation
-    if figsize == (6, 4):
-        heights = reversed([0.05 + 0.1*i for i in range(len(groups))])
-    else:
-        heights = reversed([0.05 + 0.07*i for i in range(len(groups))])
+    heights = reversed([0.05 + eq_hscale*i for i in range(len(groups))])
     for group_ds, height in zip(groups, heights):
         di = group_ds[0]
         color = styler.color_dict[di.info[color_by]] if color_by is not None else 'k'
@@ -214,10 +210,10 @@ def make_quality_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], 
         columns = [columns]
 
     def calculate_quality(df):
-        df['quality'] = df['lnZ_fit_residual'].abs().sum()/(df['lnZ_fit_residual'].count()*df[flow_stress_key].mean())
+        df['quality'] = df['lnZ_fit_residual'].abs().sum()/(df['lnZ_fit_residual'].count()*df[flow_stress_key].mean())*100
         return df
 
-    quality_matrix = info_table.groupby(index + columns).apply(calculate_quality).groupby(index + columns)[
+    quality_matrix = info_table.groupby(index + columns, group_keys=False).apply(calculate_quality).groupby(index + columns, group_keys=False)[
         'quality'].mean().unstack(columns).fillna(0)
 
     if not as_heatmap:
