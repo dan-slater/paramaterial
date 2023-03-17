@@ -198,7 +198,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../example/01%20preparation/" class="md-tabs__link">
+      <a href="../example/paramaterial-basic-usage/" class="md-tabs__link">
         Example
       </a>
     </li>
@@ -409,8 +409,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../example/01%20preparation/" class="md-nav__link">
-        Data Preparation
+      <a href="../example/paramaterial-basic-usage/" class="md-nav__link">
+        Basic Usage
       </a>
     </li>
   
@@ -945,14 +945,14 @@
     <span class="n">screening_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">test_id_key</span><span class="p">,</span> <span class="s1">&#39;reject&#39;</span><span class="p">,</span> <span class="s1">&#39;comment&#39;</span><span class="p">])</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">screening_pdf_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">pdf_fields</span> <span class="o">=</span> <span class="n">PdfFileReader</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">get_fields</span><span class="p">()</span>
+        <span class="n">pdf_fields</span> <span class="o">=</span> <span class="n">PdfReader</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">get_fields</span><span class="p">()</span>
 
     <span class="c1"># get comment and reject fields</span>
     <span class="n">comment_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">pdf_fields</span> <span class="k">if</span> <span class="s1">&#39;comment&#39;</span> <span class="ow">in</span> <span class="n">field</span><span class="p">]</span>
     <span class="n">reject_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">pdf_fields</span> <span class="k">if</span> <span class="s1">&#39;reject&#39;</span> <span class="ow">in</span> <span class="n">field</span><span class="p">]</span>
 
     <span class="c1"># get test_ids from comment fields</span>
-    <span class="n">test_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">field_name</span><span class="p">[</span><span class="o">-</span><span class="mi">11</span><span class="p">:]</span> <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">comment_fields</span><span class="p">]</span>
+    <span class="n">test_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_box_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">comment_fields</span><span class="p">]</span>
 
     <span class="c1"># get comments and rejects</span>
     <span class="n">comments</span> <span class="o">=</span> <span class="p">[</span><span class="n">pdf_fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="s1">&#39;/V&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">comment_fields</span><span class="p">]</span>
@@ -995,11 +995,19 @@
 <span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
-<span class="normal">132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">remove_rejected_items</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">screening_pdf_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataSet</span><span class="p">:</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">remove_rejected_items</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">screening_pdf_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataSet</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Reject data items that were marked as reject in the screening pdf.&quot;&quot;&quot;</span>
     <span class="n">new_ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">screened_ds</span> <span class="o">=</span> <span class="n">read_screening_pdf_fields</span><span class="p">(</span><span class="n">new_ds</span><span class="p">,</span> <span class="n">screening_pdf_path</span><span class="p">)</span>
-    <span class="n">screened_ds</span><span class="o">.</span><span class="n">info_table</span> <span class="o">=</span> <span class="n">screened_ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="n">screened_ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;reject&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;Yes&#39;</span><span class="p">]</span>
+    <span class="n">screened_ds</span><span class="o">.</span><span class="n">info_table</span> <span class="o">=</span> <span class="n">screened_ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="n">screened_ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;reject&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/Yes&#39;</span><span class="p">]</span>
+    <span class="c1"># print a list of the rejected items with a detailed message</span>
+    <span class="n">rejected_items</span> <span class="o">=</span> <span class="n">screened_ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="n">screened_ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;reject&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;/Yes&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rejected_items</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Item </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="n">screened_ds</span><span class="o">.</span><span class="n">test_id_key</span><span class="p">]</span><span class="si">}</span><span class="s1"> was rejected because </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">screened_ds</span>
 </code></pre></div></td></tr></table></div>
       </details>

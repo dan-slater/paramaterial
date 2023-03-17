@@ -198,7 +198,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../example/01%20preparation/" class="md-tabs__link">
+      <a href="../example/paramaterial-basic-usage/" class="md-tabs__link">
         Example
       </a>
     </li>
@@ -409,8 +409,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../example/01%20preparation/" class="md-nav__link">
-        Data Preparation
+      <a href="../example/paramaterial-basic-usage/" class="md-nav__link">
+        Basic Usage
       </a>
     </li>
   
@@ -587,13 +587,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#paramaterial.modelling.ModelItem.write_data_to_csv" class="md-nav__link">
-    write_data_to_csv()
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -615,15 +608,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#paramaterial.modelling.ModelSet.from_info_table" class="md-nav__link">
-    from_info_table()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#paramaterial.modelling.ModelSet.model_items" class="md-nav__link">
-    model_items()
+  <a href="#paramaterial.modelling.ModelSet.fitting_results" class="md-nav__link">
+    fitting_results()
   </a>
   
 </li>
@@ -643,6 +629,13 @@
         <li class="md-nav__item">
   <a href="#paramaterial.modelling.make_representative_data" class="md-nav__link">
     make_representative_data()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#paramaterial.modelling.make_representative_info" class="md-nav__link">
+    make_representative_info()
   </a>
   
 </li>
@@ -721,275 +714,7 @@
 
         <details class="quote">
           <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">ModelItem</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Class that acts as a model DataItem.&quot;&quot;&quot;</span>
-    <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">info</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span>
-    <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">model_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
-    <span class="n">x_min</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">x_max</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Generate the model data and return as a DataFrame.&quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">})</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">test_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Return the test_id of the corresponding DataItem.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;test_id&#39;</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">write_data_to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Write the generated data to a csv file.&quot;&quot;&quot;</span>
-        <span class="n">output_path</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_from_results_dict</span><span class="p">(</span><span class="n">results_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
-        <span class="n">model_id</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;model_id&#39;</span><span class="p">]</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">])</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span>
-        <span class="n">param_names</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;param_names&#39;</span><span class="p">]</span>
-        <span class="n">variables</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">]</span>
-        <span class="n">variable_names</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;variable_names&#39;</span><span class="p">]</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">info</span><span class="p">,</span>
-                          <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-                          <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">param_names</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)])</span>
-        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;model_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_id</span>
-        <span class="n">model_func</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;model_func&#39;</span><span class="p">]</span>
-        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;model_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_func</span><span class="o">.</span><span class="vm">__name__</span>
-        <span class="n">x_min</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span>
-        <span class="n">x_max</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span>
-        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_min</span>
-        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_max</span>
-        <span class="n">input_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">variables</span><span class="p">,</span> <span class="n">params</span><span class="p">])</span> <span class="k">if</span> <span class="n">variable_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">params</span>
-        <span class="k">return</span> <span class="n">ModelItem</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">input_params</span><span class="p">,</span> <span class="n">model_func</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_read_row_from_params_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">model_id_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">params_table</span><span class="p">[</span><span class="n">model_id_key</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="bp">self</span>
-</code></pre></div></td></tr></table></div>
-        </details>
-
-  
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h3 id="paramaterial.modelling.ModelItem.data" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">data</span><span class="p">()</span></code>
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-</h3>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Generate the model data and return as a DataFrame.</p>
-
-      <details class="quote">
-        <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
-<span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Generate the model data and return as a DataFrame.&quot;&quot;&quot;</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">})</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-
-<h3 id="paramaterial.modelling.ModelItem.test_id" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">test_id</span><span class="p">()</span></code>
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-</h3>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Return the test_id of the corresponding DataItem.</p>
-
-      <details class="quote">
-        <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
-<span class="k">def</span> <span class="nf">test_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Return the test_id of the corresponding DataItem.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;test_id&#39;</span><span class="p">]</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-
-<h3 id="paramaterial.modelling.ModelItem.write_data_to_csv" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">write_data_to_csv</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span></code>
-
-</h3>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Write the generated data to a csv file.</p>
-
-      <details class="quote">
-        <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">write_data_to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Write the generated data to a csv file.&quot;&quot;&quot;</span>
-    <span class="n">output_path</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">return</span> <span class="bp">self</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
-
-</div>
-
-
-
-  </div>
-
-  </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="paramaterial.modelling.ModelSet" class="doc doc-heading">
-        <code>ModelSet</code>
-
-
-</h2>
-
-
-  <div class="doc doc-contents ">
-
-  
-      <p>Class that acts as model DataSet.</p>
-
-
-        <details class="quote">
-          <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">199</span>
 <span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
@@ -1050,10 +775,183 @@
 <span class="normal">257</span>
 <span class="normal">258</span>
 <span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
+<span class="normal">260</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ModelItem</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class that acts as a model DataItem.&quot;&quot;&quot;</span>
+    <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">info</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">model_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+    <span class="n">x_key</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">y_key</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">x_min</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">x_max</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate the model data and return as a DataFrame.&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="c1"># return pd.DataFrame({&#39;Strain&#39;: x, &#39;Stress(MPa)&#39;: y})</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_key</span><span class="p">:</span> <span class="n">y</span><span class="p">})</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">test_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the test_id of the corresponding DataItem.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;test_id&#39;</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_results_dict</span><span class="p">(</span><span class="n">results_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+        <span class="n">model_id</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;model_id&#39;</span><span class="p">]</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">])</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;param_names&#39;</span><span class="p">]</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">]</span>
+        <span class="n">variable_names</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;variable_names&#39;</span><span class="p">]</span>
+        <span class="n">var_vals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">param_vals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">param_names</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">param_vals</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">info</span><span class="p">,</span> <span class="n">var_vals</span><span class="p">,</span> <span class="n">param_vals</span><span class="p">])</span>
+        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;model_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_id</span>
+        <span class="n">model_func</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;model_func&#39;</span><span class="p">]</span>
+        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;model_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_func</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">x_key</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;x_key&#39;</span><span class="p">]</span>
+        <span class="n">y_key</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;y_key&#39;</span><span class="p">]</span>
+        <span class="n">x_min</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span>
+        <span class="n">x_max</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span>
+        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_min</span>
+        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_max</span>
+        <span class="n">input_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">variables</span><span class="p">,</span> <span class="n">params</span><span class="p">])</span> <span class="k">if</span> <span class="n">variable_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">params</span>
+        <span class="c1"># drop duplicate columns from info</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">info</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">ModelItem</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">input_params</span><span class="p">,</span> <span class="n">model_func</span><span class="p">,</span> <span class="n">x_key</span><span class="p">,</span> <span class="n">y_key</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">read_info_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info_table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">test_id_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="n">info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="n">test_id_key</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_id</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">read_row_from_params_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">model_id_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">params_table</span><span class="p">[</span><span class="n">model_id_key</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div></td></tr></table></div>
+        </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="paramaterial.modelling.ModelItem.data" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">data</span><span class="p">()</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Generate the model data and return as a DataFrame.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>paramaterial\modelling.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate the model data and return as a DataFrame.&quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+    <span class="c1"># return pd.DataFrame({&#39;Strain&#39;: x, &#39;Stress(MPa)&#39;: y})</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_key</span><span class="p">:</span> <span class="n">y</span><span class="p">})</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="paramaterial.modelling.ModelItem.test_id" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">test_id</span><span class="p">()</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Return the test_id of the corresponding DataItem.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>paramaterial\modelling.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">test_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return the test_id of the corresponding DataItem.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;test_id&#39;</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="paramaterial.modelling.ModelSet" class="doc doc-heading">
+        <code>ModelSet</code>
+
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+
+  
+      <p>Class that acts as model DataSet.</p>
+
+
+        <details class="quote">
+          <summary>Source code in <code>paramaterial\modelling.py</code></summary>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">263</span>
 <span class="normal">264</span>
 <span class="normal">265</span>
 <span class="normal">266</span>
@@ -1141,21 +1039,65 @@
 <span class="normal">348</span>
 <span class="normal">349</span>
 <span class="normal">350</span>
-<span class="normal">351</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ModelSet</span><span class="p">:</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ModelSet</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class that acts as model DataSet.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">model_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-            <span class="n">param_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">var_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">bounds</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">initial_guess</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">scipy_func</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;minimize&#39;</span><span class="p">,</span>
-            <span class="n">scipy_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">param_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">var_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bounds</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">initial_guess</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scipy_func</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;minimize&#39;</span><span class="p">,</span>
+                 <span class="n">scipy_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_func</span> <span class="o">=</span> <span class="n">model_func</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;model id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">param_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;model_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">param_names</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results_dict_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">param_names</span> <span class="o">=</span> <span class="n">param_names</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="o">=</span> <span class="n">var_names</span>
@@ -1167,29 +1109,25 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fitted_ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y_key</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_map</span><span class="p">:</span> <span class="nb">map</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_items</span><span class="p">:</span> <span class="n">List</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">model_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ModelItem</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Return a list of ModelItem objects.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">mi</span> <span class="k">for</span> <span class="n">mi</span> <span class="ow">in</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_map</span><span class="p">)]</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">from_info_table</span><span class="p">(</span><span class="n">info_table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-                        <span class="n">model_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-                        <span class="n">param_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-                        <span class="n">model_id_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;model_id&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;ModelSet&#39;</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Create a ModelSet from an info table.&quot;&quot;&quot;</span>
-        <span class="n">model_ids</span> <span class="o">=</span> <span class="n">info_table</span><span class="p">[</span><span class="n">model_id_key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-        <span class="n">info_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">param_names</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-        <span class="n">params_lists</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="n">param_names</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-        <span class="n">model_funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">model_func</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-        <span class="n">x_mins</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-        <span class="n">x_maxs</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-        <span class="n">resolutions</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;resolution&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-        <span class="n">ms</span> <span class="o">=</span> <span class="n">ModelSet</span><span class="p">(</span><span class="n">model_func</span><span class="p">,</span> <span class="n">param_names</span><span class="p">)</span>
-        <span class="n">ms</span><span class="o">.</span><span class="n">model_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">ModelItem</span><span class="p">,</span> <span class="n">model_ids</span><span class="p">,</span> <span class="n">info_rows</span><span class="p">,</span> <span class="n">params_lists</span><span class="p">,</span> <span class="n">model_funcs</span><span class="p">,</span> <span class="n">x_mins</span><span class="p">,</span> <span class="n">x_maxs</span><span class="p">,</span> <span class="n">resolutions</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ms</span>
+    <span class="c1"># @staticmethod</span>
+    <span class="c1"># def from_info_table(info_table: pd.DataFrame, model_func: Callable[[np.ndarray, List[float]], np.ndarray],</span>
+    <span class="c1">#                     param_names: List[str], model_id_key: str = &#39;model_id&#39;) -&gt; &#39;ModelSet&#39;:</span>
+    <span class="c1">#     &quot;&quot;&quot;Create a ModelSet from an info table.&quot;&quot;&quot;</span>
+    <span class="c1">#     model_ids = info_table[model_id_key].values</span>
+    <span class="c1">#     info_rows = [info_table.drop(columns=param_names).iloc[i] for i in range(len(info_table))]</span>
+    <span class="c1">#     params_lists = [info_table[param_names].iloc[i].values for i in range(len(info_table))]</span>
+    <span class="c1">#     model_funcs = [model_func for _ in range(len(info_table))]</span>
+    <span class="c1">#     x</span>
+    <span class="c1">#     x_mins = [info_table[&#39;x_min&#39;].iloc[i] for i in range(len(info_table))]</span>
+    <span class="c1">#     x_maxs = [info_table[&#39;x_max&#39;].iloc[i] for i in range(len(info_table))]</span>
+    <span class="c1">#     resolutions = [info_table[&#39;resolution&#39;].iloc[i] for i in range(len(info_table))]</span>
+    <span class="c1">#     ms = ModelSet(model_func, param_names)</span>
+    <span class="c1">#     ms.model_items = list(</span>
+    <span class="c1">#         map(ModelItem, model_ids, info_rows, params_lists, model_funcs, x_keys, y_keys, x_mins, x_maxs,</span>
+    <span class="c1">#             resolutions))</span>
+    <span class="c1">#     return ms</span>
 
     <span class="k">def</span> <span class="nf">fit_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">x_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">y_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Fit the model to the DataSet.</span>
@@ -1208,9 +1146,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span> <span class="o">=</span> <span class="n">sample_size</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_item</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_items</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;fits&#39;</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
             <span class="k">pass</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">ModelItem</span><span class="o">.</span><span class="n">_from_results_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_dict_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">ModelItem</span><span class="o">.</span><span class="n">from_results_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_dict_list</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataSet</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataSet</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return a ds with generated data with optimised model parameters added to the info table.</span>
 
 <span class="sd">        Args:</span>
@@ -1220,13 +1158,21 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">predict_ds</span> <span class="o">=</span> <span class="n">DataSet</span><span class="p">()</span>
 
+        <span class="c1"># predict_ds.test_id_key = &#39;model_id&#39;</span>
+
         <span class="k">def</span> <span class="nf">update_resolution</span><span class="p">(</span><span class="n">mi</span><span class="p">:</span> <span class="n">ModelItem</span><span class="p">):</span>
             <span class="n">mi</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span>
             <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;resolution&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resolution</span>
+            <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmin</span> <span class="k">if</span> <span class="n">xmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span>
+            <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmax</span> <span class="k">if</span> <span class="n">xmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">mi</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">mi</span><span class="p">:</span> <span class="n">update_resolution</span><span class="p">(</span><span class="n">mi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_map</span><span class="p">)</span>
-        <span class="n">predict_ds</span><span class="o">.</span><span class="n">data_map</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_map</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">mi</span><span class="p">:</span> <span class="n">update_resolution</span><span class="p">(</span><span class="n">mi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_items</span><span class="p">))</span>
+        <span class="n">predict_ds</span><span class="o">.</span><span class="n">data_items</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_items</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">di</span> <span class="ow">in</span> <span class="n">predict_ds</span><span class="o">.</span><span class="n">data_items</span><span class="p">:</span>
+            <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;test_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;model_id&#39;</span><span class="p">]</span>
+        <span class="n">predict_ds</span><span class="o">.</span><span class="n">info_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">di</span><span class="o">.</span><span class="n">info</span> <span class="k">for</span> <span class="n">di</span> <span class="ow">in</span> <span class="n">predict_ds</span><span class="o">.</span><span class="n">data_items</span><span class="p">])</span>
+
         <span class="k">return</span> <span class="n">predict_ds</span>
 
     <span class="k">def</span> <span class="nf">_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -1247,71 +1193,41 @@
 
     <span class="k">def</span> <span class="nf">_fit_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">di</span><span class="p">:</span> <span class="n">DataItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scipy_func</span> <span class="o">==</span> <span class="s1">&#39;minimize&#39;</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">initial_guess</span><span class="p">,</span>
-                <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span>
-                <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
-                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span>
-            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_guess</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
+                                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scipy_func</span> <span class="o">==</span> <span class="s1">&#39;differential_evolution&#39;</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">differential_evolution</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
-                <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span>
-                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span>
-            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">differential_evolution</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scipy_func</span> <span class="o">==</span> <span class="s1">&#39;basinhopping&#39;</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">basinhopping</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">initial_guess</span><span class="p">,</span>
-                <span class="n">minimizer_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-                    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span>
-                    <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
-                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">basinhopping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_guess</span><span class="p">,</span>
+                                     <span class="n">minimizer_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span><span class="p">))</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scipy_func</span> <span class="o">==</span> <span class="s1">&#39;dual_annealing&#39;</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">dual_annealing</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
-                <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span>
-                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span>
-            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">dual_annealing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scipy_func</span> <span class="o">==</span> <span class="s1">&#39;shgo&#39;</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">shgo</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
-                <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span>
-                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span>
-            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">shgo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scipy_func</span> <span class="o">==</span> <span class="s1">&#39;brute&#39;</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">brute</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
-                <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span>
-                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span>
-            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">brute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objective_function</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">di</span><span class="p">,),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;Invalid scipy_func: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_func</span><span class="si">}</span><span class="se">\n</span><span class="s1">Must be one of:&#39;</span>
-                <span class="sa">f</span><span class="s1">&#39; minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid scipy_func: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scipy_func</span><span class="si">}</span><span class="se">\n</span><span class="s1">Must be one of:&#39;</span>
+                             <span class="sa">f</span><span class="s1">&#39; minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute&#39;</span><span class="p">)</span>
         <span class="n">model_id</span> <span class="o">=</span> <span class="s1">&#39;model_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">results_dict</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;model_id&#39;</span><span class="p">:</span> <span class="n">model_id</span><span class="p">,</span>
-            <span class="s1">&#39;info&#39;</span><span class="p">:</span> <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">,</span>
-            <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-            <span class="s1">&#39;param_names&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_names</span><span class="p">,</span>
-            <span class="s1">&#39;variables&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s1">&#39;variable_names&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span>
-            <span class="s1">&#39;model_func&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_func</span><span class="p">,</span>
-            <span class="s1">&#39;x_min&#39;</span><span class="p">:</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
-            <span class="s1">&#39;x_max&#39;</span><span class="p">:</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
-        <span class="p">}</span>
+        <span class="n">results_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;model_id&#39;</span><span class="p">:</span> <span class="n">model_id</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">:</span> <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;param_names&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_names</span><span class="p">,</span>
+                        <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span>
+                        <span class="s1">&#39;variables&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="s1">&#39;variable_names&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span> <span class="s1">&#39;model_func&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_func</span><span class="p">,</span>
+                        <span class="s1">&#39;x_key&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">,</span> <span class="s1">&#39;y_key&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_key</span><span class="p">,</span>
+                        <span class="s1">&#39;x_min&#39;</span><span class="p">:</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                        <span class="s1">&#39;x_max&#39;</span><span class="p">:</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results_dict_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results_dict</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">params_table</span><span class="p">,</span>
-                                       <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="n">model_id</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)],</span>
-                                                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;model id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_names</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">params_table</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="n">model_id</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">fun</span><span class="p">]],</span>
+                                             <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;model_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_names</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;fitting error&#39;</span><span class="p">])])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fitting_results</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return a DataFrame with the results of the fitting.&quot;&quot;&quot;</span>
+        <span class="c1"># get the fitted parameters and make a table with them and include only the relevant info and the fitting error</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_table</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fitted_ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;model_id&#39;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
         </details>
 
@@ -1397,24 +1313,24 @@
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">x_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">y_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">x_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">y_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Fit the model to the DataSet.</span>
 
 <span class="sd">    Args:</span>
@@ -1431,7 +1347,7 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span> <span class="o">=</span> <span class="n">sample_size</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_item</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_items</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;fits&#39;</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">pass</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">model_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">ModelItem</span><span class="o">.</span><span class="n">_from_results_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_dict_list</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">model_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">ModelItem</span><span class="o">.</span><span class="n">from_results_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_dict_list</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>
@@ -1442,65 +1358,8 @@
 
 
 
-<h3 id="paramaterial.modelling.ModelSet.from_info_table" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">from_info_table</span><span class="p">(</span><span class="n">info_table</span><span class="p">,</span> <span class="n">model_func</span><span class="p">,</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">model_id_key</span><span class="o">=</span><span class="s1">&#39;model_id&#39;</span><span class="p">)</span></code>
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
-  </span>
-
-</h3>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Create a ModelSet from an info table.</p>
-
-      <details class="quote">
-        <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
-<span class="k">def</span> <span class="nf">from_info_table</span><span class="p">(</span><span class="n">info_table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-                    <span class="n">model_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-                    <span class="n">param_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-                    <span class="n">model_id_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;model_id&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;ModelSet&#39;</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Create a ModelSet from an info table.&quot;&quot;&quot;</span>
-    <span class="n">model_ids</span> <span class="o">=</span> <span class="n">info_table</span><span class="p">[</span><span class="n">model_id_key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">info_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">param_names</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-    <span class="n">params_lists</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="n">param_names</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-    <span class="n">model_funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">model_func</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-    <span class="n">x_mins</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-    <span class="n">x_maxs</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-    <span class="n">resolutions</span> <span class="o">=</span> <span class="p">[</span><span class="n">info_table</span><span class="p">[</span><span class="s1">&#39;resolution&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">info_table</span><span class="p">))]</span>
-    <span class="n">ms</span> <span class="o">=</span> <span class="n">ModelSet</span><span class="p">(</span><span class="n">model_func</span><span class="p">,</span> <span class="n">param_names</span><span class="p">)</span>
-    <span class="n">ms</span><span class="o">.</span><span class="n">model_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">ModelItem</span><span class="p">,</span> <span class="n">model_ids</span><span class="p">,</span> <span class="n">info_rows</span><span class="p">,</span> <span class="n">params_lists</span><span class="p">,</span> <span class="n">model_funcs</span><span class="p">,</span> <span class="n">x_mins</span><span class="p">,</span> <span class="n">x_maxs</span><span class="p">,</span> <span class="n">resolutions</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">ms</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-
-<h3 id="paramaterial.modelling.ModelSet.model_items" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">model_items</span><span class="p">()</span></code>
+<h3 id="paramaterial.modelling.ModelSet.fitting_results" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">fitting_results</span><span class="p">()</span></code>
   
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
@@ -1511,17 +1370,19 @@
 
   <div class="doc doc-contents ">
   
-      <p>Return a list of ModelItem objects.</p>
+      <p>Return a DataFrame with the results of the fitting.</p>
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
-<span class="k">def</span> <span class="nf">model_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ModelItem</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Return a list of ModelItem objects.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">mi</span> <span class="k">for</span> <span class="n">mi</span> <span class="ow">in</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_map</span><span class="p">)]</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">fitting_results</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return a DataFrame with the results of the fitting.&quot;&quot;&quot;</span>
+    <span class="c1"># get the fitted parameters and make a table with them and include only the relevant info and the fitting error</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_table</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fitted_ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;model_id&#39;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>
@@ -1533,7 +1394,7 @@
 
 
 <h3 id="paramaterial.modelling.ModelSet.predict" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">predict</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">predict</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 </h3>
 
@@ -1568,24 +1429,32 @@
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataSet</span><span class="p">:</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataSet</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Return a ds with generated data with optimised model parameters added to the info table.</span>
 
 <span class="sd">    Args:</span>
@@ -1595,13 +1464,21 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">predict_ds</span> <span class="o">=</span> <span class="n">DataSet</span><span class="p">()</span>
 
+    <span class="c1"># predict_ds.test_id_key = &#39;model_id&#39;</span>
+
     <span class="k">def</span> <span class="nf">update_resolution</span><span class="p">(</span><span class="n">mi</span><span class="p">:</span> <span class="n">ModelItem</span><span class="p">):</span>
         <span class="n">mi</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span>
         <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;resolution&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resolution</span>
+        <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmin</span> <span class="k">if</span> <span class="n">xmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_min&#39;</span><span class="p">]</span>
+        <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmax</span> <span class="k">if</span> <span class="n">xmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mi</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;x_max&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">mi</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">model_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">mi</span><span class="p">:</span> <span class="n">update_resolution</span><span class="p">(</span><span class="n">mi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_map</span><span class="p">)</span>
-    <span class="n">predict_ds</span><span class="o">.</span><span class="n">data_map</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_map</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">model_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">mi</span><span class="p">:</span> <span class="n">update_resolution</span><span class="p">(</span><span class="n">mi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_items</span><span class="p">))</span>
+    <span class="n">predict_ds</span><span class="o">.</span><span class="n">data_items</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_items</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">di</span> <span class="ow">in</span> <span class="n">predict_ds</span><span class="o">.</span><span class="n">data_items</span><span class="p">:</span>
+        <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;test_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;model_id&#39;</span><span class="p">]</span>
+    <span class="n">predict_ds</span><span class="o">.</span><span class="n">info_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">di</span><span class="o">.</span><span class="n">info</span> <span class="k">for</span> <span class="n">di</span> <span class="ow">in</span> <span class="n">predict_ds</span><span class="o">.</span><span class="n">data_items</span><span class="p">])</span>
+
     <span class="k">return</span> <span class="n">predict_ds</span>
 </code></pre></div></td></tr></table></div>
       </details>
@@ -1623,7 +1500,7 @@
 
 
 <h2 id="paramaterial.modelling.make_representative_data" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">make_representative_data</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">info_path</span><span class="p">,</span> <span class="n">repr_col</span><span class="p">,</span> <span class="n">repr_by_cols</span><span class="p">,</span> <span class="n">interp_by</span><span class="p">,</span> <span class="n">interp_res</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">min_interp_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">interp_end</span><span class="o">=</span><span class="s1">&#39;max_all&#39;</span><span class="p">,</span> <span class="n">group_info_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">make_representative_data</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">info_path</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">repres_col</span><span class="p">,</span> <span class="n">group_by_keys</span><span class="p">,</span> <span class="n">interp_by</span><span class="p">,</span> <span class="n">interp_res</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">interp_range</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">,</span> <span class="n">group_info_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 </h2>
 
@@ -1674,7 +1551,7 @@
           </td>
         </tr>
         <tr>
-          <td><code>repr_col</code></td>
+          <td><code>repres_col</code></td>
           <td>
                 <code>str</code>
           </td>
@@ -1684,7 +1561,7 @@
           </td>
         </tr>
         <tr>
-          <td><code>repr_by_cols</code></td>
+          <td><code>group_by_keys</code></td>
           <td>
                 <code><span title="typing.List">List</span>[str]</code>
           </td>
@@ -1716,21 +1593,19 @@
         <tr>
           <td><code>min_interp_val</code></td>
           <td>
-                <code>float</code>
           </td>
           <td><p>The minimum value of the interpolation.</p></td>
           <td>
-                <code>0.0</code>
+              <em>required</em>
           </td>
         </tr>
         <tr>
           <td><code>interp_end</code></td>
           <td>
-                <code>str</code>
           </td>
           <td><p>The end of the interpolation.</p></td>
           <td>
-                <code>&#39;max_all&#39;</code>
+              <em>required</em>
           </td>
         </tr>
         <tr>
@@ -1765,7 +1640,10 @@
 
       <details class="quote">
         <summary>Source code in <code>paramaterial\modelling.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 21</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
 <span class="normal"> 22</span>
 <span class="normal"> 23</span>
 <span class="normal"> 24</span>
@@ -1866,20 +1744,40 @@
 <span class="normal">119</span>
 <span class="normal">120</span>
 <span class="normal">121</span>
-<span class="normal">122</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">make_representative_data</span><span class="p">(</span>
-        <span class="n">ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">info_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">repr_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repr_by_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">interp_by</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">interp_res</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">min_interp_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">interp_end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;max_all&#39;</span><span class="p">,</span>
-        <span class="n">group_info_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">):</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">make_representative_data</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">info_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repres_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">group_by_keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                             <span class="n">interp_by</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">interp_res</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">interp_range</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;outer&#39;</span><span class="p">,</span>
+                             <span class="n">group_info_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Make representative curves of the ds and save them to a directory.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        ds: The ds to make representative curves from.</span>
 <span class="sd">        data_dir: The directory to save the representative curves to.</span>
 <span class="sd">        info_path: The path to the info file.</span>
-<span class="sd">        repr_col: The column to group by.</span>
-<span class="sd">        repr_by_cols: The columns to group by.</span>
+<span class="sd">        repres_col: The column to group by.</span>
+<span class="sd">        group_by_keys: The columns to group by.</span>
 <span class="sd">        interp_by: The column to interpolate by.</span>
 <span class="sd">        interp_res: The resolution of the interpolation.</span>
 <span class="sd">        min_interp_val: The minimum value of the interpolation.</span>
@@ -1892,6 +1790,243 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
 
+    <span class="n">value_lists</span> <span class="o">=</span> <span class="p">[</span><span class="n">ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">group_by_keys</span><span class="p">]</span>
+
+    <span class="c1"># make a dataset filter for each representative curve</span>
+    <span class="n">subset_filters</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value_lists</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+        <span class="n">subset_filters</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">group_by_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">value_lists</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]})</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">group_by_keys</span><span class="p">)):</span>
+        <span class="n">new_filters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">fltr</span> <span class="ow">in</span> <span class="n">subset_filters</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">value_lists</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">new_filter</span> <span class="o">=</span> <span class="n">fltr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">new_filter</span><span class="p">[</span><span class="n">group_by_keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="n">new_filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_filter</span><span class="p">)</span>
+        <span class="n">subset_filters</span> <span class="o">=</span> <span class="n">new_filters</span>
+
+    <span class="c1"># keys = &#39;abc&#39;</span>
+    <span class="c1"># values = [1, 2]</span>
+    <span class="c1">#</span>
+    <span class="c1"># filters = [{keys[0]: value} for value in values]</span>
+    <span class="c1">#</span>
+    <span class="c1"># for key in keys[1:]:</span>
+    <span class="c1">#     new_filters = []</span>
+    <span class="c1">#     for fltr in filters:</span>
+    <span class="c1">#         for value in values:</span>
+    <span class="c1">#             new_fltr = fltr.copy()</span>
+    <span class="c1">#             new_fltr[key] = value</span>
+    <span class="c1">#             new_filters.append(new_fltr)</span>
+    <span class="c1">#     filters = new_filters</span>
+    <span class="c1">#</span>
+    <span class="c1"># print(filters)</span>
+
+    <span class="c1"># make list of repres_ids and initialise info table for the representative data</span>
+    <span class="n">repres_ids</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;repres_id_</span><span class="si">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="si">:</span><span class="s1">0&gt;4</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subset_filters</span><span class="p">))]</span>
+    <span class="n">repr_info_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_by_keys</span><span class="p">)</span>
+
+    <span class="c1"># make representative curves and take means of info table columns</span>
+    <span class="k">for</span> <span class="n">repres_id</span><span class="p">,</span> <span class="n">subset_filter</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">repres_ids</span><span class="p">,</span> <span class="n">subset_filters</span><span class="p">):</span>
+        <span class="c1"># get representative subset</span>
+        <span class="n">repres_subset</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="n">subset_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">repres_subset</span><span class="o">.</span><span class="n">info_table</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># add row to repr_info_table</span>
+        <span class="n">repr_info_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">repr_info_table</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;repres_id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">repres_id</span><span class="p">],</span> <span class="o">**</span><span class="n">subset_filter</span><span class="p">,</span> <span class="s1">&#39;nr averaged&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">repres_subset</span><span class="p">)]})])</span>
+
+        <span class="c1"># add means of group info columns to repr_info_table</span>
+        <span class="k">if</span> <span class="n">group_info_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">group_info_cols</span><span class="p">:</span>
+                <span class="n">df_col</span> <span class="o">=</span> <span class="n">repres_subset</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;std_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;upstd_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="n">df_col</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;downstd_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">df_col</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;max_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;min_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+        <span class="c1"># find minimum of maximum interp_by vals in subset</span>
+        <span class="k">if</span> <span class="n">interp_range</span> <span class="o">==</span> <span class="s1">&#39;outer&#39;</span><span class="p">:</span>
+            <span class="n">min_interp_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="nb">min</span><span class="p">(</span><span class="n">dataitem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">])</span> <span class="k">for</span> <span class="n">dataitem</span> <span class="ow">in</span> <span class="n">repres_subset</span><span class="p">])</span>
+            <span class="n">max_interp_val</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="n">dataitem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">])</span> <span class="k">for</span> <span class="n">dataitem</span> <span class="ow">in</span> <span class="n">repres_subset</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">interp_range</span> <span class="o">==</span> <span class="s1">&#39;inner&#39;</span><span class="p">:</span>
+            <span class="n">min_interp_val</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">min</span><span class="p">(</span><span class="n">dataitem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">])</span> <span class="k">for</span> <span class="n">dataitem</span> <span class="ow">in</span> <span class="n">repres_subset</span><span class="p">])</span>
+            <span class="n">max_interp_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="n">dataitem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">])</span> <span class="k">for</span> <span class="n">dataitem</span> <span class="ow">in</span> <span class="n">repres_subset</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">interp_range</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+            <span class="n">min_interp_val</span> <span class="o">=</span> <span class="n">interp_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">max_interp_val</span> <span class="o">=</span> <span class="n">interp_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;interp_range must be &quot;outer&quot;, &quot;inner&quot; or a tuple, not </span><span class="si">{</span><span class="n">interp_range</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># make monotonically increasing vector to interpolate by</span>
+        <span class="n">interp_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">min_interp_val</span><span class="p">,</span> <span class="n">max_interp_val</span><span class="p">,</span> <span class="n">interp_res</span><span class="p">)</span>
+
+        <span class="c1"># make interpolated data for averaging, staring at origin</span>
+        <span class="n">interp_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="n">interp_by</span><span class="p">:</span> <span class="n">interp_vec</span><span class="p">})</span>
+
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">dataitem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">repres_subset</span><span class="p">):</span>
+            <span class="c1"># drop columns and rows outside interp range</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">dataitem</span><span class="o">.</span><span class="n">data</span><span class="p">[[</span><span class="n">interp_by</span><span class="p">,</span> <span class="n">repres_col</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[(</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_interp_val</span><span class="p">)</span><span class="o">&amp;</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_interp_val</span><span class="p">)]</span>
+            <span class="c1"># interpolate the repr_by column and add to interp_data</span>
+            <span class="c1"># add 0 to start of data to ensure interpolation starts at origin</span>
+            <span class="n">interp_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;interp_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">interp_vec</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                                                                <span class="n">data</span><span class="p">[</span><span class="n">repres_col</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+        <span class="c1"># make representative data from stats of interpolated data</span>
+        <span class="n">interp_data</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">interp_by</span><span class="p">])</span>
+        <span class="n">repr_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">interp_by</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="n">interp_vec</span><span class="p">})</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;up_std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;down_std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;up_2std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;down_2std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;up_3std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;down_3std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span><span class="o">*</span><span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;min_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;max_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;q1_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;q3_</span><span class="si">{</span><span class="n">repres_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># write the representative data and info</span>
+        <span class="n">repr_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repres_id</span><span class="si">}</span><span class="s1">.csv&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">repr_info_table</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">info_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="paramaterial.modelling.make_representative_info" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">make_representative_info</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">repr_by_cols</span><span class="p">,</span> <span class="n">group_info_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Make a table of representative info for each group in a DataSet.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>ds</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="paramaterial.plug.DataSet" href="../plug/#paramaterial.plug.DataSet">DataSet</a></code>
+          </td>
+          <td><p>DataSet to make representative info for.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>info_path</code></td>
+          <td>
+          </td>
+          <td><p>Path to save representative info table to.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>repr_by_cols</code></td>
+          <td>
+                <code><span title="typing.List">List</span>[str]</code>
+          </td>
+          <td><p>Columns to group by and make representative info for.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>group_info_cols</code></td>
+          <td>
+                <code><span title="typing.List">List</span>[str]</code>
+          </td>
+          <td><p>Columns to include in representative info table.</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>paramaterial\modelling.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">make_representative_info</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">DataSet</span><span class="p">,</span> <span class="n">repr_by_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">group_info_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make a table of representative info for each group in a DataSet.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ds: DataSet to make representative info for.</span>
+<span class="sd">        info_path: Path to save representative info table to.</span>
+<span class="sd">        repr_by_cols: Columns to group by and make representative info for.</span>
+<span class="sd">        group_info_cols: Columns to include in representative info table.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">subset_filters</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">value_lists</span> <span class="o">=</span> <span class="p">[</span><span class="n">ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">repr_by_cols</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value_lists</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
@@ -1905,69 +2040,33 @@
                 <span class="n">new_filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_filter</span><span class="p">)</span>
         <span class="n">subset_filters</span> <span class="o">=</span> <span class="n">new_filters</span>
 
-    <span class="c1"># make list of repr_ids and initialise info table for the representative data</span>
-    <span class="n">repr_ids</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;repr_id_</span><span class="si">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="si">:</span><span class="s1">0&gt;4</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subset_filters</span><span class="p">))]</span>
-    <span class="n">repr_info_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;repr id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">repr_by_cols</span><span class="p">)</span>
+    <span class="c1"># make list of repres_ids and initialise info table for the representative data</span>
+    <span class="n">repres_ids</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;repres_id_</span><span class="si">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="si">:</span><span class="s1">0&gt;4</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subset_filters</span><span class="p">))]</span>
+    <span class="n">repr_info_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">repr_by_cols</span><span class="p">)</span>
 
-    <span class="c1"># make representative curves and take means of info table columns</span>
-    <span class="k">for</span> <span class="n">repr_id</span><span class="p">,</span> <span class="n">subset_filter</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">repr_ids</span><span class="p">,</span> <span class="n">subset_filters</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">fltr</span><span class="p">,</span> <span class="n">repres_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">subset_filters</span><span class="p">,</span> <span class="n">repres_ids</span><span class="p">):</span>
         <span class="c1"># get representative subset</span>
-        <span class="n">repr_subset</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="n">subset_filter</span><span class="p">)</span>
+        <span class="n">repr_subset</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="n">fltr</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">repr_subset</span><span class="o">.</span><span class="n">info_table</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="c1"># add row to repr_info_table</span>
         <span class="n">repr_info_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">repr_info_table</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;repr id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">repr_id</span><span class="p">],</span> <span class="o">**</span><span class="n">subset_filter</span><span class="p">,</span> <span class="s1">&#39;nr averaged&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">repr_subset</span><span class="p">)]})])</span>
+            <span class="p">[</span><span class="n">repr_info_table</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;repres_id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">repres_id</span><span class="p">],</span> <span class="o">**</span><span class="n">fltr</span><span class="p">,</span> <span class="s1">&#39;nr averaged&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">repr_subset</span><span class="p">)]})])</span>
 
         <span class="c1"># add means of group info columns to repr_info_table</span>
         <span class="k">if</span> <span class="n">group_info_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">group_info_cols</span><span class="p">:</span>
-                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repr id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repr_id</span><span class="p">,</span> <span class="s1">&#39;mean_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> \
-                    <span class="o">=</span> <span class="n">repr_subset</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">df_col</span> <span class="o">=</span> <span class="n">repr_subset</span><span class="o">.</span><span class="n">info_table</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;std_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;upstd_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="n">df_col</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;downstd_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">df_col</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;max_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="n">repr_info_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">repr_info_table</span><span class="p">[</span><span class="s1">&#39;repres_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">repres_id</span><span class="p">,</span> <span class="s1">&#39;min_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_col</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 
-        <span class="c1"># find minimum of maximum interp_by vals in subset</span>
-        <span class="k">if</span> <span class="n">interp_end</span> <span class="o">==</span> <span class="s1">&#39;max_all&#39;</span><span class="p">:</span>
-            <span class="n">max_interp_val</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="n">dataitem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">])</span> <span class="k">for</span> <span class="n">dataitem</span> <span class="ow">in</span> <span class="n">repr_subset</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="n">interp_end</span> <span class="o">==</span> <span class="s1">&#39;min_of_maxes&#39;</span><span class="p">:</span>
-            <span class="n">max_interp_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="n">dataitem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">])</span> <span class="k">for</span> <span class="n">dataitem</span> <span class="ow">in</span> <span class="n">repr_subset</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;interp_end must be &quot;max_all&quot; or &quot;min_of_maxes&quot;, not </span><span class="si">{</span><span class="n">interp_end</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="c1"># make monotonically increasing vector to interpolate by</span>
-        <span class="n">interp_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">min_interp_val</span><span class="p">,</span> <span class="n">max_interp_val</span><span class="p">,</span> <span class="n">interp_res</span><span class="p">)</span>
-
-        <span class="c1"># make interpolated data for averaging, staring at origin</span>
-        <span class="n">interp_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="n">interp_by</span><span class="p">:</span> <span class="n">interp_vec</span><span class="p">})</span>
-
-        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">dataitem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">repr_subset</span><span class="p">):</span>
-            <span class="c1"># drop columns and rows outside interp range</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">dataitem</span><span class="o">.</span><span class="n">data</span><span class="p">[[</span><span class="n">interp_by</span><span class="p">,</span> <span class="n">repr_col</span><span class="p">]]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[(</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_interp_val</span><span class="p">)</span><span class="o">&amp;</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_interp_val</span><span class="p">)]</span>
-            <span class="c1"># interpolate the repr_by column and add to interp_data</span>
-            <span class="c1"># add 0 to start of data to ensure interpolation starts at origin</span>
-            <span class="n">interp_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;interp_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">interp_vec</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="n">interp_by</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-                                                              <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="n">repr_col</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-
-        <span class="c1"># make representative data from stats of interpolated data</span>
-        <span class="n">interp_data</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">interp_by</span><span class="p">])</span>
-        <span class="n">repr_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="sa">f</span><span class="s1">&#39;interp_</span><span class="si">{</span><span class="n">interp_by</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="n">interp_vec</span><span class="p">})</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mean_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;up_std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mean_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;down_std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mean_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;up_2std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mean_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;down_2std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mean_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;up_3std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mean_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;down_3std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mean_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span><span class="o">*</span><span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;std_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;min_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;max_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;q1_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">repr_data</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;q3_</span><span class="si">{</span><span class="n">repr_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp_data</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="c1"># make representative info from subset info</span>
-
-        <span class="c1"># write the representative data and info</span>
-        <span class="n">repr_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">repr_id</span><span class="si">}</span><span class="s1">.csv&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">repr_info_table</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">info_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">repr_info_table</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>

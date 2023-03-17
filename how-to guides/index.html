@@ -198,7 +198,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../example/01%20preparation/" class="md-tabs__link">
+      <a href="../example/paramaterial-basic-usage/" class="md-tabs__link">
         Example
       </a>
     </li>
@@ -407,8 +407,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../example/01%20preparation/" class="md-nav__link">
-        Data Preparation
+      <a href="../example/paramaterial-basic-usage/" class="md-nav__link">
+        Basic Usage
       </a>
     </li>
   
@@ -572,8 +572,10 @@ dataset.info_table = info_table
 <p>The paramaterial.modelling module contains a 'make_representative_data' function that can be used to make representative curves from a dataset. The functino can be used as follows:</p>
 <pre><code class="language-python">import paramaterial as pam
 from paramaterial import DataSet
+
 dataset = DataSet(&quot;path/to/folder&quot;, &quot;path/to/metadata.csv&quot;)
-representative_curves = pam.modelling.make_representative_data(dataset, &quot;path/to/output_folder&quot;, &quot;path/to/output_metadata.csv&quot;, repr_col=&quot;Stress_MPa&quot;)
+representative_curves = pam.modelling.make_representative_data(dataset, &quot;path/to/output_folder&quot;,
+                                                               &quot;path/to/output_metadata.csv&quot;, repres_col=&quot;Stress_MPa&quot;)
 </code></pre>
 <p>```</p>
 
