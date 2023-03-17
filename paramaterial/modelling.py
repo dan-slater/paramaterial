@@ -16,8 +16,7 @@ from paramaterial.plug import DataItem, DataSet
 
 
 def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_col: str, group_by_keys: List[str],
-                             interp_by: str, interp_res: int = 200, min_interp_val: float = 0.,
-                             interp_end: str = 'max_all',
+                             interp_by: str, interp_res: int = 200, interp_range: str|Tuple[float, float] = 'outer',
                              group_info_cols: List[str]|None = None):
     """Make representative curves of the ds and save them to a directory.
 
@@ -98,13 +97,18 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_
                 repr_info_table.loc[repr_info_table['repres_id'] == repres_id, 'min_' + col] = df_col.min()
 
         # find minimum of maximum interp_by vals in subset
-        if interp_end == 'max_all':
+        if interp_range == 'outer':
+            min_interp_val = min([min(dataitem.data[interp_by]) for dataitem in repres_subset])
             max_interp_val = max([max(dataitem.data[interp_by]) for dataitem in repres_subset])
-        elif interp_end == 'min_of_maxes':
+        elif interp_range == 'inner':
+            min_interp_val = max([min(dataitem.data[interp_by]) for dataitem in repres_subset])
             max_interp_val = min([max(dataitem.data[interp_by]) for dataitem in repres_subset])
+        elif type(interp_range) == tuple:
+            min_interp_val = interp_range[0]
+            max_interp_val = interp_range[1]
         else:
-            raise ValueError(f'interp_end must be "max_all" or "min_of_maxes", not {interp_end}')
-        
+            raise ValueError(f'interp_range must be "outer", "inner" or a tuple, not {interp_range}')
+
         # make monotonically increasing vector to interpolate by
         interp_vec = np.linspace(min_interp_val, max_interp_val, interp_res)
 
