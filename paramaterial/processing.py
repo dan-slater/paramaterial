@@ -10,7 +10,7 @@ from paramaterial.plug import DataItem, DataSet
 
 def find_proportional_limits(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
                              preload: float = 0, preload_key: str = 'Stress_MPa', max_strain: float|None = None,
-                             suppress_numpy_warnings: bool = False) -> DataSet:
+                             suppress_numpy_warnings: bool = True) -> DataSet:
     """Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of stress-strain curves.
     The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.
     The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL.
@@ -263,15 +263,19 @@ def calculate_strain_rate(di: DataItem, strain_key: str = 'Strain', time_key: st
     return di
 
 
-def correct_foot(di: DataItem, strain_key: str = 'Strain') -> DataItem:
-    UPL = di.info['UPL_0'], di.info['UPL_1']
-    E = di.info['E']
-    strain_shift = UPL[0] - UPL[1]/E  # x-intercept of line through UPL & LPL
-    di.info['foot correction'] = -strain_shift
-    di.data['Strain'] = di.data['Strain'].values - strain_shift
-    di.info['UPL_0'] = di.info['UPL_0'] - strain_shift
-    di.info['LPL_0'] = di.info['LPL_0'] - strain_shift
-    return di
+def correct_foot(ds: DataSet, strain_key: str = 'Strain', LPL_key='LPL', UPL_key='UPL') -> DataSet:
+
+    def correct_di_foot(di):
+        UPL = di.info['UPL_0'], di.info['UPL_1']
+        E = di.info['E']
+        strain_shift = UPL[0] - UPL[1]/E  # x-intercept of line through UPL & LPL
+        di.info['foot correction'] = -strain_shift
+        di.data[strain_key] = di.data[strain_key].values - strain_shift
+        di.info['UPL_0'] = di.info['UPL_0'] - strain_shift
+        di.info['LPL_0'] = di.info['LPL_0'] - strain_shift
+        return di
+
+    return ds.apply(correct_di_foot)
 
 
 def correct_friction_UC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0', D0_key: str = 'D_0',
