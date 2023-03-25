@@ -34,7 +34,7 @@ nav:
       - how_to_guides/use_screening_pdf.md
       - how_to_guides/zener_holloman_eg.ipynb
   - Example:
-      - Data Preparation: example/01 preparation.ipynb
+      - Basic Usage: example/paramaterial-basic-usage.ipynb
   - Reference:
       - preparing.md
       - plug.md

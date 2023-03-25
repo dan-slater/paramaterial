@@ -53,22 +53,6 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_
                 new_filters.append(new_filter)
         subset_filters = new_filters
 
-    # keys = 'abc'
-    # values = [1, 2]
-    #
-    # filters = [{keys[0]: value} for value in values]
-    #
-    # for key in keys[1:]:
-    #     new_filters = []
-    #     for fltr in filters:
-    #         for value in values:
-    #             new_fltr = fltr.copy()
-    #             new_fltr[key] = value
-    #             new_filters.append(new_fltr)
-    #     filters = new_filters
-    #
-    # print(filters)
-
     # make list of repres_ids and initialise info table for the representative data
     repres_ids = [f'repres_id_{i + 1:0>4}' for i in range(len(subset_filters))]
     repr_info_table = pd.DataFrame(columns=['repres_id'] + group_by_keys)
