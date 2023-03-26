@@ -5,7 +5,7 @@ import copy
 import os
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -16,8 +16,9 @@ from paramaterial.plug import DataItem, DataSet
 
 
 def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_col: str, group_by_keys: List[str],
-                             interp_by: str, interp_res: int = 200, interp_range: str|Tuple[float, float] = 'outer',
-                             group_info_cols: List[str]|None = None):
+                             interp_by: str, interp_res: int = 200,
+                             interp_range: Union[str, Tuple[float, float]] = 'outer',
+                             group_info_cols: Optional[List[str]] = None):
     """Make representative curves of the ds and save them to a directory.
 
     Args:
@@ -65,7 +66,8 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_
             continue
         # add row to repr_info_table
         repr_info_table = pd.concat(
-            [repr_info_table, pd.DataFrame({'repres_id': [repres_id], **subset_filter, 'nr averaged': [len(repres_subset)]})])
+            [repr_info_table,
+             pd.DataFrame({'repres_id': [repres_id], **subset_filter, 'nr averaged': [len(repres_subset)]})])
 
         # add means of group info columns to repr_info_table
         if group_info_cols is not None:
@@ -248,9 +250,9 @@ class ModelSet:
     """Class that acts as model DataSet."""
 
     def __init__(self, model_func: Callable[[np.ndarray, List[float]], np.ndarray], param_names: List[str],
-                 var_names: List[str]|None = None, bounds: List[Tuple[float, float]]|None = None,
-                 initial_guess: np.ndarray|None = None, scipy_func: str = 'minimize',
-                 scipy_kwargs: Dict[str, Any]|None = None, ):
+                 var_names: Optional[List[str]] = None, bounds: Optional[List[Tuple[float, float]]] = None,
+                 initial_guess: Optional[np.ndarray] = None, scipy_func: str = 'minimize',
+                 scipy_kwargs: Optional[Dict[str, Any]] = None, ):
         self.model_func = model_func
         self.params_table = pd.DataFrame(columns=['model_id'] + param_names)
         self.results_dict_list = []
@@ -260,11 +262,11 @@ class ModelSet:
         self.initial_guess = initial_guess if initial_guess is not None else [0.0]*len(param_names)
         self.scipy_func = scipy_func
         self.scipy_kwargs = scipy_kwargs if scipy_kwargs is not None else {}
-        self.sample_size: int|None = None
-        self.fitted_ds: DataSet|None = None
-        self.x_key: str|None = None
-        self.y_key: str|None = None
-        self.model_items: List|None = None
+        self.sample_size: Optional[int] = None
+        self.fitted_ds: Optional[DataSet] = None
+        self.x_key: Optional[str] = None
+        self.y_key: Optional[str] = None
+        self.model_items: Optional[List] = None
 
     # @staticmethod
     # def from_info_table(info_table: pd.DataFrame, model_func: Callable[[np.ndarray, List[float]], np.ndarray],

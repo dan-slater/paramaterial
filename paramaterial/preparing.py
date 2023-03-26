@@ -83,7 +83,7 @@ def check_for_duplicate_files(data_dir: str):
 
 def make_experimental_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], columns: Union[str, List[str]],
                              as_heatmap: bool = False, title: str = None, xlabel: str = None,
-                             ylabel: str = None, tick_params: Dict = None, **kwargs) -> pd.DataFrame|plt.Axes:
+                             ylabel: str = None, tick_params: Dict = None, **kwargs) -> Union[pd.DataFrame,plt.Axes]:
     if isinstance(index, str):
         index = [index]
     if isinstance(columns, str):

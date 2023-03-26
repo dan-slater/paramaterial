@@ -2,7 +2,7 @@
 import copy
 import os
 from dataclasses import dataclass
-from typing import Dict, Callable, List, Any, Union
+from typing import Dict, Callable, List, Any, Union, Optional
 
 import pandas as pd
 from tqdm import tqdm
@@ -21,7 +21,7 @@ class DataItem:
 
 
 class DataSet:
-    def __init__(self, info_path: str|None = None, data_dir: str|None = None, test_id_key: str = 'test_id'):
+    def __init__(self, info_path: Optional[str] = None, data_dir: Optional[str] = None, test_id_key: str = 'test_id'):
         """Initialize the ds.
         Args:
             info_path: The path to the info table file.
@@ -118,7 +118,7 @@ class DataSet:
             output_path = out_data_dir + '/' + di.test_id + '.csv'
             di.data.to_csv(output_path, index=False)
 
-    def sort_by(self, column: str | List[str], ascending: bool = True) -> 'DataSet':
+    def sort_by(self, column: Union[str, List[str]], ascending: bool = True) -> 'DataSet':
         """Sort a copy of the ds by a column in the info table and return the copy."""
         self._update_data_items()
         new_ds = self.copy()
@@ -146,7 +146,7 @@ class DataSet:
         else:
             raise ValueError(f'Invalid ds[specifier] specifier type: {type(specifier)}')
 
-    def subset(self, filter_dict: Dict[str, str|List[Any]]) -> 'DataSet':
+    def subset(self, filter_dict: Dict[str, Union[str, List[Any]]]) -> 'DataSet':
         self._update_data_items()
         new_ds = self.copy()
         for key, value in filter_dict.items():
