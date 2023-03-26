@@ -4,16 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d5791664-c121-4d98-bb1e-52ef24b47c5d" name="Changes" comment="basic usage start">
-      <change beforePath="$PROJECT_DIR$/docs/example/01 preparation.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/info/01 prepared info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/overview.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/uniaxial tension/02 processing.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/info/00 backup info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/paramaterial-basic-usage.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mkdocs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mkdocs.yml" afterDir="false" />
+    <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/paramaterial.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/paramaterial.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plotting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plug.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/preparing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/preparing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/processing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/zener_holloman.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/zener_holloman.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -21,86 +23,44 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Jupyter Notebook" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectId" id="2N85NDglwTP1NzWpIzxOHlRZI3c" />
-  <component name="ProjectLevelVcsManager">
-    <ConfirmationsSetting value="2" id="Add" />
-  </component>
+  <component name="ProjectId" id="2NYM9afWVOJiEkhjPWDaMUAfP6o" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Users/DS/casestudies",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\DS\paramaterial\example\info" />
-      <recent name="C:\Users\DS\paramaterial\example\data" />
-    </key>
-  </component>
+}]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="d5791664-c121-4d98-bb1e-52ef24b47c5d" name="Changes" comment="" />
-      <created>1679032826301</created>
+      <changelist id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="" />
+      <created>1679836413413</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1679032826301</updated>
-      <workItem from="1679032827670" duration="4467000" />
-      <workItem from="1679039548476" duration="733000" />
-      <workItem from="1679226436743" duration="7072000" />
-      <workItem from="1679303231268" duration="1189000" />
-      <workItem from="1679309157849" duration="847000" />
-      <workItem from="1679736208264" duration="740000" />
-      <workItem from="1679737215309" duration="1533000" />
-      <workItem from="1679743747176" duration="124000" />
-      <workItem from="1679743880162" duration="1353000" />
+      <updated>1679836413413</updated>
+      <workItem from="1679836416990" duration="77000" />
+      <workItem from="1679836868844" duration="10000" />
+      <workItem from="1679837501073" duration="2993000" />
     </task>
-    <task id="LOCAL-00001" summary="basic usage start">
-      <created>1679037747051</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1679037747051</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="basic usage start" />
-    <option name="LAST_COMMIT_MESSAGE" value="basic usage start" />
   </component>
 </project>

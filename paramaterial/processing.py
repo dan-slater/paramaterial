@@ -1,110 +1,16 @@
 """Module with functions for processing materials test data. This includes functionality for finding properties
 like yield strength Young's modulus from stress-strain curves, as well as post-processing functions for cleaning
 and correcting experimental measurements."""
-from typing import Tuple
+from typing import Tuple, Optional, Union
 
 import numpy as np
 
 from paramaterial.plug import DataItem, DataSet
 
 
-def find_proportional_limits(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
-                             preload: float = 0, preload_key: str = 'Stress_MPa', max_strain: float|None = None,
-                             suppress_numpy_warnings: bool = True) -> DataSet:
-    """Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of stress-strain curves.
-    The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.
-    The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL.
-    The elastic modulus is the slope between the UPL and LPL.
-
-    Args:
-        ds: DataSet with stress-strain curves
-        strain_key: key for strain data
-        stress_key: key for stress data
-        preload: preload value
-        preload_key: key for preload data
-        max_strain: maximum strain to consider
-        suppress_numpy_warnings: suppress numpy warnings
-
-    Returns:
-        DataSet with UPL, LPL, and E added to info.
-    """
-    return ds.apply(find_upl_and_lpl, strain_key=strain_key, stress_key=stress_key, preload=preload,
-                    preload_key=preload_key, max_strain=max_strain, suppress_numpy_warnings=suppress_numpy_warnings)
-
-
-def find_upl_and_lpl(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', preload: float = 0,
-                     preload_key: str = 'Stress_MPa', max_strain: float|None = None,
-                     suppress_numpy_warnings: bool = False) -> DataItem:
-    """Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of a stress-strain curve.
-    The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.
-    The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL.
-    The elastic modulus is the slope between the UPL and LPL.
-
-    Args:
-        di: DataItem with stress-strain curve
-        strain_key: key for strain data
-        stress_key: key for stress data
-        preload: preload value
-        preload_key: key for preload data
-        max_strain: maximum strain to consider
-        suppress_numpy_warnings: suppress numpy warnings
-
-    Returns:
-        DataItem with UPL, LPL, and E added to info.
-    """
-    if suppress_numpy_warnings:
-        np.seterr(all="ignore")
-
-    data = di.data[di.data[strain_key] <= max_strain] if max_strain is not None else di.data
-
-    UPL = (0, 0)
-    LPL = (0, 0)
-
-    def fit_line(_x, _y):
-        n = len(_x)  # number of points
-        m = (n*np.sum(_x*_y) - np.sum(_x)*np.sum(_y))/(n*np.sum(np.square(_x)) - np.square(np.sum(_x)))  # slope
-        c = (np.sum(_y) - m*np.sum(_x))/n  # intercept
-        S_xy = (n*np.sum(_x*_y) - np.sum(_x)*np.sum(_y))/(n - 1)  # empirical covariance
-        S_x = np.sqrt((n*np.sum(np.square(_x)) - np.square(np.sum(_x)))/(n - 1))  # x standard deviation
-        S_y = np.sqrt((n*np.sum(np.square(_y)) - np.square(np.sum(_y)))/(n - 1))  # y standard deviation
-        r = S_xy/(S_x*S_y)  # correlation coefficient
-        S_m = np.sqrt((1 - r ** 2)/(n - 2))*S_y/S_x  # slope standard deviation
-        S_rel = S_m/m  # relative deviation of slope
-        return S_rel
-
-    x = data[strain_key].values
-    y = data[stress_key].values
-
-    x_upl = x[data[preload_key] >= preload]
-    y_upl = y[data[preload_key] >= preload]
-
-    S_min = np.inf
-    for i in range(3, len(x)):
-        S_rel = fit_line(x_upl[:i], y_upl[:i])  # fit a line to the first i points after the preload
-        if S_rel < S_min:
-            S_min = S_rel
-            UPL = (x_upl[i], y_upl[i])
-
-    x_lpl = x[x <= UPL[0]]
-    y_lpl = y[x <= UPL[0]]
-
-    S_min = np.inf
-    for j in range(len(x), 3, -1):
-        S_rel = fit_line(x_lpl[j:], y_lpl[j:])  # fit a line to the last i points before the UPL
-        if S_rel < S_min:
-            S_min = S_rel
-            LPL = (x_lpl[j], y_lpl[j])
-
-    di.info['UPL_0'] = UPL[0]
-    di.info['UPL_1'] = UPL[1]
-    di.info['LPL_0'] = LPL[0]
-    di.info['LPL_1'] = LPL[1]
-    di.info['E'] = (UPL[1] - LPL[1])/(UPL[0] - LPL[0])
-    return di
-
-
-def find_UTS(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', max_strain: float|None = None,
-                suppress_numpy_warnings: bool = False) -> DataSet:
+def find_UTS(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', max_strain: Optional[
+    float] = None,
+             suppress_numpy_warnings: bool = False) -> DataSet:
     """Find the ultimate tensile strength (UTS) of an engineering stress-strain curve.
 
     Args:
@@ -122,49 +28,15 @@ def find_UTS(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_
 
     ds = ds.copy()
 
-    def find_di_UTS(di):     
+    def find_di_UTS(di):
         data = di.data[di.data[strain_key] <= max_strain] if max_strain is not None else di.data
         x = data[strain_key].values
         y = data[stress_key].values
         di.info['UTS_1'] = np.max(y)
         di.info['UTS_0'] = x[np.argmax(y)]
         return di
-    
+
     return ds.apply(find_di_UTS)
-
-
-def find_proof_stress(ds: DataSet, proof_strain: float = 0.002, strain_key: str = 'Strain',
-                      stress_key: str = 'Stress_MPa', E_key: str='E') -> DataSet:
-    """Find the proof stress of a stress-strain curve.
-
-    Args:
-        di: DataItem with stress-strain curve
-        proof_strain: Strain at which to find the proof stress
-        strain_key: Key for strain data
-        stress_key: Key for stress data
-
-    Returns: DataItem with proof stress added to info.
-    """
-    def find_di_proof_stress(di):
-        E = di.info[E_key]
-        x_data = di.data[strain_key].values
-        y_data = di.data[stress_key].values
-        x_shift = proof_strain
-        y_line = E*(x_data - x_shift)
-        cut = np.where(np.diff(np.sign(y_line - y_data)) != 0)[0][-1]
-        m = (y_data[cut + 1] - y_data[cut])/(x_data[cut + 1] - x_data[cut])
-        xl = x_data[cut]
-        yl = y_line[cut]
-        xd = x_data[cut]
-        yd = y_data[cut]
-        K = np.array([[1, -E], [1, -m]])
-        f = np.array([[yl - E*xl], [yd - m*xd]])
-        d = np.linalg.solve(K, f).flatten()
-        di.info[f'PS_{proof_strain}_0'] = d[1]
-        di.info[f'PS_{proof_strain}_1'] = d[0]
-        return di
-    
-    return ds.apply(find_di_proof_stress)
 
 
 def find_ultimate_strength(di: DataItem, force_key: str = 'Force_kN', strain_key: str = 'Strain',
@@ -196,19 +68,19 @@ def find_fracture_point(ds: DataSet, strain_key: str = 'Strain', stress_key: str
     Returns: DataSet with fracture points added to info_table.
     """
     ds = ds.copy()
-    
+
     def find_di_fracture_point(di):
         idx_max = di.data[strain_key].idxmax()
         di.info['FP_0'] = di.data[strain_key][idx_max]
         di.info['FP_1'] = di.data[stress_key][idx_max]
         return di
-    
+
     return ds.apply(find_di_fracture_point)
 
 
 def find_flow_stress_values(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
                             temperature_key: str = None, rate_key: str = None,
-                            flow_strain: int|float|Tuple[float, float] = None) -> DataItem:
+                            flow_strain: Union[int, float, Tuple[float, float]] = None) -> DataItem:
     """Find the flow stress of a stress-strain curve, defined as the point at which the stress is maximum,
     or as the point at a specified strain.
 
@@ -245,6 +117,131 @@ def find_flow_stress_values(di: DataItem, strain_key: str = 'Strain', stress_key
     return di
 
 
+def find_upl_and_lpl(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', preload: float = 0,
+                     preload_key: str = 'Stress_MPa', max_strain: Optional[float] = None,
+                     suppress_numpy_warnings: bool = True) -> DataSet:
+    """Determine the upper proportional limit (UPL) and lower proportional limit (LPL) of a stress-strain curve.
+    The UPL is the point that minimizes the residuals of the slope fit between that point and the specified preload.
+    The LPL is the point that minimizes the residuals of the slope fit between that point and the UPL.
+    The elastic modulus is the slope between the UPL and LPL.
+
+    Args:
+        di: DataItem with stress-strain curve
+        strain_key: key for strain data
+        stress_key: key for stress data
+        preload: preload value
+        preload_key: key for preload data
+        max_strain: maximum strain to consider
+        suppress_numpy_warnings: suppress numpy warnings
+
+    Returns:
+        DataItem with UPL, LPL, and E added to info.
+    """
+    if suppress_numpy_warnings:
+        np.seterr(all="ignore")
+
+    ds = ds.copy()
+
+    def _find_upl_and_lpl(di: DataItem) -> DataItem:
+        data = di.data[di.data[strain_key] <= max_strain] if max_strain is not None else di.data
+
+        UPL = (0, 0)
+        LPL = (0, 0)
+
+        def fit_line(_x, _y):
+            n = len(_x)  # number of points
+            m = (n*np.sum(_x*_y) - np.sum(_x)*np.sum(_y))/(n*np.sum(np.square(_x)) - np.square(np.sum(_x)))  # slope
+            c = (np.sum(_y) - m*np.sum(_x))/n  # intercept
+            S_xy = (n*np.sum(_x*_y) - np.sum(_x)*np.sum(_y))/(n - 1)  # empirical covariance
+            S_x = np.sqrt((n*np.sum(np.square(_x)) - np.square(np.sum(_x)))/(n - 1))  # x standard deviation
+            S_y = np.sqrt((n*np.sum(np.square(_y)) - np.square(np.sum(_y)))/(n - 1))  # y standard deviation
+            r = S_xy/(S_x*S_y)  # correlation coefficient
+            S_m = np.sqrt((1 - r**2)/(n - 2))*S_y/S_x  # slope standard deviation
+            S_rel = S_m/m  # relative deviation of slope
+            return S_rel
+
+        x = data[strain_key].values
+        y = data[stress_key].values
+
+        x_upl = x[data[preload_key] >= preload]
+        y_upl = y[data[preload_key] >= preload]
+
+        S_min = np.inf
+        for i in range(3, len(x)):
+            S_rel = fit_line(x_upl[:i], y_upl[:i])  # fit a line to the first i points after the preload
+            if S_rel < S_min:
+                S_min = S_rel
+                UPL = (x_upl[i], y_upl[i])
+
+        x_lpl = x[x <= UPL[0]]
+        y_lpl = y[x <= UPL[0]]
+
+        S_min = np.inf
+        for j in range(len(x), 3, -1):
+            S_rel = fit_line(x_lpl[j:], y_lpl[j:])  # fit a line to the last i points before the UPL
+            if S_rel < S_min:
+                S_min = S_rel
+                LPL = (x_lpl[j], y_lpl[j])
+
+        di.info['UPL_0'] = UPL[0]
+        di.info['UPL_1'] = UPL[1]
+        di.info['LPL_0'] = LPL[0]
+        di.info['LPL_1'] = LPL[1]
+        di.info['E'] = (UPL[1] - LPL[1])/(UPL[0] - LPL[0])
+        return di
+
+    return ds.apply(_find_upl_and_lpl)
+
+
+def correct_foot(ds: DataSet, strain_key: str = 'Strain', LPL_key: str='LPL', UPL_key: str='UPL') -> DataSet:
+    def correct_di_foot(di):
+        UPL = di.info['UPL_0'], di.info['UPL_1']
+        E = di.info['E']
+        strain_shift = UPL[0] - UPL[1]/E  # x-intercept of line through UPL & LPL
+        di.info['foot correction'] = -strain_shift
+        di.data[strain_key] = di.data[strain_key].values - strain_shift
+        di.info[UPL_key+'_0'] = di.info[UPL_key+'_0'] - strain_shift
+        di.info[LPL_key+'_0'] = di.info[LPL_key+'_0'] - strain_shift
+        return di
+
+    return ds.apply(correct_di_foot)
+
+
+def find_proof_stress(ds: DataSet, proof_strain: float = 0.002, strain_key: str = 'Strain',
+                      stress_key: str = 'Stress_MPa', E_key: str = 'E') -> DataSet:
+    """Find the proof stress of a stress-strain curve.
+
+    Args:
+        di: DataItem with stress-strain curve
+        proof_strain: Strain at which to find the proof stress
+        strain_key: Key for strain data
+        stress_key: Key for stress data
+
+    Returns: DataItem with proof stress added to info.
+    """
+
+    def find_di_proof_stress(di):
+        E = di.info[E_key]
+        x_data = di.data[strain_key].values
+        y_data = di.data[stress_key].values
+        x_shift = proof_strain
+        y_line = E*(x_data - x_shift)
+        cut = np.where(np.diff(np.sign(y_line - y_data)) != 0)[0][-1]
+        m = (y_data[cut + 1] - y_data[cut])/(x_data[cut + 1] - x_data[cut])
+        xl = x_data[cut]
+        yl = y_line[cut]
+        xd = x_data[cut]
+        yd = y_data[cut]
+        K = np.array([[1, -E], [1, -m]])
+        f = np.array([[yl - E*xl], [yd - m*xd]])
+        d = np.linalg.solve(K, f).flatten()
+        di.info[f'PS_{proof_strain}_0'] = d[1]
+        di.info[f'PS_{proof_strain}_1'] = d[0]
+        return di
+
+    return ds.apply(find_di_proof_stress)
+
+
 def calculate_strain_rate(di: DataItem, strain_key: str = 'Strain', time_key: str = 'Time_s',
                           strain_rate_key: str = 'Strain_Rate') -> DataItem:
     """Calculate the strain rate of a stress-strain curve.
@@ -261,21 +258,6 @@ def calculate_strain_rate(di: DataItem, strain_key: str = 'Strain', time_key: st
     di.data[strain_rate_key] = gradient
     di.data[f'Smoothed_{strain_rate_key}'] = np.convolve(gradient, np.ones(5)/60, mode='same')
     return di
-
-
-def correct_foot(ds: DataSet, strain_key: str = 'Strain', LPL_key='LPL', UPL_key='UPL') -> DataSet:
-
-    def correct_di_foot(di):
-        UPL = di.info['UPL_0'], di.info['UPL_1']
-        E = di.info['E']
-        strain_shift = UPL[0] - UPL[1]/E  # x-intercept of line through UPL & LPL
-        di.info['foot correction'] = -strain_shift
-        di.data[strain_key] = di.data[strain_key].values - strain_shift
-        di.info['UPL_0'] = di.info['UPL_0'] - strain_shift
-        di.info['LPL_0'] = di.info['LPL_0'] - strain_shift
-        return di
-
-    return ds.apply(correct_di_foot)
 
 
 def correct_friction_UC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0', D0_key: str = 'D_0',
@@ -298,7 +280,7 @@ def correct_friction_UC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0', D
     D_0 = di.info[D0_key]  # initial diameter
     h = h_0 - di.data[disp_key]  # instantaneous height
     d = D_0*np.sqrt(h_0/h)  # instantaneous diameter
-    P = di.data[force_key]*1000*4/(np.pi*d ** 2)  # pressure (MPa)
+    P = di.data[force_key]*1000*4/(np.pi*d**2)  # pressure (MPa)
     di.data['Pressure(MPa)'] = P
     di.data['Corrected_Stress(MPa)'] = P/(1 + (mu*d)/(3*h))  # correct stress
     return di
@@ -328,14 +310,14 @@ def correct_friction_PSC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0',
 
     # breadth spread correction
     n = di.info[spread_exponent_key]  # spread exponent
-    C = (b_f/b_0 - 1)/(1 - (h_f/h_0) ** n)  # breadth spread coefficient
+    C = (b_f/b_0 - 1)/(1 - (h_f/h_0)**n)  # breadth spread coefficient
     h = h_0 - di.data[disp_key]  # instantaneous height
-    b = b_0*(1 + C*(1 - (h/h_0) ** n))  # instantaneous breadth
+    b = b_0*(1 + C*(1 - (h/h_0)**n))  # instantaneous breadth
 
     # calculate strains
     eps_3 = np.log(h/h_0)  # normal strain
     eps_2 = np.log(b/b_0)  # transverse strain
-    eps_bar = 2*(eps_2 ** 2 + eps_2*eps_3 + eps_3 ** 2)/np.sqrt(3)  # equivalent strain
+    eps_bar = 2*(eps_2**2 + eps_2*eps_3 + eps_3**2)/np.sqrt(3)  # equivalent strain
     di.data['Normal_Strain'] = eps_3
     di.data['Transverse_Strain'] = eps_2
     di.data['Equivalent_Strain'] = eps_bar
@@ -355,14 +337,14 @@ def correct_friction_PSC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0',
         if i < 50:
             continue
         if 2*z_0[i] > w:  # transition distance is greater than the width, full sliding
-            k[i] = P[i]/2*((2*h[i] ** 2/mu ** 2 + (b[i] - w)*h[i]/mu)*(np.exp(mu*w/h[i]) - 1)/b[i]*w - 2*h[i]/mu*b[i])
+            k[i] = P[i]/2*((2*h[i]**2/mu**2 + (b[i] - w)*h[i]/mu)*(np.exp(mu*w/h[i]) - 1)/b[i]*w - 2*h[i]/mu*b[i])
         elif w > 2*z_0[i] > 0:  # transition distance is less than the width, partial sliding
-            k[i] = P[i]/2*((w/2 - z_0[i])/mu*w + (w/2 - z_0[i]) ** 2/h[i]*w + h[i]*(1/2*mu - 1)/mu*w
-                           + (z_0[i] ** 2 - 4*z_0[i] ** 3/3*w - w ** 2/12)/h[i]*b
-                           + (2*z_0[i] ** 2/w - z_0[i] - 2*h*z_0[i]/mu*w
-                              + h[i]/2*mu - h[i] + h[i] ** 2/w*mu ** 2 - 2*h[i] ** 2/mu*w)/mu*b[i])
+            k[i] = P[i]/2*((w/2 - z_0[i])/mu*w + (w/2 - z_0[i])**2/h[i]*w + h[i]*(1/2*mu - 1)/mu*w
+                           + (z_0[i]**2 - 4*z_0[i]**3/3*w - w**2/12)/h[i]*b
+                           + (2*z_0[i]**2/w - z_0[i] - 2*h*z_0[i]/mu*w
+                              + h[i]/2*mu - h[i] + h[i]**2/w*mu**2 - 2*h[i]**2/mu*w)/mu*b[i])
         elif 0 > 2*z_0[i]:  # transition distance is less than zero, full sticking
-            k[i] = P[i]/2*(1 + w/4*h[i] - w ** 2/12*h[i]*b[i])
+            k[i] = P[i]/2*(1 + w/4*h[i] - w**2/12*h[i]*b[i])
         else:
             raise ValueError('Invalid value for z_0, the friction transition distance.'
                              '\nConsider changing the sign of the displacement and force data.')
@@ -393,6 +375,7 @@ def trim_leading_data():
 
 def trim_trailing_data():
     pass
+
 
 def trim_after_max_force(di: DataItem, force_key: str = 'Force_kN'):
     di.data = di.data.loc[:di.data[force_key].idxmax()]

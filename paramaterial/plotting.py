@@ -1,7 +1,7 @@
 """Module containing the plotting functions for the ds class."""
 import copy
 from dataclasses import dataclass, field
-from typing import Optional, Tuple, List, Any, Dict, Callable
+from typing import Optional, Tuple, List, Any, Dict, Callable, Union
 
 import matplotlib.patches as mpatches
 import numpy as np
@@ -59,9 +59,9 @@ class Styler:
     linestyles: List[str] = field(default_factory=lambda: ['-', '--', ':', '-.'])
     markers: List[str] = field(
         default_factory=lambda: ['s', 'H', 'd', 'v', 'D', 'p', 'X', 'o', 'd', 'h', 'H', '8', 'P', 'x'])
-    color_dict: Optional[Dict[str|int|float, str]] = None
-    linestyle_dict: Optional[Dict[str|int|float, str]] = None
-    marker_dict: Optional[Dict[str|int|float, str]] = None
+    color_dict: Optional[Dict[Union[str, int, float], str]] = None
+    linestyle_dict: Optional[Dict[Union[str, int, float], str]] = None
+    marker_dict: Optional[Dict[Union[str, int, float], str]] = None
     plot_kwargs: Dict[str, Any] = field(default_factory=lambda: dict())
     styled_ds: Optional[DataSet] = None
 
@@ -468,7 +468,7 @@ def matrix_plot(
         columns: str,
         x_label: str = '',
         y_label: str = '',
-        titles: str|List[str] = None,
+        titles: Union[str, List[str]] = None,
         group_by: str = None,
         group_by_vals: List[str] = None,
         axs: plt.Axes = None,

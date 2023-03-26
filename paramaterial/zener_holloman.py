@@ -11,7 +11,7 @@ from paramaterial.plotting import configure_plt_formatting
 
 
 def apply_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ZH_key: str = 'ZH_parameter',
-                        group_by: str|List[str] = None) -> DataSet:
+                        group_by: Union[str, List[str]] = None) -> DataSet:
     """Do a linear regression for LnZ vs flow stress. #todo link
 
     Args:
@@ -100,7 +100,7 @@ def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ra
                        temperature_key: str = 'temperature_K', calculate: bool = True,
                        figsize: Tuple[float, float] = (6, 4),
                        ax: plt.Axes = None, cmap: str = 'plasma', styler: Styler = None, plot_legend: bool = True,
-                       group_by: str|List[str] = None, color_by: str = None, marker_by: str = None,
+                       group_by: Union[str, List[str]] = None, color_by: str = None, marker_by: str = None,
                        linestyle_by: str = None,
                        scatter_kwargs: Dict[str, Any] = None, fit_kwargs: Dict[str, Any] = None, eq_hscale=0.1):
     """Plot the Zener-Holloman regression of the flow stress vs. temperature."""
@@ -189,7 +189,7 @@ def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ra
 
 def make_ZH_regression_table(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', rate_key: str = 'rate_s-1',
                              temperature_key: str = 'temperature_K', calculate: bool = True,
-                             group_by: str|List[str] = None) -> pd.DataFrame:
+                             group_by: Union[str, List[str]] = None) -> pd.DataFrame:
     """Make a table of the Zener-Holloman regression parameters for each group."""
     if calculate:
         ds = ds.apply(calculate_ZH_parameter, rate_key=rate_key, temperature_key=temperature_key)
@@ -203,7 +203,7 @@ def make_ZH_regression_table(ds: DataSet, flow_stress_key: str = 'flow_stress_MP
 def make_quality_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], columns: Union[str, List[str]],
                         flow_stress_key: str = 'flow_stress_MPa', as_heatmap: bool = False, title: str = None,
                         xlabel: str = None, ylabel: str = None, tick_params: Dict = None,
-                        **kwargs) -> pd.DataFrame|plt.Axes:
+                        **kwargs) -> Union[pd.DataFrame,plt.Axes]:
     if isinstance(index, str):
         index = [index]
     if isinstance(columns, str):
