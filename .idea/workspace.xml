@@ -5,18 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/paramaterial.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/paramaterial.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plotting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plug.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/preparing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/preparing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/processing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/zener_holloman.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/zener_holloman.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +27,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/Users/DS/casestudies",
+    "last_opened_file_path": "C:/Users/DS/paramaterial",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -57,6 +46,8 @@
       <workItem from="1679836416990" duration="77000" />
       <workItem from="1679836868844" duration="10000" />
       <workItem from="1679837501073" duration="2993000" />
+      <workItem from="1679908814420" duration="646000" />
+      <workItem from="1679920490440" duration="1039000" />
     </task>
     <servers />
   </component>
