@@ -117,6 +117,9 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     screening_df['reject'] = rejects
     screening_df['comment'] = comments
 
+    # replace reject /Yes values with True, and /Off with False
+    screening_df['reject'] = screening_df['reject'].replace('/Yes', True)
+
     _info_table = _info_table.merge(screening_df, on=test_id_key, how='left')
 
     new_ds.info_table = _info_table
