@@ -118,7 +118,8 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     screening_df['comment'] = comments
 
     # replace reject /Yes values with True, and /Off with False
-    screening_df['reject'] = screening_df['reject'].replace('/Yes', True)
+    screening_df['reject'] = screening_df['reject'].replace('/Yes', 'True')
+    screening_df['reject'] = screening_df['reject'].replace('/Off', 'False')
 
     _info_table = _info_table.merge(screening_df, on=test_id_key, how='left')
 
@@ -131,9 +132,9 @@ def remove_rejected_items(ds: DataSet, screening_pdf_path: str) -> DataSet:
     """Reject data items that were marked as reject in the screening pdf."""
     new_ds = ds.copy()
     screened_ds = read_screening_pdf_fields(new_ds, screening_pdf_path)
-    screened_ds.info_table = screened_ds.info_table[screened_ds.info_table['reject'] != '/Yes']
+    screened_ds.info_table = screened_ds.info_table[screened_ds.info_table['reject'] != 'True']
     # print a list of the rejected items with a detailed message
-    rejected_items = screened_ds.info_table[screened_ds.info_table['reject'] == '/Yes']
+    rejected_items = screened_ds.info_table[screened_ds.info_table['reject'] == 'True']
     for i, row in rejected_items.iterrows():
         print(f'Item {row[screened_ds.test_id_key]} was rejected because {row["comment"]}')
     return screened_ds
