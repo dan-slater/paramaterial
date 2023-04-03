@@ -43,12 +43,12 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_
 
     # make a dataset filter for each representative curve
     subset_filters = []
-    for i in range(len(value_lists[0])):
+    for i in range(len(value_lists[0])):  # i
         subset_filters.append({group_by_keys[0]: value_lists[0][i]})
-    for i in range(1, len(group_by_keys)):
+    for i in range(1, len(group_by_keys)):  # i
         new_filters = []
-        for fltr in subset_filters:
-            for value in value_lists[i]:
+        for fltr in subset_filters:  # j
+            for value in value_lists[i]:  # k
                 new_filter = fltr.copy()
                 new_filter[group_by_keys[i]] = value
                 new_filters.append(new_filter)
@@ -198,6 +198,7 @@ class ModelItem:
     @property
     def data(self) -> pd.DataFrame:
         """Generate the model data and return as a DataFrame."""
+        self.x_min = 0  # TODO: remove this
         x = np.linspace(self.x_min, self.x_max, self.resolution)
         y = self.model_func(x, self.params)
         # return pd.DataFrame({'Strain': x, 'Stress(MPa)': y})
@@ -267,6 +268,7 @@ class ModelSet:
         self.x_key: Optional[str] = None
         self.y_key: Optional[str] = None
         self.model_items: Optional[List] = None
+        self.predicted_ds: Optional[DataSet] = None
 
     # @staticmethod
     # def from_info_table(info_table: pd.DataFrame, model_func: Callable[[np.ndarray, List[float]], np.ndarray],
@@ -305,8 +307,10 @@ class ModelSet:
             pass
         self.model_items = list(map(ModelItem.from_results_dict, self.results_dict_list))
 
-    def predict(self, resolution: int = 50, xmin=None, xmax=None) -> DataSet:
+    def predict(self, resolution: int = 50, xmin=None, xmax=None, info_table=None) -> DataSet:
         """Return a ds with generated data with optimised model parameters added to the info table.
+        If an info table is provided, data items will be generated to match the rows of the info table, using the
+        var_names and param_names and model_func.
 
         Args:
             resolution: Number of points to generate between the x_min and x_max.
@@ -314,6 +318,18 @@ class ModelSet:
         Returns: DataSet with generated data.
         """
         predict_ds = DataSet()
+
+        if info_table is not None:
+            predict_ds.info_table = info_table
+            for i, row in info_table.iterrows():
+                # make a data item for each row in the info table
+                x_data = np.linspace(row['x_min'], row['x_max'], resolution)
+                y_data = self.model_func(x_data, row[self.param_names].values)
+                data = {self.x_key: x_data, self.y_key: y_data}
+                info = row
+                test_id = row['test_id']
+                di = DataItem()
+
 
         # predict_ds.test_id_key = 'model_id'
 

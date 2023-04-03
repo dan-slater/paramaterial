@@ -68,7 +68,6 @@ class Styler:
     def __post_init__(self):
         self.plot_kwargs['legend'] = False
         self.plot_kwargs.update({'markeredgecolor': 'white', 'markersize': 8})
-
         # todo: use pandas in-built color bar
         # if self.cbar:
         #     self.plot_kwargs['cmap'] = self.cmap
