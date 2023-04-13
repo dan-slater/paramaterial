@@ -12,27 +12,27 @@
     --md-code-hl-string-color: #0c0786;
 }
 
-.md-typeset h1 {
-    font-weight: 600;
-}
+/*.md-typeset h1 {*/
+/*    font-weight: 600;*/
+/*}*/
 
-.md-typeset h2 {
-    font-size: 1.25em;
-}
+/*.md-typeset h2 {*/
+/*    font-size: 1.25em;*/
+/*}*/
 
-.md-typeset tbody {
-    font-size: 1.2em;
-}
+/*.md-typeset tbody {*/
+/*    font-size: 1.2em;*/
+/*}*/
 
-.md-typeset thead {
-    font-size: 1.2em;
-}
+/*.md-typeset thead {*/
+/*    font-size: 1.2em;*/
+/*}*/
 
-.md-header__topic:first-child {
-    font-weight: 500;
-}
+/*.md-header__topic:first-child {*/
+/*    font-weight: 500;*/
+/*}*/
 
 
-.md-grid {
-  max-width: 1440px;
-}
+/*.md-grid {*/
+/*  max-width: 1440px;*/
+/*}*/

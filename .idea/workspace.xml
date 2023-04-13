@@ -5,14 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="replace reject /Yes values with True, and /Off with False in read_screening_pdf_fields">
-      <change afterPath="$PROJECT_DIR$/receipts.tex" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_receipts.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plotting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/receipts.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/receipts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/screening.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/screening.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/getting started.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/img/paramaterial-logo.png" beforeDir="false" afterPath="$PROJECT_DIR$/docs/img/paramaterial-logo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/stylesheets/extra.css" beforeDir="false" afterPath="$PROJECT_DIR$/docs/stylesheets/extra.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/receipts.tex" beforeDir="false" afterPath="$PROJECT_DIR$/important-functions.tex" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +41,8 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/DS/casestudies&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/DS/paramaterial&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
@@ -107,6 +105,10 @@
       <workItem from="1680273294549" duration="1302000" />
       <workItem from="1680437094143" duration="3480000" />
       <workItem from="1680510085714" duration="582000" />
+      <workItem from="1680609947422" duration="594000" />
+      <workItem from="1680714846804" duration="137000" />
+      <workItem from="1681405392243" duration="2976000" />
+      <workItem from="1681408857412" duration="298000" />
     </task>
     <task id="LOCAL-00001" summary="replace reject /Yes values with True, and /Off with False in read_screening_pdf_fields">
       <created>1679921690942</created>
