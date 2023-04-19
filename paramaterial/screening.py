@@ -23,7 +23,8 @@ def make_screening_pdf(
         pdf_path: str = 'screening_pdf.pdf',
         pagesize: Tuple[float, float] = (900, 600),
 ) -> None:
-    """Make a screening pdf where each page contains a plot, a check box and a commentbox.
+    """Make a screening pdf where each page contains a plot, a check-box and a comment-box.
+    Scaling the plot is still under development. Currently, the plot_func should produce a figure with figsize=(10., 5.8).
 
     Args:
         ds: DataSet object
@@ -68,7 +69,6 @@ def make_screening_pdf(
                        borderColor=magenta, fillColor=pink, textColor=black, forceBorder=True, fieldFlags='multiline')
 
         # add page to canvas and close plot
-        # make name of page the test_id
         pdf_canvas.showPage()
         plt.close()
 
@@ -76,12 +76,14 @@ def make_screening_pdf(
     print(f'Screening pdf saved to {pdf_path}.')
 
 
-def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
-    """Screen data using marked pdf file.
+def read_screening_pdf(ds: DataSet, pdf_path: str) -> DataSet:
+    """Read the values from the checkbox and comment fields in the screening pdf and add them to the DataSet's info_table.
+    The info_table will have two new columns: 'reject' and 'comment'. The 'reject' column will contain either 'True' or 'False'.
+    The 'comment' column will contain the comment string entered into the comment field.
 
     Args:
         ds: DataSet object
-        screening_pdf_path: Path to screening pdf file
+        pdf_path: Path to screening pdf file
 
     Returns: DataSet object with checkbox and comment fields added to each DataItem's info
     """
@@ -98,7 +100,7 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     # dataframe for screening results
     screening_df = pd.DataFrame(columns=[test_id_key, 'reject', 'comment'])
 
-    with open(screening_pdf_path, 'rb') as f:
+    with open(pdf_path, 'rb') as f:
         pdf_fields = PdfReader(f).get_fields()
 
     # get comment and reject fields
@@ -128,22 +130,19 @@ def read_screening_pdf_fields(ds: DataSet, screening_pdf_path: str) -> DataSet:
     return new_ds
 
 
-def remove_rejected_items(ds: DataSet, screening_pdf_path: str) -> DataSet:
-    """Reject data items that were marked as reject in the screening pdf."""
+def remove_rejected_items(ds: DataSet, reject_key: str = 'reject') -> DataSet:
+    """Remove DataItems from the DataSet that were marked as rejected in the screening pdf.
+    DataItems will be removed if the value in the reject_key column of the ds.info_table is 'True'.
+
+    Args:
+        ds: DataSet object
+        reject_key: Column name in the info_table that contains the reject values
+    """
     new_ds = ds.copy()
-    screened_ds = read_screening_pdf_fields(new_ds, screening_pdf_path)
-    screened_ds.info_table = screened_ds.info_table[screened_ds.info_table['reject'] != 'True']
+    new_ds.info_table = new_ds.info_table[new_ds.info_table['reject'] != 'True']
     # print a list of the rejected items with a detailed message
-    rejected_items = screened_ds.info_table[screened_ds.info_table['reject'] == 'True']
+    rejected_items = new_ds.info_table[new_ds.info_table['reject'] == 'True']
     for i, row in rejected_items.iterrows():
-        print(f'Item {row[screened_ds.test_id_key]} was rejected because {row["comment"]}')
-    return screened_ds
+        print(f'Item {row[new_ds.test_id_key]} was rejected because {row["comment"]}')
+    return new_ds
 
-
-if __name__ == '__main__':
-    ds = DataSet(r'C:\Users\DS\msc-case-studies\baron study\info\01 raw info.xlsx',
-                 r'C:\Users\DS\msc-case-studies\baron study\data\01 raw data')
-    ds2 = read_screening_pdf_fields(
-        ds,
-        r'C:\Users\DS\msc-case-studies\baron study\info\04 trimmed data screening marked 7Dec22.pdf')
-    print(ds2.info_table.reject.unique())

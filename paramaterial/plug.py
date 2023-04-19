@@ -1,4 +1,4 @@
-""" In charge of handling data and executing I/O. [danslater, 1march2022] """
+""" In charge of handling data and executing I/O. """
 import copy
 import os
 from dataclasses import dataclass
@@ -10,6 +10,12 @@ from tqdm import tqdm
 
 @dataclass
 class DataItem:
+    """A class for handling a single data item.
+    Args:
+        test_id: The test id.
+        info: A pandas Series containing the info for the test.
+        data: A pandas DataFrame containing the data for the test.
+     """
     test_id: str
     info: pd.Series
     data: pd.DataFrame
@@ -21,14 +27,13 @@ class DataItem:
 
 
 class DataSet:
+    """A class for handling data. The data is stored in a list of DataItems. The info table is stored in a pandas DataFrame.
+    Args:
+        info_path: The path to the info table file.
+        data_dir: The directory containing the data files.
+        test_id_key: The column name in the info table that contains the test ids.
+    """
     def __init__(self, info_path: Optional[str] = None, data_dir: Optional[str] = None, test_id_key: str = 'test_id'):
-        """Initialize the ds.
-        Args:
-            info_path: The path to the info table file.
-            data_dir: The directory containing the data files.
-            test_id_key: The column name in the info table that contains the test ids.
-        """
-
         # store initialization parameters
         self.info_path = info_path
         self.data_dir = data_dir
