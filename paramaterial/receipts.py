@@ -16,6 +16,13 @@ from paramaterial.plug import DataSet, DataItem
 
 
 class TestReceipts:
+    """Class for generating test receipts.
+
+    Args:
+        template_path: Path to the template file to be used for generating the receipts.
+        jinja_env_kwargs: Keyword arguments to be passed to the jinja2.Environment constructor.
+    """
+
     def __init__(self, template_path: str, jinja_env_kwargs: Dict = None):
         self.template_path = template_path
         self.placeholders: List[str] = ['']
@@ -31,7 +38,15 @@ class TestReceipts:
             env_kwargs = default_jinja_env_kwargs.update(jinja_env_kwargs)
         self.jinja_env = Environment(**env_kwargs)
 
-    def parse_template_vars(self, as_dict: bool = False) -> Union[List[str], Dict[str, Any]]:
+    def parse_placeholders(self, as_dict: bool = False) -> Union[List[str], Dict[str, Any]]:
+        """Parse the template file for placeholders. With the default setup for the jinja2.Environment, placeholders are
+        defined as \VAR{placeholder_name}. The placeholders are returned as a list of strings, or as a dictionary with
+        the placeholder names as keys and None as values.
+
+        Args:
+            as_dict: If True, return a dictionary with the placeholder names as keys and None as values. If False,
+            return a list of strings.
+        """
         template_source = self.jinja_env.loader.get_source(self.jinja_env, self.template_path)
         parsed_content = self.jinja_env.parse(template_source)
         self.placeholders = list(meta.find_undeclared_variables(parsed_content))
@@ -41,10 +56,20 @@ class TestReceipts:
 
     def generate_receipts(self, ds: DataSet, receipts_path: str, replace_dict: Dict[str, Any],
                           receipts_dir: str = './receipts', clean: bool = True):
+        """Generate receipts for the tests in the DataSet. The receipts are saved as pdf files in the receipts_dir
+        directory. The directory structure is receipts_dir/test_id/(files for test_id receipt). The receipts are merged
+        into a single pdf file and saved at receipts_path. The replace_dict dictionary is used to replace the
+        placeholders
+        in the template file. The keys of the dictionary are the placeholders, and the values are the replacement
+        strings.
+        The values can also be functions that take a DataItem as input and return a string. The functions are called
+        with the DataItem corresponding to the test_id of the receipt being generated. If the function generates a
+        plot, it should save the plot in the current directory and return the name of the saved plot-file"""
         # make receipts folder
         if not os.path.exists(receipts_dir):
             os.mkdir(receipts_dir)
 
+        page_num = 1
         for di in ds.data_items:
             # make di folder
             di_folder = os.path.join(receipts_dir, di.test_id)
@@ -67,6 +92,11 @@ class TestReceipts:
                     else:
                         replace_dict_strings.update({placeholder: replacer})
                 filled_template = template.render(**replace_dict_strings).replace('_', '\_')
+
+                # set page number
+                filled_template = filled_template.replace('\end{document}',
+                                                          f'\setcounter{{page}}{{{page_num}}}\n\end{{document}}')
+                page_num += 1
 
                 # write filled template to file
                 with open(f'{di.test_id}_receipt.tex', 'w') as f:
@@ -99,7 +129,6 @@ class TestReceipts:
         # delete receipts folder
         if clean:
             shutil.rmtree(receipts_dir)
-
 
 
 if __name__ == '__main__':

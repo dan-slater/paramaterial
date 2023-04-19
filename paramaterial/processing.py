@@ -8,24 +8,21 @@ import numpy as np
 from paramaterial.plug import DataItem, DataSet
 
 
-def find_UTS(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', max_strain: Optional[
-    float] = None,
-             suppress_numpy_warnings: bool = False) -> DataSet:
-    """Find the ultimate tensile strength (UTS) of an engineering stress-strain curve.
+def find_UTS(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
+             max_strain: Optional[float] = None) -> DataSet:
+    """Find the ultimate tensile strength (UTS) of an engineering stress-strain curves in the DataSet. The UTS is
+    defined
+    as the maximum stress in the curve. The UTS is added to the DataSet.info dictionary as 'UTS_1' and the strain at the
+    UTS is added as 'UTS_0'.
 
     Args:
-        di: DataItem with stress-strain curve
-        strain_key: key for strain data
-        stress_key: key for stress data
-        max_strain: maximum strain to consider
-        suppress_numpy_warnings: suppress numpy warnings
+        ds: DataSet containing the stress-strain curves.
+        strain_key: Key for the strain data in the DataItem.
+        stress_key: Key for the stress data in the DataItem.
+        max_strain: Maximum strain to consider when finding the UTS. If None, the maximum strain in the curve is used.
 
-    Returns:
-        DataItem with UTS added to info.
+    Returns: DataSet with UTS added to info_table.
     """
-    if suppress_numpy_warnings:
-        np.seterr(all="ignore")
-
     ds = ds.copy()
 
     def find_di_UTS(di):
@@ -39,33 +36,17 @@ def find_UTS(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_
     return ds.apply(find_di_UTS)
 
 
-def find_ultimate_strength(di: DataItem, force_key: str = 'Force_kN', strain_key: str = 'Strain',
-                           stress_key: str = 'Stress_MPa') -> DataItem:
-    """Find the ultimate strength of a stress-strain curve, defined as the strain and stress at the maximum force.
-
-    Args:
-        di: DataItem with stress-strain curve
-        force_key: Key for force data
-        strain_key: Key for strain data
-        stress_key: Key for stress data
-
-    Returns: DataItem with ultimate strength added to info.
-    """
-    idx_max = di.data[force_key].idxmax()
-    di.info['Ultimate_Strength_0'] = di.data[strain_key][idx_max]
-    di.info['Ultimate_Strength_1'] = di.data[stress_key][idx_max]
-    return di
-
-
 def find_fracture_point(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa') -> DataSet:
-    """Find the fracture point of a stress-strain curve, defined as the point at which the strain is maximum.
+    """Find the fracture point for the stress-strain curves in the DataSet. The fracture point is defined as the
+    maximum strain in the curve. The fracture point is added to the DataSet.info dictionary as 'FP_1' and the stress at
+    the fracture point is added as 'FP_0'.
 
     Args:
         ds: DataSet with stress-strain curves
         strain_key: Key for strain data
         stress_key: Key for stress data
 
-    Returns: DataSet with fracture points added to info_table.
+    Returns: DataSet with fracture point added to info_table.
     """
     ds = ds.copy()
 
@@ -193,15 +174,15 @@ def find_upl_and_lpl(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 
     return ds.apply(_find_upl_and_lpl)
 
 
-def correct_foot(ds: DataSet, strain_key: str = 'Strain', LPL_key: str='LPL', UPL_key: str='UPL') -> DataSet:
+def correct_foot(ds: DataSet, strain_key: str = 'Strain', LPL_key: str = 'LPL', UPL_key: str = 'UPL') -> DataSet:
     def correct_di_foot(di):
         UPL = di.info['UPL_0'], di.info['UPL_1']
         E = di.info['E']
         strain_shift = UPL[0] - UPL[1]/E  # x-intercept of line through UPL & LPL
         di.info['foot correction'] = -strain_shift
         di.data[strain_key] = di.data[strain_key].values - strain_shift
-        di.info[UPL_key+'_0'] = di.info[UPL_key+'_0'] - strain_shift
-        di.info[LPL_key+'_0'] = di.info[LPL_key+'_0'] - strain_shift
+        di.info[UPL_key + '_0'] = di.info[UPL_key + '_0'] - strain_shift
+        di.info[LPL_key + '_0'] = di.info[LPL_key + '_0'] - strain_shift
         return di
 
     return ds.apply(correct_di_foot)

@@ -248,7 +248,17 @@ class ModelItem:
 
 
 class ModelSet:
-    """Class that acts as model DataSet."""
+    """Class that acts as model DataSet.
+
+    Args:
+        model_func: The model function to be used for fitting.
+        param_names: The names of the parameters of the model function.
+        var_names: The names of the variables of the model function.
+        bounds: The bounds for the parameters of the model function.
+        initial_guess: The initial guess for the parameters of the model function.
+        scipy_func: The scipy function to be used for fitting.
+        scipy_kwargs: The kwargs for the scipy function.
+    """
 
     def __init__(self, model_func: Callable[[np.ndarray, List[float]], np.ndarray], param_names: List[str],
                  var_names: Optional[List[str]] = None, bounds: Optional[List[Tuple[float, float]]] = None,
