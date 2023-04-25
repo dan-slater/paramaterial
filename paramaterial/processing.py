@@ -59,11 +59,10 @@ def find_fracture_point(ds: DataSet, strain_key: str = 'Strain', stress_key: str
     return ds.apply(find_di_fracture_point)
 
 
-def find_flow_stress_values(di: DataItem, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
+def find_flow_stress_values(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
                             temperature_key: str = None, rate_key: str = None,
-                            flow_strain: Union[int, float, Tuple[float, float]] = None) -> DataItem:
-    """Find the flow stress of a stress-strain curve, defined as the point at which the stress is maximum,
-    or as the point at a specified strain.
+                            flow_strain: Union[int, float, Tuple[float, float]] = None) -> DataSet:
+    """
 
     Args:
         di: DataItem with stress-strain curve
@@ -75,27 +74,30 @@ def find_flow_stress_values(di: DataItem, strain_key: str = 'Strain', stress_key
 
     Returns: DataItem with flow stress added to info.
     """
-    if flow_strain is None:
-        flow_strain = di.data[strain_key].max()
-    if (type(flow_strain) is float) or (type(flow_strain) is int):
-        di.info[f'flow_{strain_key}'] = flow_strain
-        di.info[f'flow_{stress_key}'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
-        if temperature_key is not None:
-            di.info[f'flow_{temperature_key}'] = di.data[temperature_key][di.data[strain_key] <= flow_strain].max()
-        if rate_key is not None:
-            di.info[f'flow_{rate_key}'] = di.data[rate_key][di.data[strain_key] <= flow_strain].max()
-    elif type(flow_strain) is tuple:
-        # average the flow stress over a range of strains
-        di.info[f'flow_{strain_key}'] = np.mean(flow_strain)
-        di.info[f'flow_{stress_key}'] = di.data[stress_key][
-            (di.data[strain_key] >= flow_strain[0])&(di.data[strain_key] <= flow_strain[1])].mean()
-        if temperature_key is not None:
-            di.info[f'flow_{temperature_key}'] = di.data[temperature_key][
+    def find_di_flow_stress_values(di, flow_strain):
+        if flow_strain is None:
+            flow_strain = di.data[strain_key].max()
+        if (type(flow_strain) is float) or (type(flow_strain) is int):
+            di.info[f'flow_{strain_key}'] = flow_strain
+            di.info[f'flow_{stress_key}'] = di.data[stress_key][di.data[strain_key] <= flow_strain].max()
+            if temperature_key is not None:
+                di.info[f'flow_{temperature_key}'] = di.data[temperature_key][di.data[strain_key] <= flow_strain].max()
+            if rate_key is not None:
+                di.info[f'flow_{rate_key}'] = di.data[rate_key][di.data[strain_key] <= flow_strain].max()
+        elif type(flow_strain) is tuple:
+            # average the flow stress over a range of strains
+            di.info[f'flow_{strain_key}'] = np.mean(flow_strain)
+            di.info[f'flow_{stress_key}'] = di.data[stress_key][
                 (di.data[strain_key] >= flow_strain[0])&(di.data[strain_key] <= flow_strain[1])].mean()
-        if rate_key is not None:
-            di.info[f'flow_{rate_key}'] = di.data[rate_key][
-                (di.data[strain_key] >= flow_strain[0])&(di.data[strain_key] <= flow_strain[1])].mean()
-    return di
+            if temperature_key is not None:
+                di.info[f'flow_{temperature_key}'] = di.data[temperature_key][
+                    (di.data[strain_key] >= flow_strain[0])&(di.data[strain_key] <= flow_strain[1])].mean()
+            if rate_key is not None:
+                di.info[f'flow_{rate_key}'] = di.data[rate_key][
+                    (di.data[strain_key] >= flow_strain[0])&(di.data[strain_key] <= flow_strain[1])].mean()
+        return di
+
+    return ds.apply(find_di_flow_stress_values, flow_strain=flow_strain)
 
 
 def find_upl_and_lpl(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa', preload: float = 0,
@@ -207,24 +209,28 @@ def find_proof_stress(ds: DataSet, proof_strain: float = 0.002, strain_key: str 
         y_data = di.data[stress_key].values
         x_shift = proof_strain
         y_line = E*(x_data - x_shift)
-        cut = np.where(np.diff(np.sign(y_line - y_data)) != 0)[0][-1]
-        m = (y_data[cut + 1] - y_data[cut])/(x_data[cut + 1] - x_data[cut])
-        xl = x_data[cut]
-        yl = y_line[cut]
-        xd = x_data[cut]
-        yd = y_data[cut]
-        K = np.array([[1, -E], [1, -m]])
-        f = np.array([[yl - E*xl], [yd - m*xd]])
-        d = np.linalg.solve(K, f).flatten()
-        di.info[f'PS_{proof_strain}_0'] = d[1]
-        di.info[f'PS_{proof_strain}_1'] = d[0]
+        try:
+            cut = np.where(np.diff(np.sign(y_line - y_data)) != 0)[0][-1]
+            m = (y_data[cut + 1] - y_data[cut])/(x_data[cut + 1] - x_data[cut])
+            xl = x_data[cut]
+            yl = y_line[cut]
+            xd = x_data[cut]
+            yd = y_data[cut]
+            K = np.array([[1, -E], [1, -m]])
+            f = np.array([[yl - E*xl], [yd - m*xd]])
+            d = np.linalg.solve(K, f).flatten()
+            di.info[f'PS_{proof_strain}_0'] = d[1]
+            di.info[f'PS_{proof_strain}_1'] = d[0]
+        except IndexError:
+            di.info[f'PS_{proof_strain}_0'] = np.nan
+            di.info[f'PS_{proof_strain}_1'] = np.nan
         return di
 
     return ds.apply(find_di_proof_stress)
 
 
-def calculate_strain_rate(di: DataItem, strain_key: str = 'Strain', time_key: str = 'Time_s',
-                          strain_rate_key: str = 'Strain_Rate') -> DataItem:
+def calculate_strain_rate(ds: DataSet, strain_key: str = 'Strain', time_key: str = 'Time_s',
+                          strain_rate_key: str = 'Strain_Rate') -> DataSet:
     """Calculate the strain rate of a stress-strain curve.
 
     Args:
@@ -235,10 +241,13 @@ def calculate_strain_rate(di: DataItem, strain_key: str = 'Strain', time_key: st
 
     Returns: DataItem with strain rate added to data.
     """
-    gradient = np.gradient(di.data[strain_key], di.data[time_key])
-    di.data[strain_rate_key] = gradient
-    di.data[f'Smoothed_{strain_rate_key}'] = np.convolve(gradient, np.ones(5)/60, mode='same')
-    return di
+    def _calculate_di_strain_rate(di):
+        gradient = np.gradient(di.data[strain_key], di.data[time_key])
+        di.data[strain_rate_key] = gradient
+        di.data[f'Smoothed_{strain_rate_key}'] = np.convolve(gradient, np.ones(5)/60, mode='same')
+        return di
+
+    return ds.apply(_calculate_di_strain_rate)
 
 
 def correct_friction_UC(di: DataItem, mu_key: str = 'mu', h0_key: str = 'h_0', D0_key: str = 'D_0',

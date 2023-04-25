@@ -33,8 +33,8 @@ def configure_plt_formatting():
     # mpl.rcParams['legend.facecolor'] = "white"
     # mpl.rcParams["grid.linewidth"] = 1
     # mpl.rcParams["text.color"] = (40/255, 40/255, 40/255)
-    cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (0.2124, 0.3495, 0.1692)])
-    mpl.rcParams["axes.facecolor"]= cmap(0.1)
+    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (0.2124, 0.3495, 0.1692)])
+    # mpl.rcParams["axes.facecolor"]= cmap(0.1)
 
 
 configure_plt_formatting()
@@ -108,7 +108,7 @@ class Styler:
         if self.styled_ds is None:
             raise ValueError('The styler must be styled to a ds before plotting.')
 
-        configure_plt_formatting()
+        # configure_plt_formatting()
         formatters = dict()
 
         if self.color_by is not None:
