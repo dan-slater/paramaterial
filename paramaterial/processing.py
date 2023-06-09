@@ -150,7 +150,7 @@ def find_upl_and_lpl(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 
         y_upl = y[data[preload_key] >= preload]
 
         S_min = np.inf
-        for i in range(3, len(x)):
+        for i in range(3, len(x_upl)):
             S_rel = fit_line(x_upl[:i], y_upl[:i])  # fit a line to the first i points after the preload
             if S_rel < S_min:
                 S_min = S_rel
@@ -164,7 +164,12 @@ def find_upl_and_lpl(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 
             S_rel = fit_line(x_lpl[j:], y_lpl[j:])  # fit a line to the last i points before the UPL
             if S_rel < S_min:
                 S_min = S_rel
-                LPL = (x_lpl[j], y_lpl[j])
+                LPL = [x_lpl[j], y_lpl[j]]
+
+        # if LPL is less than preload, then find the first data point with stress greater than preload
+        if LPL[1] < preload:
+            LPL = (x[data[preload_key] >= preload][0], y[data[preload_key] >= preload][0])
+
 
         di.info['UPL_0'] = UPL[0]
         di.info['UPL_1'] = UPL[1]
@@ -188,6 +193,32 @@ def correct_foot(ds: DataSet, strain_key: str = 'Strain', LPL_key: str = 'LPL', 
         return di
 
     return ds.apply(correct_di_foot)
+
+
+def find_E(ds: DataSet, LPL_stress: float, UPL_stress: float, strain_key: str = 'Strain',
+                      stress_key: str = 'Stress_MPa', E_key: str = 'E'):
+    """Find the elastic modulus of a stress-strain curve by fitting a line to the points between the specified stresses.
+
+Args:
+        di: DataItem with stress-strain curve
+        LPL_stress: Lower stress bound
+        UPL_stress: Upper stress bound
+        strain_key: Key for strain data
+        stress_key: Key for stress data
+        E_key: Key to store elastic modulus in info
+    """
+    ds = ds.copy()
+
+    def find_di_E(di):
+        x_data = di.data[strain_key].values
+        y_data = di.data[stress_key].values
+        x = x_data[(y_data >= LPL_stress) & (y_data <= UPL_stress)]
+        y = y_data[(y_data >= LPL_stress) & (y_data <= UPL_stress)]
+        E = np.polyfit(x, y, 1)[0]
+        di.info[E_key] = E
+        return di
+
+    return ds.apply(find_di_E)
 
 
 def find_proof_stress(ds: DataSet, proof_strain: float = 0.002, strain_key: str = 'Strain',

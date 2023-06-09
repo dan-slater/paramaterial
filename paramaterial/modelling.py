@@ -131,31 +131,31 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_
         repr_info_table.to_excel(info_path, index=False)
 
 
-def make_representative_info(ds: DataSet, repr_by_cols: List[str], group_info_cols: List[str] = None):
+def make_representative_info(ds: DataSet, group_by_keys: List[str], group_info_cols: List[str] = None):
     """Make a table of representative info for each group in a DataSet.
 
     Args:
         ds: DataSet to make representative info for.
         info_path: Path to save representative info table to.
-        repr_by_cols: Columns to group by and make representative info for.
+        group_by_keys: Columns to group by and make representative info for.
         group_info_cols: Columns to include in representative info table.
     """
     subset_filters = []
-    value_lists = [ds.info_table[col].unique() for col in repr_by_cols]
+    value_lists = [ds.info_table[col].unique() for col in group_by_keys]
     for i in range(len(value_lists[0])):
-        subset_filters.append({repr_by_cols[0]: [value_lists[0][i]]})
-    for i in range(1, len(repr_by_cols)):
+        subset_filters.append({group_by_keys[0]: [value_lists[0][i]]})
+    for i in range(1, len(group_by_keys)):
         new_filters = []
         for fltr in subset_filters:
             for value in value_lists[i]:
                 new_filter = fltr.copy()
-                new_filter[repr_by_cols[i]] = [value]
+                new_filter[group_by_keys[i]] = [value]
                 new_filters.append(new_filter)
         subset_filters = new_filters
 
     # make list of repres_ids and initialise info table for the representative data
     repres_ids = [f'repres_id_{i + 1:0>4}' for i in range(len(subset_filters))]
-    repr_info_table = pd.DataFrame(columns=['repres_id'] + repr_by_cols)
+    repr_info_table = pd.DataFrame(columns=['repres_id'] + group_by_keys)
 
     for fltr, repres_id in zip(subset_filters, repres_ids):
         # get representative subset
