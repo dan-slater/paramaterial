@@ -31,7 +31,7 @@ def configure_plt_formatting():
     # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (85/255, 49/255, 0)])
     # mpl.rcParams['axes.facecolor'] = cmap(0.1)
     # mpl.rcParams['legend.facecolor'] = "white"
-    # mpl.rcParams["grid.linewidth"] = 1
+    # mpl.rcParams["grid.linewidth"] = 2
     # mpl.rcParams["text.color"] = (40/255, 40/255, 40/255)
     # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (0.2124, 0.3495, 0.1692)])
     # mpl.rcParams["axes.facecolor"]= cmap(0.1)
@@ -188,6 +188,10 @@ def dataset_plot(
     if ax.get_legend() is not None and plot_legend:
         ax.get_legend().remove()
 
+    if styler is None:
+        styler = Styler()
+        styler.style_to(ds)
+
     kwargs = {**styler.plot_kwargs, **kwargs}
 
     # plot the dataitems
@@ -335,7 +339,7 @@ def dataset_subplots(
     if row_titles is not None:
         for ax, row_title in zip(axs[:, 0], row_titles):
             ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
-                        textcoords='offset points', ha='right', va='center', rotation=90, fontsize=12)
+                        textcoords='offset points', ha='right', va='center', rotation=90, fontsize=11)
 
     if col_titles is not None:
         for ax, column_title in zip(axs[0, :], col_titles):

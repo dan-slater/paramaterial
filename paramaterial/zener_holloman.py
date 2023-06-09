@@ -104,7 +104,7 @@ def plot_ZH_regression(ds: DataSet, flow_stress_key: str = 'flow_stress_MPa', ra
                        linestyle_by: str = None,
                        scatter_kwargs: Dict[str, Any] = None, fit_kwargs: Dict[str, Any] = None, eq_hscale=0.1):
     """Plot the Zener-Holloman regression of the flow stress vs. temperature."""
-    configure_plt_formatting()
+    # configure_plt_formatting()
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
 
@@ -210,7 +210,7 @@ def make_quality_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], 
         columns = [columns]
 
     def calculate_quality(df):
-        df['quality'] = df['lnZ_fit_residual'].abs().sum()/(df['lnZ_fit_residual'].count()*df[flow_stress_key].mean())*100
+        df['quality'] = 100 - df['lnZ_fit_residual'].abs().sum()/(df['lnZ_fit_residual'].count()*df[flow_stress_key].mean())*100
         return df
 
     quality_matrix = info_table.groupby(index + columns, group_keys=False).apply(calculate_quality).groupby(index + columns, group_keys=False)[
