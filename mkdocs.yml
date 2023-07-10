@@ -11,7 +11,7 @@ theme:
     - navigation.sections
     - navigation.expand
     - toc.integrate
-#    - navigation.top
+    #    - navigation.top
     - search.suggest
     - search.highlight
     - navigation.instant
@@ -36,12 +36,15 @@ nav:
   - Example:
       - Basic Usage: example/paramaterial-basic-usage.ipynb
   - Reference:
-      - preparing.md
-      - plug.md
-      - plotting.md
-      - processing.md
-      - screening.md
-      - modelling.md
+      - reference/aggregate.md
+      - reference/example.md
+      - reference/models.md
+      - reference/plotting.md
+      - reference/plug.md
+      - reference/prep.md
+      - reference/proc_ops.md
+      - reference/receipts.md
+      - reference/screening.md
 
 extra_css:
   - stylesheets/extra.css
