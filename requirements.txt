@@ -9,3 +9,5 @@ pypdf2>=2.10.9
 svglib>=1.4.1
 reportlab>=3.5.67
 openpyxl>=3.1.2
+setuptools>=67.8.0
+requests>=2.29.0

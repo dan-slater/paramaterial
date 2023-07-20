@@ -5,254 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="working on porting">
-      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/reference/example.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/reference/models.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/reference/plotting.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/reference/plug.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/reference/prep.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/reference/proc_ops.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/reference/receipts.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/reference/screening.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/paramaterial/aggregate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_example.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/paramaterial.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/paramaterial.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/ParaMat Manifesto.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/architectural design.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/manifesto.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/modelling.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/plotting.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/plug.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/preparing.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/processing.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/receipts.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/screening.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/stylesheets/extra.css" beforeDir="false" afterPath="$PROJECT_DIR$/docs/stylesheets/extra.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/important-functions.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mkdocs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mkdocs.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/aggregate.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/representing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/example.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/example.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/preparing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/prep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/proc_ops.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/zener_holloman.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/refactor.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plug.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/prep.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/preparing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/proc_ops.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/processing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_001.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_002.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_003.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_004.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_005.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_006.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_007.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_008.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_009.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_010.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_011.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_012.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_013.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_014.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_015.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_016.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_017.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_018.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_019.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_020.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_021.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_022.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_023.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_024.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_025.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_026.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_027.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_028.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_029.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_030.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_031.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_032.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_033.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_034.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_035.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_036.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_037.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_038.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_039.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_040.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_041.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_042.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_043.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_044.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_045.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_046.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_047.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_048.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_049.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_050.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_051.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_052.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_053.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_054.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_055.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_056.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_057.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_058.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_059.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_060.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_061.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_062.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_063.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_064.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_065.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_066.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_067.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_068.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_069.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_070.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_071.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_072.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_073.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_074.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_075.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_076.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_077.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_078.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_079.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_080.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_081.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_082.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_083.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_084.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_085.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_086.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_087.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_088.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_089.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_090.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_091.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_092.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_093.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_094.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_095.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_096.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_097.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_098.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_099.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/01 prepared data/test_ID_100.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_001.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_002.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_003.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_004.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_005.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_006.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_007.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_008.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_009.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_010.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_011.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_012.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_013.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_014.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_015.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_016.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_017.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_018.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_019.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_020.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_021.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_022.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_023.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_024.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_025.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_026.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_027.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_028.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_029.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_030.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_031.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_032.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_033.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_034.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_035.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_036.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_037.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_038.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_039.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_040.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_041.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_042.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_043.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_044.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_045.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_046.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_047.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_048.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_049.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_050.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_051.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_052.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_053.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_054.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_055.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_056.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_057.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_058.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_059.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_060.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_061.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_062.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_063.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_064.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_065.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_066.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_067.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_068.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_069.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_070.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_071.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_072.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_073.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_074.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_075.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_076.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_077.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_078.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_079.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_080.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_081.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_082.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_083.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_084.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_085.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_086.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_087.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_088.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_089.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_090.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_091.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_092.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_093.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_094.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_095.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_096.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_097.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_098.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_099.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test data/02 find_upl_and_lpl_data/test_ID_100.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test info/01 prepared info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/processing test data/test info/02 find_upl_and_lpl_info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_data/id_001.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_data/id_002.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_data/info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/docs/reference/aggregate.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_models.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_models_plot.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_processing.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_receipts.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/zener-holloman/info/03 screened info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/zener-holloman/info/04 ZH info.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/zener-holloman/info/04 ZH parameter info.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/zener-holloman/info/04 ZH regression info.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/zener-holloman/test_zener_holloman_plot.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -267,6 +31,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -295,7 +64,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.sourceCode.Python",
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -304,7 +73,29 @@
       <recent name="C:\Users\DS\paramaterial" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.Python tests in test_example.py">
+    <configuration name="example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="paramaterial" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/paramaterial" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/paramaterial/example.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="receipts" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="paramaterial" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -327,8 +118,41 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Python tests for test_example.TestExample" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="paramaterial" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_example.TestExample&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests in test_example.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="paramaterial" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_example.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Python tests in test_example.py" />
+        <item itemvalue="Python tests.Python tests for test_example.TestExample" />
+        <item itemvalue="Python.example" />
         <item itemvalue="Python.receipts" />
       </list>
     </recent_temporary>
@@ -377,6 +201,9 @@
       <workItem from="1688987174356" duration="738000" />
       <workItem from="1688987975001" duration="1528000" />
       <workItem from="1688989535209" duration="1930000" />
+      <workItem from="1689771969643" duration="336000" />
+      <workItem from="1689772327387" duration="16396000" />
+      <workItem from="1689861182094" duration="4159000" />
     </task>
     <task id="LOCAL-00001" summary="replace reject /Yes values with True, and /Off with False in read_screening_pdf_fields">
       <created>1679921690942</created>
@@ -431,7 +258,20 @@
     <MESSAGE value="working on porting" />
     <option name="LAST_COMMIT_MESSAGE" value="working on porting" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/paramaterial/example.py</url>
+          <line>40</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/paramaterial$receipts.coverage" NAME="receipts Coverage Results" MODIFIED="1688987388202" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/paramaterial" />
+    <SUITE FILE_PATH="coverage/paramaterial$.coverage" NAME=" Coverage Results" MODIFIED="1689861650034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/paramaterial$receipts.coverage" NAME="receipts Coverage Results" MODIFIED="1680186807581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/paramaterial" />
+    <SUITE FILE_PATH="coverage/paramaterial$example.coverage" NAME="example Coverage Results" MODIFIED="1689788042121" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/paramaterial" />
   </component>
 </project>
