@@ -8,13 +8,29 @@ import pandas as pd
 from tqdm import tqdm
 
 
+
+
+class UnsupportedExtensionError(Exception):
+    """Exception raised when an unsupported file extension is encountered."""
+    def __init__(self, extension, message="Unsupported file extension."):
+        self.extension = extension
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.extension} -> {self.message}'
+
+
+
+
+
 @dataclass
 class DataItem:
     """A class for handling a single data item.
     Args:
         test_id: The test id.
         data: A pandas DataFrame containing the data for the test.
-        _info_table: Reference to info_table from parent DataSet. Should not be set manually.
+        _info_table: (Internal) Reference to info_table from parent DataSet. Should not be set manually.
 
     Attributes:
         info: A Series containing the corresponding row from the info_table of the parent DataSet.
@@ -57,8 +73,31 @@ class DataSet:
             raise ValueError('Both info_path and data_dir must be specified, or neither.')
 
         self._info_table = self._read_info_table()
-        self._data_items = self._load_data_items()
-        self._check_data_info_match()
+        self.data_items: List[DataItem] = self._load_data_items()
+
+    @property
+    def info_table(self) -> pd.DataFrame:
+        return self._info_table
+
+    @info_table.setter
+    def info_table(self, info_table: pd.DataFrame):
+        self._info_table = info_table
+        for data_item in self.data_items:
+            data_item._info_table = info_table
+
+    @property
+    def data_items(self) -> List[DataItem]:
+        self._check_info_table_sync()
+        return self._data_items
+
+    @data_items.setter
+    def data_items(self, data_items: List[DataItem]):
+        self._data_items = data_items
+        self._check_info_table_sync()
+
+    def _check_extension_implemented(self, path: str):
+        if not path.endswith('.csv') and not path.endswith('.xlsx') and not path.endswith('.ods'):
+            raise ValueError(f'Invalid file extension: {path.split(".")[-1]}')
 
     def _read_info_table(self):
         if self.info_path.endswith('.xlsx'):
@@ -71,9 +110,6 @@ class DataSet:
             raise ValueError(
                 f'Info_path must end with ".csv", ".xlsx" or ".ods". Not ".{self.info_path.split(".")[-1]}"')
 
-    def _read_info_row(self, test_id: str):
-        return self._info_table.loc[self._info_table[self.test_id_key] == test_id].squeeze()
-
     def _load_data_items(self) -> List[DataItem]:
         try:
             test_ids = self._info_table[self.test_id_key].tolist()
@@ -82,59 +118,44 @@ class DataSet:
 
         file_extensions = set([file.split('.')[-1] for file in os.listdir(self.data_dir)])
         if len(file_extensions) > 1:
-            raise ValueError(f'Data files have multiple extensions: {file_extensions}.'
-                             f'Must have only one extension: csv, xlsx or ods.')
-        if file_extensions.pop() not in ['csv', 'xlsx', 'ods']:
-            raise ValueError(f'Data files must have extension csv, xlsx or ods. Got {file_extensions}.')
+            raise ValueError(f'Data files have multiple extensions: {file_extensions}.')
 
-        file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in test_ids]
+        data_file_extension = file_extensions.pop()
+        file_paths = [self.data_dir + f'/{test_id}.{data_file_extension}' for test_id in test_ids]
 
-        return [DataItem(test_id, self._read_info_row(test_id, self.test_id_key), pd.read_csv(file_path)) for
-                test_id, file_path in zip(test_ids, file_paths)]
+        read_data: Callable[[str], pd.DataFrame] = pd.read_csv
+        if data_file_extension == 'csv':
+            pass
+        elif data_file_extension == 'xlsx':
+            read_data = pd.read_excel
+        elif data_file_extension == 'ods':
+            read_data = lambda file_path: pd.read_excel(file_path, engine='odf')
+        else:
+            raise ValueError(f'Invalid data file extension: {data_file_extension}')
 
-    def _check_data_info_match(self):
-        if len(self._info_table) != len(self._data_items):
-            raise ValueError('Lengths of info_table and data_items are different.')
-        if any([di.test_id != self._info_table[self.test_id_key][i] for i, di in enumerate(self._data_items)]):
-            raise ValueError('test_id\'s in info_table and data_items are different.')
-        if any([not di.info.equals(self._info_table.loc[self._info_table[self.test_id_key] == di.test_id].squeeze()) for
-                di in self._data_items]):
-            raise ValueError('At least one DataItem.info different to corresponding info_table row.')
+        return [DataItem(t_id, read_data(f_path), self._info_table) for t_id, f_path in zip(test_ids, file_paths)]
 
-    @property
-    def info_table(self) -> pd.DataFrame:
+    def _check_info_table_sync(self):
+        for data_item in self.data_items:
+            expected_info = self._info_table.loc[self._info_table['test_id'] == data_item.test_id]
+            if not data_item.info.equals(expected_info):
+                raise ValueError(f"DataItem with test_id={data_item.test_id} is out of sync with the info_table.")
 
-    @info_table.setter
-    def info_table(self, info_table: pd.DataFrame):
-        self._info_table = info_table
-        self._update_data_items()
-
-    def _read_info_row(self, test_id: str, test_id_key: str):
-        return self._info_table.loc[self._info_table[test_id_key] == test_id].squeeze()
-
-    def _update_data_items(self):
-        # update the list of dataitems
-        new_test_ids = self._info_table[self.test_id_key].tolist()
-        old_test_ids = [di.test_id for di in self.data_items]
-        self.data_items = [self.data_items[old_test_ids.index(new_test_id)] for new_test_id in new_test_ids]
-        # update the info in the data items
-        self.data_items = list(map(lambda di: di.read_info_from(self._info_table, self.test_id_key),
-                                   self.data_items))
+    def __iter__(self):
+        for data_item in tqdm(self.data_items, unit='DataItems', leave=False):
+            yield data_item
 
     def apply(self, func: Callable[[DataItem, ...], DataItem], **kwargs) -> 'DataSet':
-        """Apply a function to every dataitem in a copy of the ds and return the copy."""
-        self._update_data_items()
+        new_data_items = [func(data_item, **kwargs) for data_item in self.data_items]
+        self.data_items = new_data_items
+        return self
 
-        def wrapped_func(di: DataItem):
-            di = func(di, **kwargs)
-            di.data.reset_index(drop=True, inplace=True)
-            assert self.test_id_key in di.info.index
-            return di
+    def copy(self) -> 'DataSet':
 
-        new_ds = self.copy()
-        new_ds.data_items = list(map(wrapped_func, new_ds.data_items))
-        new_ds.info_table = pd.DataFrame([di.info for di in new_ds.data_items])
-        return new_ds
+        copied_dataset = DataSet(test_id_key=self.test_id_key)
+        copied_dataset.info_table = self.info_table.copy()
+        copied_dataset.data_items = [copy.deepcopy(data_item) for data_item in self.data_items]
+        return copied_dataset
 
     def write_output(self, out_info_path: str, out_data_dir: str) -> None:
         """Execute the processing operations and write the output of the ds to a directory.
@@ -142,11 +163,9 @@ class DataSet:
             out_data_dir: The directory to write the data to.
             out_info_path: The path to write the info table to.
         """
-        # make the output directory if it doesn't exist
-        self._update_data_items()
         if not os.path.exists(out_data_dir):
             os.makedirs(out_data_dir)
-        # write the info table
+
         if out_info_path.endswith('.xlsx'):
             self._info_table.to_excel(out_info_path, index=False)
         elif out_info_path.endswith('.csv'):
@@ -164,12 +183,6 @@ class DataSet:
         new_ds = self.copy()
         new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending).reset_index(drop=True)
         return new_ds
-
-    def __iter__(self):
-        """Iterate over the ds."""
-        self._update_data_items()
-        for dataitem in tqdm(self.copy().data_items, unit='DataItems', leave=False):
-            yield dataitem
 
     def __getitem__(self, specifier: Union[int, str, slice, Dict[str, List[Any]]]) -> Union['DataSet', DataItem]:
         """Get a subset of the ds using a dictionary of column names and lists of values or using normal list
@@ -201,27 +214,13 @@ class DataSet:
             print(f'Error applying query "{query_string}" to info table: {e}')
         return new_ds
 
-    def copy(self) -> 'DataSet':
-        """Return a copy of the ds."""
-        self._update_data_items()
-        return copy.deepcopy(self)
-
     def __repr__(self):
-        self._update_data_items()
-        repr_string = f'DataSet with {len(self._info_table)} DataItems containing\n'
-        repr_string += f'\tinfo: columns -> {", ".join(self._info_table.columns)}\n'
-        repr_string += f'\tdata: len = {len(self.data_items[0].data)}, columns -> {", ".join(self.data_items[0].data.columns)}\n'
-        return repr_string
+        return f"DataSet({len(self._info_table)} DataItems)"
 
     def __len__(self):
-        """Get the number of dataitems in the ds."""
-        self._update_data_items()
-        if len(self._info_table) != len(self.data_items):
-            raise ValueError('Length of info table and datamap are different.')
         return len(self._info_table)
 
     def __hash__(self):
-        self._update_data_items()
         return hash(tuple(map(hash, self.data_items)))
 
 

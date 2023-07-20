@@ -4,19 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="working on porting">
-      <change afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/paramaterial.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/paramaterial.iml" afterDir="false" />
+    <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="making major changes to plug. finished example">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/aggregate.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/representing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/example.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plug.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/prep.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/preparing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/proc_ops.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/processing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -203,7 +193,7 @@
       <workItem from="1688989535209" duration="1930000" />
       <workItem from="1689771969643" duration="336000" />
       <workItem from="1689772327387" duration="16396000" />
-      <workItem from="1689861182094" duration="4159000" />
+      <workItem from="1689861182094" duration="8244000" />
     </task>
     <task id="LOCAL-00001" summary="replace reject /Yes values with True, and /Off with False in read_screening_pdf_fields">
       <created>1679921690942</created>
@@ -240,7 +230,15 @@
       <option name="project" value="LOCAL" />
       <updated>1686316314326</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="making major changes to plug. finished example">
+      <option name="closed" value="true" />
+      <created>1689865615520</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1689865615520</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -256,7 +254,8 @@
     <MESSAGE value="updating processing docstrings" />
     <MESSAGE value="added try except to find_proof_stress" />
     <MESSAGE value="working on porting" />
-    <option name="LAST_COMMIT_MESSAGE" value="working on porting" />
+    <MESSAGE value="making major changes to plug. finished example" />
+    <option name="LAST_COMMIT_MESSAGE" value="making major changes to plug. finished example" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
