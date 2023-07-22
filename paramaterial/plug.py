@@ -8,10 +8,9 @@ import pandas as pd
 from tqdm import tqdm
 
 
-
-
 class UnsupportedExtensionError(Exception):
     """Exception raised when an unsupported file extension is encountered."""
+
     def __init__(self, extension, message="Unsupported file extension."):
         self.extension = extension
         self.message = message
@@ -21,34 +20,54 @@ class UnsupportedExtensionError(Exception):
         return f'{self.extension} -> {self.message}'
 
 
+def _read_file(path: str) -> pd.DataFrame:
+    """Read a file into a pandas DataFrame.
+    Args:
+        path: The path to the file to be read.
+    Returns:
+        A pandas DataFrame containing the data from the file.
+    """
+    if path.endswith('.csv'):
+        return pd.read_csv(path)
+    elif path.endswith('.xlsx'):
+        return pd.read_excel(path)
+    elif path.endswith('.ods'):
+        return pd.read_excel(path, engine='odf')
+    else:
+        raise UnsupportedExtensionError(path.split('.')[-1], "Read file extension not supported.")
 
+
+def _write_file(df: pd.DataFrame, path: str) -> None:
+    """Write a pandas DataFrame to a file.
+    Args:
+        df: The pandas DataFrame to be written.
+        path: The path to the file to be written.
+    """
+    if path.endswith('.csv'):
+        df.to_csv(path, index=False)
+    elif path.endswith('.xlsx'):
+        df.to_excel(path, index=False)
+    elif path.endswith('.ods'):
+        df.to_excel(path, index=False, engine='odf')
+    else:
+        raise UnsupportedExtensionError(path.split('.')[-1], "Write file extension not supported.")
 
 
 @dataclass
 class DataItem:
-    """A class for handling a single data item.
-    Args:
-        test_id: The test id.
-        data: A pandas DataFrame containing the data for the test.
-        _info_table: (Internal) Reference to info_table from parent DataSet. Should not be set manually.
-
-    Attributes:
-        info: A Series containing the corresponding row from the info_table of the parent DataSet.
-        Modifying the info of a DataItem will modify the info_table of the parent DataSet and vice versa.
-    """
     test_id: str
     data: pd.DataFrame
-    _info_table: pd.DataFrame  # Reference to info_table from parent DataSet
+    info_table: pd.DataFrame  # Reference to DataSet.info_table from parent
 
     @property
     def info(self) -> pd.Series:
         """Return the corresponding info for this DataItem from the info_table."""
-        return self._info_table.loc[self._info_table['test_id'] == self.test_id]
+        return self.info_table.loc[self.info_table['test_id'] == self.test_id]
 
     @info.setter
     def info(self, new_info: pd.Series):
         """Update the corresponding info for this DataItem in the info_table."""
-        self._info_table.loc[self._info_table['test_id'] == self.test_id] = new_info
+        self.info_table.loc[self.info_table['test_id'] == self.test_id] = new_info
 
 
 class DataSet:
@@ -72,8 +91,18 @@ class DataSet:
         if info_path is None or data_dir is None:
             raise ValueError('Both info_path and data_dir must be specified, or neither.')
 
-        self._info_table = self._read_info_table()
+        self._info_table = _read_file(info_path)
         self.data_items: List[DataItem] = self._load_data_items()
+
+    def _load_data_items(self) -> List[DataItem]:
+        file_paths = [self.data_dir + f'/{file}' for file in os.listdir(self.data_dir)]
+
+        try:
+            test_ids = self._info_table[self.test_id_key].tolist()
+        except KeyError:
+            raise KeyError(f'Could not find test_id column "{self.test_id_key}" in info_table.')
+
+        return [DataItem(t_id, _read_file(f_path), self._info_table) for t_id, f_path in zip(test_ids, file_paths)]
 
     @property
     def info_table(self) -> pd.DataFrame:
@@ -81,68 +110,37 @@ class DataSet:
 
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
-        self._info_table = info_table
         for data_item in self.data_items:
-            data_item._info_table = info_table
+            data_item.info_table = info_table
+        self._info_table = info_table
 
     @property
     def data_items(self) -> List[DataItem]:
-        self._check_info_table_sync()
         return self._data_items
 
     @data_items.setter
     def data_items(self, data_items: List[DataItem]):
+        if not all([data_item.info_table is self._info_table for data_item in data_items]):
+            new_info_table = pd.concat([data_item.info_table for data_item in data_items], axis=1)
+            new_info_table = new_info_table.loc[:, ~new_info_table.columns.duplicated()]
+            self.info_table = new_info_table
         self._data_items = data_items
-        self._check_info_table_sync()
 
-    def _check_extension_implemented(self, path: str):
-        if not path.endswith('.csv') and not path.endswith('.xlsx') and not path.endswith('.ods'):
-            raise ValueError(f'Invalid file extension: {path.split(".")[-1]}')
-
-    def _read_info_table(self):
-        if self.info_path.endswith('.xlsx'):
-            self._info_table = pd.read_excel(self.info_path)
-        elif self.info_path.endswith('.csv'):
-            self._info_table = pd.read_csv(self.info_path)
-        elif self.info_path.endswith('.ods'):
-            self._info_table = pd.read_excel(self.info_path, engine='odf')
-        else:
-            raise ValueError(
-                f'Info_path must end with ".csv", ".xlsx" or ".ods". Not ".{self.info_path.split(".")[-1]}"')
-
-    def _load_data_items(self) -> List[DataItem]:
-        try:
-            test_ids = self._info_table[self.test_id_key].tolist()
-        except KeyError:
-            raise KeyError(f'Could not find test_id column "{self.test_id_key}" in info table.')
-
-        file_extensions = set([file.split('.')[-1] for file in os.listdir(self.data_dir)])
-        if len(file_extensions) > 1:
-            raise ValueError(f'Data files have multiple extensions: {file_extensions}.')
-
-        data_file_extension = file_extensions.pop()
-        file_paths = [self.data_dir + f'/{test_id}.{data_file_extension}' for test_id in test_ids]
-
-        read_data: Callable[[str], pd.DataFrame] = pd.read_csv
-        if data_file_extension == 'csv':
-            pass
-        elif data_file_extension == 'xlsx':
-            read_data = pd.read_excel
-        elif data_file_extension == 'ods':
-            read_data = lambda file_path: pd.read_excel(file_path, engine='odf')
-        else:
-            raise ValueError(f'Invalid data file extension: {data_file_extension}')
-
-        return [DataItem(t_id, read_data(f_path), self._info_table) for t_id, f_path in zip(test_ids, file_paths)]
-
-    def _check_info_table_sync(self):
+    def write_output(self, info_path: str, data_dir: str) -> None:
+        """Execute the processing operations and write the output of the ds to a directory.
+        Args:
+            info_path: The path to write the info table to.
+            data_dir: The directory to write the data files into.
+        """
+        _write_file(self.info_table, info_path)
         for data_item in self.data_items:
-            expected_info = self._info_table.loc[self._info_table['test_id'] == data_item.test_id]
-            if not data_item.info.equals(expected_info):
-                raise ValueError(f"DataItem with test_id={data_item.test_id} is out of sync with the info_table.")
+            _write_file(data_item.data, f'{data_dir}/{data_item.test_id}.csv')
 
     def __iter__(self):
-        for data_item in tqdm(self.data_items, unit='DataItems', leave=False):
+        for test_id in tqdm(self.info_table[self.test_id_key].tolist(), unit='DataItems', leave=False):
+            data_item = next((item for item in self.data_items if item.test_id == test_id), None)
+            if data_item is None:
+                raise ValueError(f"No DataItem found with test_id={test_id}.")
             yield data_item
 
     def apply(self, func: Callable[[DataItem, ...], DataItem], **kwargs) -> 'DataSet':
@@ -151,67 +149,55 @@ class DataSet:
         return self
 
     def copy(self) -> 'DataSet':
-
         copied_dataset = DataSet(test_id_key=self.test_id_key)
         copied_dataset.info_table = self.info_table.copy()
-        copied_dataset.data_items = [copy.deepcopy(data_item) for data_item in self.data_items]
+        copied_dataset.data_items = [DataItem(di.test_id, di.data.copy(), copied_dataset.info_table)
+                                     for di in self.data_items]
         return copied_dataset
 
-    def write_output(self, out_info_path: str, out_data_dir: str) -> None:
-        """Execute the processing operations and write the output of the ds to a directory.
-        Args:
-            out_data_dir: The directory to write the data to.
-            out_info_path: The path to write the info table to.
-        """
-        if not os.path.exists(out_data_dir):
-            os.makedirs(out_data_dir)
+    def sort_by(self, column: Union[str, List[str]], ascending: bool = True):
+        """Sort the info table of the current DataSet in place by a column or list of columns."""
+        self.info_table.sort_values(by=column, ascending=ascending, inplace=True)
 
-        if out_info_path.endswith('.xlsx'):
-            self._info_table.to_excel(out_info_path, index=False)
-        elif out_info_path.endswith('.csv'):
-            self._info_table.to_csv(out_info_path, index=False)
-        else:
-            raise ValueError(f'Info table must be a csv or xlsx file. Got {out_info_path}')
-        # write the data files
-        for di in self.data_items:
-            output_path = out_data_dir + '/' + di.test_id + '.csv'
-            di.data.to_csv(output_path, index=False)
-
-    def sort_by(self, column: Union[str, List[str]], ascending: bool = True) -> 'DataSet':
-        """Sort a copy of the ds by a column in the info table and return the copy."""
-        self._update_data_items()
-        new_ds = self.copy()
-        new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending).reset_index(drop=True)
-        return new_ds
-
-    def __getitem__(self, specifier: Union[int, str, slice, Dict[str, List[Any]]]) -> Union['DataSet', DataItem]:
+    def __getitem__(self, specifier: Union[int, str, slice, Dict[str, List[Any]]]) -> Union[List[DataItem], DataItem]:
         """Get a subset of the ds using a dictionary of column names and lists of values or using normal list
         indexing. """
-        self._update_data_items()
+        sorted_test_ids = self.info_table[self.test_id_key].tolist()
+        sorted_data_items = [self.data_items[sorted_test_ids.index(test_id)] for test_id in sorted_test_ids]
         if isinstance(specifier, int):
-            return self.data_items[specifier]
+            return sorted_data_items[specifier]
         elif isinstance(specifier, str):
             return self.data_items[self._info_table[self.test_id_key].tolist().index(specifier)]
         elif isinstance(specifier, slice):
-            new_ds = self.copy()
-            new_ds.info_table = new_ds.info_table.iloc[specifier]
-            return new_ds
+            return sorted_data_items[specifier]
         else:
-            raise ValueError(f'Invalid ds[specifier] specifier type: {type(specifier)}')
+            raise ValueError(f'Invalid ds[<specifier>] specifier type: {type(specifier)}')
 
     def subset(self, filter_dict: Dict[str, Union[str, List[Any]]]) -> 'DataSet':
-        self._update_data_items()
+        """ Subset the DataSet based on a provided filtering dictionary.
+        Args:
+            filter_dict: A dictionary where the keys are column names from the info_table and values are lists of acceptable
+                         values for the corresponding column.
+        Returns:
+            A new DataSet instance where the info_table and the data_items are filtered based on the provided filter_dict.
+        """
+
         new_ds = self.copy()
+
         for key, value in filter_dict.items():
             if key not in new_ds.info_table.columns:
                 raise ValueError(f'Invalid filter key: {key}')
+
             if not isinstance(value, list):
                 filter_dict[key] = [value]
+
         query_string = ' and '.join([f"`{key}` in {str(values)}" for key, values in filter_dict.items()])
+
         try:
             new_ds.info_table = self._info_table.query(query_string)
         except Exception as e:
-            print(f'Error applying query "{query_string}" to info table: {e}')
+            print(f'Error applying query "{query_string}" to info_table: {e}')
+
         return new_ds
 
     def __repr__(self):
@@ -222,74 +208,3 @@ class DataSet:
 
     def __hash__(self):
         return hash(tuple(map(hash, self.data_items)))
-
-
-#####
-
-@dataclass
-class DataItem:
-    test_id: str
-    info: pd.Series
-    data: pd.DataFrame
-
-
-class DataSet:
-    def __init__(self, info_path: Optional[str] = None, data_dir: Optional[str] = None):
-        self.info_path = info_path
-        self.data_dir = data_dir
-
-        if info_path is None and data_dir is None:
-            self._info_table = pd.DataFrame()
-            self.data_items = []
-            return
-
-        if info_path is None or data_dir is None:
-            raise ValueError('Both info_path and data_dir must be specified, or neither.')
-
-        if self.info_path.endswith('.xlsx'):
-            self._info_table = pd.read_excel(self.info_path)
-        elif self.info_path.endswith('.csv'):
-            self._info_table = pd.read_csv(self.info_path)
-        elif self.info_path.endswith('.ods'):
-            self._info_table = pd.read_excel(self.info_path, engine='odf')
-        else:
-            raise ValueError(
-                f'Info_path must end with ".csv", ".xlsx" or ".ods". Not ".{self.info_path.split(".")[-1]}"')
-
-        self.update_data_items()
-
-    @property
-    def info_table(self):
-        return self._info_table
-
-    @info_table.setter
-    def info_table(self, info_table):
-        self._info_table = info_table
-        self.update_data_items()
-
-    def update_data_items(self, test_id_key: str = 'test_id'):
-        test_ids = self._info_table[test_id_key].tolist()
-        if self.data_dir is not None:
-            file_paths = [self.data_dir + f'/{test_id}.csv' for test_id in test_ids]
-            self.data_items = [DataItem(test_id, self.read_info_from(test_id, test_id_key), pd.read_csv(file_path)) for
-                               test_id, file_path in zip(test_ids, file_paths)]
-        else:
-            self.data_items = [DataItem(test_id, self.read_info_from(test_id, test_id_key), pd.DataFrame()) for test_id
-                               in test_ids]
-
-    def read_info_from(self, test_id: str, test_id_key: str):
-        return self._info_table.loc[self._info_table[test_id_key] == test_id].squeeze()
-
-    def subset(self, filter_dict: Dict[str, Union[str, List[Any]]]) -> 'DataSet':
-        new_ds = self.copy()
-        for key, value in filter_dict.items():
-            if key not in new_ds._info_table.columns:
-                raise ValueError(f'Invalid filter key: {key}')
-            if isinstance(value, str):
-                value = [value]
-            if not all(elem in new_ds._info_table[key].values for elem in value):
-                raise ValueError(f'Invalid values for filter key: {key}')
-            new_ds._info_table = new_ds._info_table[new_ds._info_table[key].isin(value)]
-        return new_ds
-
-    # Other methods...

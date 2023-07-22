@@ -10,32 +10,6 @@ import pandas as pd
 from paramaterial.plug import DataItem, DataSet
 
 
-class TestDataItem(unittest.TestCase):
-    """Tests for the DataItem class."""
-
-    def setUp(self):
-        # create test data if it does not exist, otherwise overwrite it
-        if not os.path.exists('./test_data'):
-            os.mkdir('./test_data')
-        else:
-            shutil.rmtree('./test_data')
-            os.mkdir('./test_data')
-        self.test_id = 'id_001'
-        self.data = pd.DataFrame({'x': [1, 2, 3], 'y': [2, 3, 4]})
-        self.info = pd.Series({'test_id': 'id_001', 'a': 1, 'b': 2})
-        self.data.to_csv('./test_data/id_001.csv', index=False)
-
-    def tearDown(self):
-        shutil.rmtree('./test_data')
-
-    def test_update_info_from_table(self):
-        file_path = './test_data/id_001.csv'
-        dataitem = DataItem('id_001', self.info, self.data)
-        info_table = pd.DataFrame({'test_id': ['id_001'], 'a': [1], 'b': [2]})
-        dataitem.read_info_from(info_table, 'test_id')
-        self.assertTrue(dataitem.info.equals(self.info))
-
-
 class TestDataSet(unittest.TestCase):
     """Tests for the DataSet class."""
 
@@ -63,10 +37,9 @@ class TestDataSet(unittest.TestCase):
                                         'a': [1, 2, 3],
                                         'b': [4, 5, 6]})
 
-        self.dataitems = list(map(DataItem,
-                                  ['id_001', 'id_002', 'id_003'],
-                                  [self.data1, self.data2, self.data3],
-                                  [self.info1, self.info2, self.info3]))
+        self.data_items = [DataItem('id_001', self.data1, self.info_table),
+                           DataItem('id_002', self.data2, self.info_table),
+                           DataItem('id_003', self.data3, self.info_table)]
 
         self.info_table.to_excel('./test_data/info.xlsx', index=False)
 
