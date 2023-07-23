@@ -1,263 +1,194 @@
-from typing import Callable, List, Optional, Dict, Any, Tuple
+from typing import Callable, List, Optional, Dict, Any, Tuple, Union
 import numpy as np
 import pandas as pd
 from scipy import optimize as op
 
-from paramaterial.plug import DataSet
+from paramaterial.plug import DataSet, DataItem
 
 
-class ModelSet:
-    """Class that acts as model DataSet."""
-    SCIPY_METHODS = {
-        'minimize': op.minimize,
-        'differential_evolution': op.differential_evolution,
-        'basinhopping': op.basinhopping,
-        'dual_annealing': op.dual_annealing,
-        'shgo': op.shgo,
-        'brute': op.brute,
-    }
+def _call_scipy_method(scipy_method: str,
+                       initial_guess: Tuple[float, ...],
+                       bounds: List[Tuple[float, float]],
+                       objective_function: Callable[[Tuple[float, ...], Union[DataItem, pd.DataFrame]], float],
+                       storage_object: Union[DataItem, pd.DataFrame],
+                       **scipy_method_kwargs):
+    if scipy_method == 'minimize':
+        result = op.minimize(objective_function, np.array(initial_guess), args=(storage_object,),
+                             bounds=bounds,
+                             **scipy_method_kwargs)
+    elif scipy_method == 'differential_evolution':
+        result = op.differential_evolution(objective_function, bounds, args=(storage_object,),
+                                           **scipy_method_kwargs)
+    elif scipy_method == 'basinhopping':
+        result = op.basinhopping(objective_function, initial_guess,
+                                 minimizer_kwargs=dict(args=(storage_object,), bounds=bounds,
+                                                       **scipy_method_kwargs))
+    elif scipy_method == 'dual_annealing':
+        result = op.dual_annealing(objective_function, bounds, args=(storage_object,),
+                                   **scipy_method_kwargs)
+    elif scipy_method == 'shgo':
+        result = op.shgo(objective_function, bounds, args=(storage_object,), **scipy_method_kwargs)
+    elif scipy_method == 'brute':
+        result = op.brute(objective_function, bounds, args=(storage_object,), **scipy_method_kwargs)
+    else:
+        raise ValueError(f'Invalid scipy_method: {scipy_method}\nMust be one of:'
+                         f' minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute')
+    return result
+
+
+def _error_norm(y_data: np.ndarray, y_model: np.ndarray) -> float:
+    return np.linalg.norm((y_data - y_model) / np.sqrt(len(y_data))) ** 2
+
+
+class ModelTable:
+    """Class that fits a model between info_table columns."""
 
     def __init__(self,
                  model_func: Callable[[np.ndarray, Tuple[float]], np.ndarray],
+                 x_key: str,
+                 y_key: str,
                  param_names: List[str],
                  variable_names: List[str] = None,
-                 bounds: List[Tuple[float]] = None,
+                 bounds: List[Tuple[float, float]] = None,
                  initial_guess: Tuple[float] = None,
                  scipy_method_name: str = 'minimize',
                  scipy_method_kwargs: Dict[str, Any] = None
                  ):
         self.model_func = model_func
-        self.param_names = param_names
+        self.x_key = x_key
+        self.y_key = y_key
         self.variable_names = variable_names
+
+        self.param_names = param_names
         self.bounds = bounds
-        self.initial_guess = initial_guess
-        self.scipy_method_name = scipy_method_name
-        self.scipy_method_kwargs = scipy_method_kwargs
+        self.initial_guess = initial_guess if initial_guess else [0.0] * len(param_names)
 
-        if self.scipy_method_name not in self.SCIPY_METHODS:
-            raise ValueError(f'Invalid scipy_method_name: {self.scipy_method_name}\nMust be one of:'
-                             f' {list(self.SCIPY_METHODS.keys())}')
+        self.fitting_table: pd.DataFrame = pd.DataFrame(
+            columns=variable_names + param_names + ['error'])
 
-        self.scipy_method = self.SCIPY_METHODS[self.scipy_method_name]
+    def _objective_function(self, params: Tuple[float, ...], info_table: pd.DataFrame) -> float:
+        x_info, y_info = info_table[self.x_key].values, info_table[self.y_key].values
+        variables = info_table[self.variable_names] if self.variable_names is not None else pd.DataFrame()
+        params = pd.DataFrame(params, columns=self.param_names)
+        variables_and_params = pd.concat([variables, params], axis=1)
+        # apply model_func to each row of variables_and_params and add y_model column and error to info_table
+        y_model = self.model_func(x_info, variables_and_params)
 
-    def _error_norm(self, x_data: np.ndarray, y_data: np.ndarray, params: Tuple[float]) -> float:
-        y_model = self.model_func(x_data, params)
-        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data)))**2
+        return _error_norm(y_info, y_model)
 
-    def _objective_function(self, params: Tuple[float], variables: Tuple[float]) -> float:
-        data = di.data[di.data[self.x_key] > 0]
-        if self.var_names is not None:
-            variables = [di.info[var_name] for var_name in self.var_names]
-            params = np.hstack([variables, params])
-        x_data = data[self.x_key].values
-        y_data = data[self.y_key].values
-        sampling_stride = int(len(x_data)/self.sample_size)
-        if sampling_stride < 1:
-            sampling_stride = 1
-        x_data = x_data[::sampling_stride]
-        y_data = y_data[::sampling_stride]
-        y_model = self.model_func(x_data, params)
-        # return max((y_data - y_model)/np.sqrt(len(y_data)))
-        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data)))**2
+    def _objective_function(self, params: Tuple[float, ...], info_table: pd.DataFrame) -> float:
+        params = pd.Series(params, index=self.param_names)
+        info_table = info_table.assign(**params.to_dict())
 
-    def _fit_item(self, di: DataItem) -> None:
-        if self.scipy_func == 'minimize':
-            result = op.minimize(self._objective_function, self.initial_guess, args=(di,), bounds=self.bounds,
-                                 **self.scipy_kwargs)
-        elif self.scipy_func == 'differential_evolution':
-            result = op.differential_evolution(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
-        elif self.scipy_func == 'basinhopping':
-            result = op.basinhopping(self._objective_function, self.initial_guess,
-                                     minimizer_kwargs=dict(args=(di,), bounds=self.bounds, **self.scipy_kwargs))
-        elif self.scipy_func == 'dual_annealing':
-            result = op.dual_annealing(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
-        elif self.scipy_func == 'shgo':
-            result = op.shgo(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
-        elif self.scipy_func == 'brute':
-            result = op.brute(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
+        variables_and_params_keys = self.variable_names + self.param_names if self.variable_names else self.param_names
+        y_model = info_table.apply(lambda row: self.model_func(row[self.x_key], row[variables_and_params_keys]), axis=1)
+        y_info = info_table[self.y_key].values
+
+        info_table[f'{self.y_key}_{self.model_func.__name__}'] = y_model
+        info_table[f'error_{self.y_key}_{self.model_func.__name__}'] = (y_info - y_model) / np.sqrt(len(y_info))
+
+        return _error_norm(y_info, y_model.values)
+
+    def _fit_table(self, info_table: pd.DataFrame):
+
+    def fit_table(self, info_table: pd.DataFrame):
+
+
+class ModelSet:
+    """Class that acts as model DataSet."""
+
+    def __init__(self,
+                 model_func: Callable[[np.ndarray, Tuple[float]], np.ndarray],
+                 x_col: str,
+                 y_col: str,
+                 param_names: List[str],
+                 variable_names: List[str] = None,
+                 bounds: List[Tuple[float, float]] = None,
+                 initial_guess: Tuple[float] = None,
+                 sample_range: Tuple[float, float] = (None, None),
+                 sample_size: int = 50,
+                 model_id_key: str = 'model_id'
+                 ):
+        self.model_func = model_func
+        self.x_col = x_col
+        self.y_col = y_col
+        self.variable_names = variable_names
+
+        self.param_names = param_names
+        self.bounds = bounds
+        self.initial_guess = initial_guess if initial_guess else [0.0] * len(param_names)
+        self.sample_range = sample_range
+        self.sample_size = sample_size
+
+        self.model_id_key = model_id_key
+        self.fitting_table: pd.DataFrame = pd.DataFrame(
+            columns=[model_id_key] + variable_names + param_names + ['error'])
+
+    def _sample_data(self, di: DataItem) -> Tuple[np.ndarray, np.ndarray]:
+        sample_range = self.sample_range
+        sample_size = self.sample_size
+        x_data = di.data[self.x_col].values
+        y_data = di.data[self.y_col].values
+        if sample_range is not None:
+            mask = (x_data > sample_range[0]) & (x_data < sample_range[1])
+            x_data, y_data = x_data[mask], y_data[mask]
+        sampling_stride = max(int(len(x_data) / sample_size), 1)
+        x_data, y_data = x_data[::sampling_stride], y_data[::sampling_stride]
+        return x_data, y_data
+
+    def _objective_function(self, params: Tuple[float, ...], di: DataItem) -> float:
+        x_data, y_data = self._sample_data(di)
+        if self.variable_names is not None:
+            variables = tuple(di.info[var_name] for var_name in self.variable_names)
         else:
-            raise ValueError(f'Invalid scipy_func: {self.scipy_func}\nMust be one of:'
-                             f' minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute')
-        model_id = 'model_' + str(di.info[0])
-        results_dict = {'model_id': model_id, 'info': di.info, 'params': result.x, 'param_names': self.param_names,
-                        'error': result.fun,
-                        'variables': [di.info[var_name] for var_name in
-                                      self.var_names] if self.var_names is not None else None,
-                        'variable_names': self.var_names, 'model_func': self.model_func,
-                        'x_key': self.x_key, 'y_key': self.y_key,
-                        'x_min': di.data[self.x_key].min(),
-                        'x_max': di.data[self.x_key].max(), }
-        self.results_dict_list.append(results_dict)
-        self.params_table = pd.concat(
-            [self.params_table, pd.DataFrame([[model_id] + list(result.x) + [result.fun]],
-                                             columns=['model_id'] + self.param_names + ['fitting error'])])
+            variables = ()
+        variables_and_params = variables + params
+        y_model = self.model_func(x_data, variables_and_params)
+        return _error_norm(y_data, y_model)
 
+    def _fit_item(self, di: DataItem, scipy_method: str, **scipy_method_kwargs) -> op.OptimizeResult:
+        return _call_scipy_method(scipy_method=scipy_method, initial_guess=self.initial_guess, bounds=self.bounds,
+                                  objective_function=self._objective_function, storage_object=di, **scipy_method_kwargs)
 
-    def fit_to(self, ds: DataSet, x_col: str, y_col: str,
-               sample_range: Tuple[float] = None, sample_size: int = 50) -> None:
-        """Fit the model to the DataSet.
+    def fit_items(self, ds: DataSet, sample_range: Tuple[float, float] = (None, None), sample_size: int = 50,
+                  scipy_method: str = 'minimize', **scipy_method_kwargs):
+        self.sample_range = sample_range
+        self.sample_size = sample_size
+        # fit each DataItem and add a row to fitting_table for each
+        fitting_dfs = []
+        pad = int(np.log10(len(ds))) + 1
+        for i, di in enumerate(ds):
+            model_id = f'{self.model_id_key}_{i:0{pad}}'
+            # run optimisation
+            fitting_result = self._fit_item(di, scipy_method, **scipy_method_kwargs)
+            # extract results
+            params = fitting_result.x
+            error = fitting_result.error
+            variables = di.info[self.variable_names]
+            # add row to fitting_table
+            fitting_dfs.append(pd.DataFrame(
+                columns=self.fitting_table.columns + di.info.index,
+                data=model_id + variables + params + error + di.info.tolist()))
+        # concatenate fitting_dfs into fitting_table
+        self.fitting_table = pd.concat(fitting_dfs)
 
-        Args:
-            ds: DataSet to fit the model to.
-            x_col: Key of the x values in the DataSet.
-            y_col: Key of the y values in the DataSet.
-            sample_range: Range of x values to sample from the DataSet.
-
-        Returns: None
-        """
-
-        total_error = 0
-        params = self.initial_guess
-
-        for di in ds:
-
-            x_data = di.data[x_col].values
-            y_data = di.data[y_col].values
-            if sample_range is not None:
-                x_data = x_data[(x_data > sample_range[0]) & (x_data < sample_range[1])]
-                y_data = y_data[(x_data > sample_range[0]) & (x_data < sample_range[1])]
-            sampling_stride = int(len(x_data)/sample_size)
-            if sampling_stride < 1:
-                sampling_stride = 1
-            x_data = x_data[::sampling_stride]
-            y_data = y_data[::sampling_stride]
-
-            vars = [di.info[var_name] for var_name in self.variable_names] if self.variable_names is not None else []
-            vars_and_params = tuple(vars) + tuple(params)
-
-            total_error += self._error_norm(x_data, y_data, vars_and_params)
-
-    # ,
-    #
-
-    # @staticmethod
-    # def from_info_table(info_table: pd.DataFrame, model_func: Callable[[np.ndarray, List[float]], np.ndarray],
-    #                     param_names: List[str], model_id_key: str = 'model_id') -> 'ModelSet':
-    #     """Create a ModelSet from an info table."""
-    #     model_ids = info_table[model_id_key].values
-    #     info_rows = [info_table.drop(columns=param_names).iloc[i] for i in range(len(info_table))]
-    #     params_lists = [info_table[param_names].iloc[i].values for i in range(len(info_table))]
-    #     model_funcs = [model_func for _ in range(len(info_table))]
-    #     x
-    #     x_mins = [info_table['x_min'].iloc[i] for i in range(len(info_table))]
-    #     x_maxs = [info_table['x_max'].iloc[i] for i in range(len(info_table))]
-    #     resolutions = [info_table['resolution'].iloc[i] for i in range(len(info_table))]
-    #     ms = ModelSet(model_func, param_names)
-    #     ms.model_items = list(
-    #         map(ModelItem, model_ids, info_rows, params_lists, model_funcs, x_keys, y_keys, x_mins, x_maxs,
-    #             resolutions))
-    #     return ms
-
-    # def fit_to(self, ds: DataSet, x_key: str, y_key: str, sample_size: int = 50) -> None:
-    #     """Fit the model to the DataSet.
-    #
-    #     Args:
-    #         ds: DataSet to fit the model to.
-    #         x_key: Key of the x values in the DataSet.
-    #         y_key: Key of the y values in the DataSet.
-    #         sample_size: Number of samples to draw from the x-y data in the DataSet.
-    #
-    #     Returns: None
-    #     """
-    #     self.fitted_ds = ds
-    #     self.x_key = x_key
-    #     self.y_key = y_key
-    #     self.sample_size = sample_size
-    #     for _ in tqdm(map(self._fit_item, ds.data_items), unit='fits', leave=False):
-    #         pass
-    #     self.model_items = list(map(ModelItem.from_results_dict, self.results_dict_list))
-    #
-    # def predict(self, resolution: int = 50, xmin=None, xmax=None, info_table=None) -> DataSet:
-    #     """Return a ds with generated data with optimised model parameters added to the info table.
-    #     If an info table is provided, data items will be generated to match the rows of the info table, using the
-    #     var_names and param_names and model_func.
-    #
-    #     Args:
-    #         resolution: Number of points to generate between the x_min and x_max.
-    #
-    #     Returns: DataSet with generated data.
-    #     """
-    #     predict_ds = DataSet()
-    #
-    #     if info_table is not None:
-    #         predict_ds.info_table = info_table
-    #         for i, row in info_table.iterrows():
-    #             # make a data item for each row in the info table
-    #             x_data = np.linspace(row['x_min'], row['x_max'], resolution)
-    #             y_data = self.model_func(x_data, row[self.param_names].values)
-    #             data = {self.x_key: x_data, self.y_key: y_data}
-    #             info = row
-    #             test_id = row['test_id']
-    #             di = DataItem()
-    #
-    #
-    #     # predict_ds.test_id_key = 'model_id'
-    #
-    #     def update_resolution(mi: ModelItem):
-    #         mi.resolution = resolution
-    #         mi.info['resolution'] = resolution
-    #         mi.info['x_min'] = xmin if xmin is not None else mi.info['x_min']
-    #         mi.info['x_max'] = xmax if xmax is not None else mi.info['x_max']
-    #         return mi
-    #
-    #     self.model_items = list(map(lambda mi: update_resolution(mi), self.model_items))
-    #     predict_ds.data_items = copy.deepcopy(self.model_items)
-    #     for di in predict_ds.data_items:
-    #         di.info['test_id'] = di.info['model_id']
-    #     predict_ds.info_table = pd.DataFrame([di.info for di in predict_ds.data_items])
-    #
-    #     return predict_ds
-
-    def _objective_function(self, params: List[float], di: DataItem) -> float:
-        data = di.data[di.data[self.x_key] > 0]
-        if self.var_names is not None:
-            variables = [di.info[var_name] for var_name in self.var_names]
-            params = np.hstack([variables, params])
-        x_data = data[self.x_key].values
-        y_data = data[self.y_key].values
-        sampling_stride = int(len(x_data)/self.sample_size)
-        if sampling_stride < 1:
-            sampling_stride = 1
-        x_data = x_data[::sampling_stride]
-        y_data = y_data[::sampling_stride]
-        y_model = self.model_func(x_data, params)
-        # return max((y_data - y_model)/np.sqrt(len(y_data)))
-        return np.linalg.norm((y_data - y_model)/np.sqrt(len(y_data)))**2
-
-    def _fit_item(self, di: DataItem) -> None:
-        if self.scipy_func == 'minimize':
-            result = op.minimize(self._objective_function, self.initial_guess, args=(di,), bounds=self.bounds,
-                                 **self.scipy_kwargs)
-        elif self.scipy_func == 'differential_evolution':
-            result = op.differential_evolution(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
-        elif self.scipy_func == 'basinhopping':
-            result = op.basinhopping(self._objective_function, self.initial_guess,
-                                     minimizer_kwargs=dict(args=(di,), bounds=self.bounds, **self.scipy_kwargs))
-        elif self.scipy_func == 'dual_annealing':
-            result = op.dual_annealing(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
-        elif self.scipy_func == 'shgo':
-            result = op.shgo(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
-        elif self.scipy_func == 'brute':
-            result = op.brute(self._objective_function, self.bounds, args=(di,), **self.scipy_kwargs)
-        else:
-            raise ValueError(f'Invalid scipy_func: {self.scipy_func}\nMust be one of:'
-                             f' minimize, differential_evolution, basinhopping, dual_annealing, shgo, brute')
-        model_id = 'model_' + str(di.info[0])
-        results_dict = {'model_id': model_id, 'info': di.info, 'params': result.x, 'param_names': self.param_names,
-                        'error': result.fun,
-                        'variables': [di.info[var_name] for var_name in
-                                      self.var_names] if self.var_names is not None else None,
-                        'variable_names': self.var_names, 'model_func': self.model_func,
-                        'x_key': self.x_key, 'y_key': self.y_key,
-                        'x_min': di.data[self.x_key].min(),
-                        'x_max': di.data[self.x_key].max(), }
-        self.results_dict_list.append(results_dict)
-        self.params_table = pd.concat(
-            [self.params_table, pd.DataFrame([[model_id] + list(result.x) + [result.fun]],
-                                             columns=['model_id'] + self.param_names + ['fitting error'])])
-
-    @property
-    def fitting_results(self) -> pd.DataFrame:
-        """Return a DataFrame with the results of the fitting."""
-        # get the fitted parameters and make a table with them and include only the relevant info and the fitting error
-        return self.params_table.merge(self.fitted_ds.info_table, on='model_id')
+    def predict_ds(self, x_range: Tuple[float, float, float], info_table: Optional[pd.DataFrame],
+                   model_id_key: str = 'model_id'):
+        if info_table is None:
+            info_table = self.fitting_table
+        # generate DataItems for each row of info_table
+        model_items = []
+        for model_id in info_table[model_id_key].to_list():
+            # extract variables and optimised params from info_table
+            variables_and_params = info_table.loc[
+                info_table[model_id_key] == model_id, self.variable_names + self.param_names].to_tuple()  # [0]?
+            # generate model data and create DataItem
+            x_model = np.arange(*x_range)
+            y_model = self.model_func(x_model, variables_and_params)
+            data = pd.DataFrame({self.x_col: x_model, self.y_col: y_model})
+            model_items.append(DataItem(model_id, data=data, info_table=info_table))
+        # create DataSet from model_items and return
+        ds = DataSet(test_id_key=model_id_key)
+        ds.info_table = info_table
+        ds.data_items = model_items
+        return ds
