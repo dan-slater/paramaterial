@@ -4,13 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="Making a separate class to handle the reading and writing stuff.">
+    <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="Updating ModelSet class">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/how-to guides.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/how-to guides.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plug.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/representing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/representing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_plug.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -215,7 +211,7 @@
       <workItem from="1689772327387" duration="16396000" />
       <workItem from="1689861182094" duration="20257000" />
       <workItem from="1690037197661" duration="1793000" />
-      <workItem from="1690039246353" duration="1212000" />
+      <workItem from="1690039246353" duration="16145000" />
     </task>
     <task id="LOCAL-00001" summary="replace reject /Yes values with True, and /Off with False in read_screening_pdf_fields">
       <created>1679921690942</created>
@@ -268,7 +264,15 @@
       <option name="project" value="LOCAL" />
       <updated>1689869537744</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Updating ModelSet class">
+      <option name="closed" value="true" />
+      <created>1690040702718</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1690040702718</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -286,7 +290,8 @@
     <MESSAGE value="working on porting" />
     <MESSAGE value="making major changes to plug. finished example" />
     <MESSAGE value="Making a separate class to handle the reading and writing stuff." />
-    <option name="LAST_COMMIT_MESSAGE" value="Making a separate class to handle the reading and writing stuff." />
+    <MESSAGE value="Updating ModelSet class" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updating ModelSet class" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
