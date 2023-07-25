@@ -173,3 +173,119 @@ def make_repres_ds(ds: DataSet, repres_col: str, interp_by: str, group_by: Union
     repres_ds.data_items = repres_data_items
 
     return repres_ds
+
+
+def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_col: str, group_by_keys: List[str],
+                             interp_by: str, interp_res: int = 200,
+                             interp_range: Union[str, Tuple[float, float]] = 'outer',
+                             group_info_cols: Optional[List[str]] = None):
+    """Make representative curves of the ds and save them to a directory.
+
+    Args:
+        ds: The ds to make representative curves from.
+        data_dir: The directory to save the representative curves to.
+        info_path: The path to the info file.
+        repres_col: The column to group by.
+        group_by_keys: The columns to group by.
+        interp_by: The column to interpolate by.
+        interp_res: The resolution of the interpolation.
+        min_interp_val: The minimum value of the interpolation.
+        interp_end: The end of the interpolation.
+        group_info_cols: The columns to group by.
+
+    Returns:
+        None
+    """
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    value_lists = [ds.info_table[col].unique() for col in group_by_keys]
+
+    # make a dataset filter for each representative curve
+    subset_filters = []
+    for i in range(len(value_lists[0])):  # i
+        subset_filters.append({group_by_keys[0]: value_lists[0][i]})
+    for i in range(1, len(group_by_keys)):  # i
+        new_filters = []
+        for fltr in subset_filters:  # j
+            for value in value_lists[i]:  # k
+                new_filter = fltr.copy()
+                new_filter[group_by_keys[i]] = value
+                new_filters.append(new_filter)
+        subset_filters = new_filters
+
+    # make list of repres_ids and initialise info table for the representative data
+    repres_ids = [f'repres_id_{i + 1:0>4}' for i in range(len(subset_filters))]
+    repr_info_table = pd.DataFrame(columns=['repres_id'] + group_by_keys)
+
+    # make representative curves and take means of info table columns
+    for repres_id, subset_filter in zip(repres_ids, subset_filters):
+        # get representative subset
+        repres_subset = ds.subset(subset_filter)
+        if repres_subset.info_table.empty:
+            continue
+        # add row to repr_info_table
+        repr_info_table = pd.concat(
+            [repr_info_table,
+             pd.DataFrame({'repres_id': [repres_id], **subset_filter, 'nr averaged': [len(repres_subset)]})])
+
+        # add means of group info columns to repr_info_table
+        if group_info_cols is not None:
+            for col in group_info_cols:
+                df_col = repres_subset.info_table[col]
+                repr_info_table.loc[repr_info_table['repres_id'] == repres_id, '' + col] = df_col.mean()
+                repr_info_table.loc[repr_info_table['repres_id'] == repres_id, 'std_' + col] = df_col.std()
+                repr_info_table.loc[
+                    repr_info_table['repres_id'] == repres_id, 'upstd_' + col] = df_col.mean() + df_col.std()
+                repr_info_table.loc[
+                    repr_info_table['repres_id'] == repres_id, 'downstd_' + col] = df_col.mean() - df_col.std()
+                repr_info_table.loc[repr_info_table['repres_id'] == repres_id, 'max_' + col] = df_col.max()
+                repr_info_table.loc[repr_info_table['repres_id'] == repres_id, 'min_' + col] = df_col.min()
+
+        # find minimum of maximum interp_by vals in subset
+        if interp_range == 'outer':
+            min_interp_val = min([min(dataitem.data[interp_by]) for dataitem in repres_subset])
+            max_interp_val = max([max(dataitem.data[interp_by]) for dataitem in repres_subset])
+        elif interp_range == 'inner':
+            min_interp_val = max([min(dataitem.data[interp_by]) for dataitem in repres_subset])
+            max_interp_val = min([max(dataitem.data[interp_by]) for dataitem in repres_subset])
+        elif type(interp_range) == tuple:
+            min_interp_val = interp_range[0]
+            max_interp_val = interp_range[1]
+        else:
+            raise ValueError(f'interp_range must be "outer", "inner" or a tuple, not {interp_range}')
+
+        # make monotonically increasing vector to interpolate by
+        interp_vec = np.linspace(min_interp_val, max_interp_val, interp_res)
+
+        # make interpolated data for averaging, staring at origin
+        interp_data = pd.DataFrame(data={interp_by: interp_vec})
+
+        for n, dataitem in enumerate(repres_subset):
+            # drop columns and rows outside interp range
+            data = dataitem.data[[interp_by, repres_col]].reset_index(drop=True)
+            data = data[(data[interp_by] <= max_interp_val)&(data[interp_by] >= min_interp_val)]
+            # interpolate the repr_by column and add to interp_data
+            # add 0 to start of data to ensure interpolation starts at origin
+            interp_data[f'interp_{repres_col}_{n}'] = np.interp(interp_vec, data[interp_by].tolist(),
+                                                                data[repres_col].tolist())
+
+        # make representative data from stats of interpolated data
+        interp_data = interp_data.drop(columns=[interp_by])
+        repr_data = pd.DataFrame({f'{interp_by}': interp_vec})
+        repr_data[f'{repres_col}'] = interp_data.mean(axis=1)
+        repr_data[f'std_{repres_col}'] = interp_data.std(axis=1)
+        repr_data[f'up_std_{repres_col}'] = repr_data[f'{repres_col}'] + repr_data[f'std_{repres_col}']
+        repr_data[f'down_std_{repres_col}'] = repr_data[f'{repres_col}'] - repr_data[f'std_{repres_col}']
+        repr_data[f'up_2std_{repres_col}'] = repr_data[f'{repres_col}'] + 2*repr_data[f'std_{repres_col}']
+        repr_data[f'down_2std_{repres_col}'] = repr_data[f'{repres_col}'] - 2*repr_data[f'std_{repres_col}']
+        repr_data[f'up_3std_{repres_col}'] = repr_data[f'{repres_col}'] + 3*repr_data[f'std_{repres_col}']
+        repr_data[f'down_3std_{repres_col}'] = repr_data[f'{repres_col}'] - 3*repr_data[f'std_{repres_col}']
+        repr_data[f'min_{repres_col}'] = interp_data.min(axis=1)
+        repr_data[f'max_{repres_col}'] = interp_data.max(axis=1)
+        repr_data[f'q1_{repres_col}'] = interp_data.quantile(0.25, axis=1)
+        repr_data[f'q3_{repres_col}'] = interp_data.quantile(0.75, axis=1)
+
+        # write the representative data and info
+        repr_data.to_csv(os.path.join(data_dir, f'{repres_id}.csv'), index=False)
+        repr_info_table.to_excel(info_path, index=False)
