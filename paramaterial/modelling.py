@@ -67,16 +67,6 @@ class ModelTable:
             columns=variable_names + param_names + ['error'])
 
     def _objective_function(self, params: Tuple[float, ...], info_table: pd.DataFrame) -> float:
-        x_info, y_info = info_table[self.x_key].values, info_table[self.y_key].values
-        variables = info_table[self.variable_names] if self.variable_names is not None else pd.DataFrame()
-        params = pd.DataFrame(params, columns=self.param_names)
-        variables_and_params = pd.concat([variables, params], axis=1)
-        # apply model_func to each row of variables_and_params and add y_model column and error to info_table
-        y_model = self.model_func(x_info, variables_and_params)
-
-        return _error_norm(y_info, y_model)
-
-    def _objective_function(self, params: Tuple[float, ...], info_table: pd.DataFrame) -> float:
         params = pd.Series(params, index=self.param_names)
         info_table = info_table.assign(**params.to_dict())
 
@@ -90,8 +80,10 @@ class ModelTable:
         return _error_norm(y_info, y_model.values)
 
     def _fit_table(self, info_table: pd.DataFrame):
+        pass
 
     def fit_table(self, info_table: pd.DataFrame):
+        pass
 
 
 class ModelSet:

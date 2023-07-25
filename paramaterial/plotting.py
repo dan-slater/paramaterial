@@ -12,6 +12,7 @@ import matplotlib as mpl
 import seaborn as sns
 
 from paramaterial.plug import DataItem, DataSet
+from paramaterial.preparing import experimental_matrix
 
 
 def configure_plt_formatting():
@@ -477,7 +478,7 @@ def matrix_plot(
         axs: plt.Axes = None,
         heatmap_kwargs: Dict[str, Any] = None,
 ) -> plt.Axes:
-    from paramaterial.preparing import make_experimental_matrix
+
 
     if axs is None:
         fig, axs = plt.subplots(1, len(group_by))
@@ -491,7 +492,7 @@ def matrix_plot(
     heatmap_kwargs = default_heatmap_kwargs.update(heatmap_kwargs)
 
     for sub_ds in ds_subsets:
-        exp_matrix = make_experimental_matrix(sub_ds.info_table, index=index, columns=columns)
+        exp_matrix = experimental_matrix(sub_ds.info_table, index=index, columns=columns)
         sns.heatmap(exp_matrix, **heatmap_kwargs)
 
     for i, ax in enumerate(axs):

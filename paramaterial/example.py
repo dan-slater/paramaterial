@@ -2,7 +2,7 @@
 import os
 import shutil
 import requests
-from requests.exceptions import HTTPError, ConnectionError
+
 
 BASE_URL = 'https://github.com/dan-slater/paramaterial-examples/raw/initial-setup/examples'
 EXAMPLE_NAMES = ['example_1', 'example_2', 'example_3', 'example_4', 'example_5']
