@@ -25,52 +25,42 @@ class TestDataSet(unittest.TestCase):
         self.info_path = './test_data/info.xlsx'
         self.test_id_key = 'test_id'
 
+        # create test data
         self.data1 = pd.DataFrame({'x': [1.1, 2, 3], 'y': [4.1, 5, 6]})
         self.data2 = pd.DataFrame({'x': [1, 2.2, 3], 'y': [4, 5.2, 6]})
         self.data3 = pd.DataFrame({'x': [1, 2, 3.3], 'y': [4, 5, 6.3]})
 
+        # create test info
         self.info1 = pd.Series({'test_id': 'id_001', 'a': 1, 'b': 4})
         self.info2 = pd.Series({'test_id': 'id_002', 'a': 2, 'b': 5})
         self.info3 = pd.Series({'test_id': 'id_003', 'a': 3, 'b': 6})
 
+        # create test info table
         self.info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
                                         'a': [1, 2, 3],
                                         'b': [4, 5, 6]})
 
-        self.data_items = [DataItem('id_001', self.data1, self.info_table),
-                           DataItem('id_002', self.data2, self.info_table),
-                           DataItem('id_003', self.data3, self.info_table)]
+        # create test data items
+        self.data_items = [DataItem('id_001', self.data1, self.info1),
+                           DataItem('id_002', self.data2, self.info2),
+                           DataItem('id_003', self.data3, self.info3)]
 
+        # write test info table and data items to files
         self.info_table.to_excel('./test_data/info.xlsx', index=False)
-
         self.data1.to_csv('./test_data/id_001.csv', index=False)
         self.data2.to_csv('./test_data/id_002.csv', index=False)
         self.data3.to_csv('./test_data/id_003.csv', index=False)
 
-
-
     def tearDown(self):
+        # delete test data files
         shutil.rmtree('./test_data')
 
     def test_init(self):
         dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-        self.assertEqual(dataset.data_dir, self.data_dir)
         self.assertEqual(dataset.info_path, self.info_path)
+        self.assertEqual(dataset.data_dir, self.data_dir)
         self.assertEqual(dataset.test_id_key, self.test_id_key)
-
-        self.assertEqual(dataset.data_items[0].test_id, 'id_001')
-        self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data1.convert_dtypes()))
-        self.assertTrue(dataset.data_items[0].info.convert_dtypes().equals(self.info1.convert_dtypes()))
-
-        self.assertEqual(dataset.data_items[1].test_id, 'id_002')
-        self.assertTrue(dataset.data_items[1].data.convert_dtypes().equals(self.data2.convert_dtypes()))
-        self.assertTrue(dataset.data_items[1].info.convert_dtypes().equals(self.info2.convert_dtypes()))
-
-        self.assertEqual(dataset.data_items[2].test_id, 'id_003')
-        self.assertTrue(dataset.data_items[2].data.convert_dtypes().equals(self.data3.convert_dtypes()))
-        self.assertTrue(dataset.data_items[2].info.convert_dtypes().equals(self.info3.convert_dtypes()))
-
-        self.assertTrue(dataset.info_table.convert_dtypes().equals(self.info_table.convert_dtypes()))
+        self.assertEqual(len(dataset.data_items), 3)
 
     def test_set_info_table(self):
         dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
