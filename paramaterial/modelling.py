@@ -114,14 +114,15 @@ class ModelSet:
 
         self.model_id_key = model_id_key
         self.fitting_table: pd.DataFrame = pd.DataFrame(
-            columns=[model_id_key] + variable_names + param_names + ['error'])
+            columns=[model_id_key] + ['var_' + var_name for var_name in variable_names] +
+                    ['param_' + param_name for param_name in param_names] + ['error'])
 
     def _sample_data(self, di: DataItem) -> Tuple[np.ndarray, np.ndarray]:
         sample_range = self.sample_range
         sample_size = self.sample_size
         x_data = di.data[self.x_col].values
         y_data = di.data[self.y_col].values
-        if sample_range is not None:
+        if sample_range[0] is not None and sample_range[1] is not None:
             mask = (x_data > sample_range[0]) & (x_data < sample_range[1])
             x_data, y_data = x_data[mask], y_data[mask]
         sampling_stride = max(int(len(x_data) / sample_size), 1)
@@ -134,7 +135,7 @@ class ModelSet:
             variables = tuple(di.info[var_name] for var_name in self.variable_names)
         else:
             variables = ()
-        variables_and_params = variables + params
+        variables_and_params = variables + tuple(params)
         y_model = self.model_func(x_data, variables_and_params)
         return _error_norm(y_data, y_model)
 
@@ -150,35 +151,45 @@ class ModelSet:
         fitting_dfs = []
         pad = int(np.log10(len(ds))) + 1
         for i, di in enumerate(ds):
-            model_id = f'{self.model_id_key}_{i:0{pad}}'
+            model_id = f'{self.model_id_key}_{i+1:0{pad}}'
             # run optimisation
             fitting_result = self._fit_item(di, scipy_method, **scipy_method_kwargs)
             # extract results
             params = fitting_result.x
-            error = fitting_result.error
+            error = fitting_result.fun
             variables = di.info[self.variable_names]
+            # add 'var_' prefix to variable names
+            variables.index = 'var_' + variables.index
+            # add 'param_' prefix to param names
+            params = pd.Series(params, index='param_' + pd.Series(self.param_names))
             # add row to fitting_table
-            fitting_dfs.append(pd.DataFrame(
-                columns=self.fitting_table.columns + di.info.index,
-                data=model_id + variables + params + error + di.info.tolist()))
+            # concatenate data
+            data = np.hstack([model_id, variables, params, error, di.info.to_list()]).reshape(1, -1)
+            # define columns
+            columns = self.fitting_table.columns.tolist() + di.info.index.to_list()
+            # create DataFrame and append
+            fitting_dfs.append(pd.DataFrame(data, columns=columns))
         # concatenate fitting_dfs into fitting_table
         self.fitting_table = pd.concat(fitting_dfs)
 
-    def predict_ds(self, x_range: Tuple[float, float, float], info_table: Optional[pd.DataFrame],
+    def predict_ds(self, x_range: Tuple[float, float, float], info_table: Optional[pd.DataFrame] = None,
                    model_id_key: str = 'model_id'):
         if info_table is None:
             info_table = self.fitting_table
         # generate DataItems for each row of info_table
         model_items = []
         for model_id in info_table[model_id_key].to_list():
+            di_info = info_table.loc[info_table[model_id_key] == model_id, :].squeeze()
             # extract variables and optimised params from info_table
-            variables_and_params = info_table.loc[
-                info_table[model_id_key] == model_id, self.variable_names + self.param_names].to_tuple()  # [0]?
+            variables_keys = self.variable_names if self.variable_names else []
+            variables_keys = ['var_' + var_key for var_key in variables_keys]
+            params_keys = ['param_' + param_key for param_key in self.param_names]
+            variables_and_params = di_info[variables_keys + params_keys].to_list()
             # generate model data and create DataItem
             x_model = np.arange(*x_range)
             y_model = self.model_func(x_model, variables_and_params)
             data = pd.DataFrame({self.x_col: x_model, self.y_col: y_model})
-            model_items.append(DataItem(model_id, data=data, info_table=info_table))
+            model_items.append(DataItem(model_id, data=data, info=di_info))
         # create DataSet from model_items and return
         ds = DataSet(test_id_key=model_id_key)
         ds.info_table = info_table

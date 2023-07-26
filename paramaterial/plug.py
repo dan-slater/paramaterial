@@ -94,15 +94,21 @@ class DataSet:
 
     @property
     def info_table(self) -> pd.DataFrame:
-        return pd.DataFrame([data_item.info for data_item in self.data_items])
+        info_table = pd.DataFrame([di.info for di in self.data_items])
+        info_table.index = range(len(info_table))
+        return info_table
 
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
-        for test_id in info_table[self.test_id_key].tolist():
-            data_item = next((di for di in self.data_items if di.test_id == test_id), None)
-            if data_item is None:
-                raise ValueError(f"No DataItem found with test_id={test_id}.")
-            data_item.info = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
+        new_data_items = []
+        test_ids = info_table[self.test_id_key].tolist()
+
+        for data_item in self.data_items:
+            if data_item.test_id in test_ids:
+                data_item.info = info_table.loc[info_table[self.test_id_key] == data_item.test_id].squeeze()
+                new_data_items.append(data_item)
+
+        self.data_items = new_data_items
 
     def write_output(self, info_path: str, data_dir: str) -> None:
         _write_file(self.info_table, info_path)
@@ -117,8 +123,9 @@ class DataSet:
             yield data_item
 
     def apply(self, func: Callable[[DataItem, Dict], DataItem], **kwargs) -> 'DataSet':
-        self.data_items = [func(di, **kwargs) for di in self.data_items]
-        return self
+        new_ds = self.copy()
+        new_ds.data_items = [func(di, **kwargs) for di in self.data_items]
+        return new_ds
 
     def copy(self) -> 'DataSet':
         new_ds = DataSet(test_id_key=self.test_id_key)
@@ -152,7 +159,8 @@ class DataSet:
                 filter_dict[key] = [value]
         query_string = ' and '.join([f"`{key}` in {str(values)}" for key, values in filter_dict.items()])
         try:
-            new_ds.info_table = new_ds.info_table.query(query_string)
+            new_info_table = new_ds.info_table.query(query_string)
+            new_ds.info_table = new_info_table
         except Exception as e:
             print(f'Error applying query "{query_string}" to info_table: {e}')
         return new_ds
