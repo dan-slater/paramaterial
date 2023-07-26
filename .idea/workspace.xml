@@ -4,8 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="Updated ModelSet class, working on ModelTable class">
+    <list default="true" id="ce77c1b4-d265-444e-950d-a9db8937335b" name="Changes" comment="simplifying dataset implementation">
+      <change afterPath="$PROJECT_DIR$/tests/modelling_test_data/03 temp repres info.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/modelling_test_data/repres_data/repres_id_0001.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/modelling_test_data/repres_data/repres_id_0002.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/modelling_test_data/repres_data/repres_id_0003.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/modelling_test_data/repres_data/repres_id_0004.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/modelling_test_data/repres_data/repres_id_0005.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/modelling_test_data/repres_data/repres_id_0006.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_modelling.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plotting.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plug.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_plug.py" afterDir="false" />
     </list>
@@ -40,32 +50,38 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "final-refactor-for-msc",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/DS/casestudies",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;final-refactor-for-msc&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/DS/paramaterial&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\DS\paramaterial\tests\modelling_test_data" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\DS\paramaterial\tests\modelling_test_data" />
+      <recent name="C:\Users\DS\paramaterial\tests\modelling_test_data\repres_data" />
+      <recent name="C:\Users\DS\paramaterial\tests" />
       <recent name="C:\Users\DS\paramaterial" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.Python tests for test_plug.TestDataSet">
-    <configuration name="example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.test_modelling">
+    <configuration name="test_modelling" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="paramaterial" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -73,12 +89,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/paramaterial" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/paramaterial/example.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_modelling.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -87,29 +103,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="receipts" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="paramaterial" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/paramaterial" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/paramaterial/receipts.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Python tests for test_example.TestExample" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests for test_plug.TestDataSet.test_init" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="paramaterial" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -120,11 +114,11 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_example.TestExample&quot;" />
+      <option name="_new_target" value="&quot;test_plug.TestDataSet.test_init&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests for test_plug.TestDataSet" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests for test_plug.TestDataSet.test_set_info_table" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="paramaterial" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -135,11 +129,11 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_plug.TestDataSet&quot;" />
+      <option name="_new_target" value="&quot;test_plug.TestDataSet.test_set_info_table&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="Python tests in test_example.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python tests for test_plug.TestDataSet.test_sort_by" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="paramaterial" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -150,17 +144,32 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_example.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <option name="_new_target" value="&quot;test_plug.TestDataSet.test_sort_by&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for test_plug.TestDataSet.test_subset" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="paramaterial" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_plug.TestDataSet.test_subset&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Python tests for test_plug.TestDataSet" />
-        <item itemvalue="Python tests.Python tests in test_example.py" />
-        <item itemvalue="Python tests.Python tests for test_example.TestExample" />
-        <item itemvalue="Python.example" />
-        <item itemvalue="Python.receipts" />
+        <item itemvalue="Python.test_modelling" />
+        <item itemvalue="Python tests.Python tests for test_plug.TestDataSet.test_sort_by" />
+        <item itemvalue="Python tests.Python tests for test_plug.TestDataSet.test_subset" />
+        <item itemvalue="Python tests.Python tests for test_plug.TestDataSet.test_set_info_table" />
+        <item itemvalue="Python tests.Python tests for test_plug.TestDataSet.test_init" />
       </list>
     </recent_temporary>
   </component>
@@ -215,6 +224,9 @@
       <workItem from="1690039246353" duration="16891000" />
       <workItem from="1690309359254" duration="3007000" />
       <workItem from="1690350595003" duration="1401000" />
+      <workItem from="1690361191704" duration="2187000" />
+      <workItem from="1690365272927" duration="3137000" />
+      <workItem from="1690368857680" duration="1259000" />
     </task>
     <task id="LOCAL-00001" summary="replace reject /Yes values with True, and /Off with False in read_screening_pdf_fields">
       <created>1679921690942</created>
@@ -313,12 +325,24 @@
           <line>40</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tests/test_plug.py</url>
+          <line>141</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tests/test_plug.py</url>
+          <line>224</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/paramaterial$.coverage" NAME=" Coverage Results" MODIFIED="1690310598441" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/paramaterial$receipts.coverage" NAME="receipts Coverage Results" MODIFIED="1680186807581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/paramaterial" />
+    <SUITE FILE_PATH="coverage/paramaterial$.coverage" NAME=" Coverage Results" MODIFIED="1690362528779" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/paramaterial$test_modelling.coverage" NAME="test_modelling Coverage Results" MODIFIED="1690369957390" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/paramaterial$scractch.coverage" NAME="scractch Coverage Results" MODIFIED="1690288762016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/paramaterial$receipts.coverage" NAME="receipts Coverage Results" MODIFIED="1688987388202" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/paramaterial" />
     <SUITE FILE_PATH="coverage/paramaterial$example.coverage" NAME="example Coverage Results" MODIFIED="1689788042121" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/paramaterial" />
   </component>
 </project>

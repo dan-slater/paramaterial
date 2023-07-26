@@ -56,7 +56,11 @@ class TestDataSet(unittest.TestCase):
         shutil.rmtree('./test_data')
 
     def test_init(self):
+        """Test the initialization of the DataSet."""
         dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
+
+        # Assert if the class is correctly initialized
+        self.assertIsInstance(dataset, DataSet)
         self.assertEqual(dataset.info_path, self.info_path)
         self.assertEqual(dataset.data_dir, self.data_dir)
         self.assertEqual(dataset.test_id_key, self.test_id_key)
@@ -77,7 +81,46 @@ class TestDataSet(unittest.TestCase):
 
         dataset = dataset.apply(test)
         dataset.info_table = info_table
-        self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data1[:-1].convert_dtypes()))
+        self.assertTrue(np.equal(dataset[0].data['x'], self.data1['x'][:-1]).all())
+
+        # test if the info in the data items is updated when the info table is updated
+        new_info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
+                                       'a': [1, 2, 3],
+                                       'b': [9, 5, 6],
+                                       'c': [7, 8, 9]})
+        dataset.info_table = new_info_table
+        self.assertTrue(dataset[0].info['c'] == 7)
+        self.assertEqual(dataset.data_items[0].info['a'], 1)
+
+        # test if data items are removed when the info table is updated
+        new_info_table = pd.DataFrame({'test_id': ['id_001', 'id_002'],
+                                        'a': [1, 2],
+                                        'b': [9, 5],
+                                        'c': [7, 8]})
+        dataset.info_table = new_info_table
+        self.assertEqual(len(dataset), 2)
+
+    def test_get_info_table(self):
+        # test if get info table works before and after applying a function and before and after updating the info table
+        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
+        pd.testing.assert_frame_equal(dataset.info_table, self.info_table)
+
+        def test(di: DataItem):
+            di.data['x'] = di.data['x'] * 2
+            di.info['a'] = di.info['a'] + 1
+            return di
+
+        dataset = dataset.apply(test)
+        new_info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
+                                       'a': [2, 3, 4],
+                                       'b': [4, 5, 6]})
+        pd.testing.assert_frame_equal(dataset.info_table, new_info_table)
+        new_info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
+                                       'a': [1, 2, 3],
+                                       'b': [4, 5, 6],
+                                       'c': [7, 8, 9]})
+        dataset.info_table = new_info_table
+        pd.testing.assert_frame_equal(dataset.info_table, new_info_table)
 
     def test_apply(self):
         dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
@@ -90,7 +133,6 @@ class TestDataSet(unittest.TestCase):
             di.info['c'] = di.info['a'] + di.info['b']
             return di
 
-        dataset = dataset.apply(apply_func)
         new_ds = dataset.apply(apply_func)
         self.assertTrue(new_ds[0].info['new'] == 1)
         self.assertTrue('new' in new_ds.info_table.columns)
@@ -178,8 +220,10 @@ class TestDataSet(unittest.TestCase):
     def test_subset(self):
         dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
 
-        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4]}).data_items[0].data.convert_dtypes().equals(
-            self.data1.convert_dtypes()))
+        subset = dataset.subset({'a': [1, 2], 'b': [4]})
+
+        pd.testing.assert_frame_equal(subset.info_table, self.info_table[:1])
+        pd.testing.assert_frame_equal(subset.data_items[0].data, self.data1)
 
         self.assertTrue(type(dataset.subset({'a': [1, 2], 'b': [4]}) is DataSet))
         self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4]})) == 1)

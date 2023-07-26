@@ -113,7 +113,13 @@ class Styler:
         formatters = dict()
 
         if self.color_by is not None:
-            formatters['color'] = self.color_dict[di.info[self.color_by]]
+            if di.info[self.color_by] not in self.color_dict.keys():
+                try:
+                    formatters['color'] = self.color_dict[float(di.info[self.color_by])]
+                except ValueError:
+                    formatters['color'] = plt.gca()._get_lines.get_next_color()
+            else:
+                formatters['color'] = self.color_dict[di.info[self.color_by]]
             if all(str(x).isnumeric() for x in self.color_dict.keys()):
                 formatters['zorder'] = di.info[self.color_by]
         else:
@@ -141,6 +147,8 @@ class Styler:
 
         if self.color_by is not None:
             for color_val in ds.info_table[self.color_by].unique():
+                if color_val not in self.color_dict.keys():
+                    color_val = float(color_val)
                 handles.append(Line2D([], [], label=color_val, color=self.color_dict[color_val], marker='o', ls=''))
 
         if self.linestyle_by_label is not None:
@@ -364,6 +372,7 @@ def dataset_subplots(
             for col, col_val in enumerate(col_vals):
                 ax = axs[row, col]
                 subset = ds.subset({cols_by: col_val, rows_by: row_val})
+                if len(subset) == 0: continue
                 dataset_plot(subset, styler=styler, ax=ax, **kwargs)
 
     if subplot_cbar:
@@ -478,8 +487,6 @@ def matrix_plot(
         axs: plt.Axes = None,
         heatmap_kwargs: Dict[str, Any] = None,
 ) -> plt.Axes:
-
-
     if axs is None:
         fig, axs = plt.subplots(1, len(group_by))
 
@@ -500,6 +507,4 @@ def matrix_plot(
         if titles is not None:
             axs[i].set_title(titles[i])
 
-
     return axs
-
