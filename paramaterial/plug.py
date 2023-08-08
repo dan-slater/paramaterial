@@ -86,7 +86,7 @@ class DataSet:
         self.data_items = list(map(lambda di: di.read_info_from(self._info_table, self.test_id_key),
                                    self.data_items))
 
-    def apply(self, func: Callable[[DataItem, ...], DataItem], **kwargs) -> 'DataSet':
+    def apply(self, func: Callable[[DataItem, Dict], DataItem], **kwargs) -> 'DataSet':
         """Apply a function to every dataitem in a copy of the ds and return the copy."""
         self._update_data_items()
 
