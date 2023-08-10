@@ -96,6 +96,7 @@ class DataSet:
     def info_table(self) -> pd.DataFrame:
         info_table = pd.DataFrame([di.info for di in self.data_items])
         info_table.index = range(len(info_table))
+        info_table = info_table.apply(pd.to_numeric, errors='ignore')
         return info_table
 
     @info_table.setter
@@ -111,6 +112,8 @@ class DataSet:
                 new_data_items.append(data_item)
 
         self.data_items = new_data_items
+
+
 
     def write_output(self, info_path: str, data_dir: str) -> None:
         _write_file(self.info_table, info_path)
@@ -138,6 +141,12 @@ class DataSet:
         """Sort the info table of the current DataSet in place by a column or list of columns."""
         if isinstance(column, str):
             column = [column]
+
+        # Ensure that the specified columns are numeric before sorting
+        for col in column:
+            if self.info_table[col].dtype == 'object':
+                self.info_table[col] = pd.to_numeric(self.info_table[col], errors='ignore')
+
         self.info_table = self.info_table.sort_values(by=column, ascending=ascending)
         return self
 
