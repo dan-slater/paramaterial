@@ -100,12 +100,14 @@ class DataSet:
 
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
-        new_data_items = []
+        data_item_dict = {data_item.test_id: data_item for data_item in self.data_items}
         test_ids = info_table[self.test_id_key].tolist()
 
-        for data_item in self.data_items:
-            if data_item.test_id in test_ids:
-                data_item.info = info_table.loc[info_table[self.test_id_key] == data_item.test_id].squeeze()
+        new_data_items = []
+        for test_id in test_ids:
+            data_item = data_item_dict.get(test_id)
+            if data_item:
+                data_item.info = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
                 new_data_items.append(data_item)
 
         self.data_items = new_data_items
