@@ -1,5 +1,6 @@
 __version__ = '0.0.11'
 from paramaterial import example, models
+from paramaterial.example import download_example
 from paramaterial.plug import DataItem, DataSet
 from paramaterial.preparing import *
 from paramaterial.processing import *
