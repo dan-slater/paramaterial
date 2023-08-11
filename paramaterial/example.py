@@ -3,9 +3,9 @@ import os
 import shutil
 import requests
 
-
 BASE_URL = 'https://github.com/dan-slater/paramaterial-examples/raw/main/examples'
-EXAMPLE_NAMES = ['dan_msc_basic_usage_0.1.0', 'example_2', 'example_3', 'example_4', 'example_5']
+EXAMPLE_NAMES = ['dan_msc_basic_usage_0.1.0', 'dan_msc_cs1_0.1.0.tar.gz', 'dan_msc_cs2_0.1.0.tar.gz',
+                 'dan_msc_cs3_0.1.0.tar.gz', 'dan_msc_cs4_0.1.0.tar.gz']
 
 
 def download_example(to_directory: str, example_name: str):
