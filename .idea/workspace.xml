@@ -4,13 +4,6 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b74e4672-8e95-4405-b69b-57f8e6475264" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plotting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plug.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/representing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/representing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_plug.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,6 +12,11 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../anaconda3/envs/paramaterial/Lib/site-packages/matplotlib/axes/_base.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../anaconda3/envs/paramaterial/Lib/site-packages/matplotlib/pyplot.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/paramaterial/plug.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -35,8 +33,6 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;final-refactor-for-msc&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -107,9 +103,6 @@
       <created>1691749404606</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1691749404606</updated>
-      <workItem from="1691749421058" duration="2405000" />
-      <workItem from="1691755266683" duration="3531000" />
     </task>
     <servers />
   </component>
@@ -117,7 +110,6 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/paramaterial$.coverage" NAME=" Coverage Results" MODIFIED="1691756300597" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/paramaterial$test_modelling.coverage" NAME="test_modelling Coverage Results" MODIFIED="1690369957390" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/paramaterial$scractch.coverage" NAME="scractch Coverage Results" MODIFIED="1690288762016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/paramaterial$receipts.coverage" NAME="receipts Coverage Results" MODIFIED="1688987388202" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/paramaterial" />

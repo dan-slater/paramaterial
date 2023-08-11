@@ -164,8 +164,6 @@ class DataSet:
         new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending).reset_index(drop=True)
         return new_ds
 
-
-
     def __getitem__(self, specifier: Union[int, str, slice]) -> Union[List[DataItem], DataItem]:
         if isinstance(specifier, int):
             return self.data_items[specifier]

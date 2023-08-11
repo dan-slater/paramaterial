@@ -1,4 +1,11 @@
-from typing import Callable, List, Optional, Dict, Any, Tuple, Union
+"""
+Module for modelling materials test data.
+"""
+import copy
+import os
+from dataclasses import dataclass
+from typing import List, Tuple, Dict, Any, Union, Optional, Callable
+
 import numpy as np
 import pandas as pd
 from scipy import optimize as op
