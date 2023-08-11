@@ -89,7 +89,7 @@ class DataSet:
         except KeyError:
             raise KeyError(f'Could not find test_id column "{self.test_id_key}" in info_table.')
 
-        info_rows = [info_table.loc[info_table[self.test_id_key] == test_id].squeeze() for test_id in test_ids]
+        info_rows = [info_table.loc[info_table[self.test_id_key] == test_id].iloc[0] for test_id in test_ids]
         return [DataItem(t_id, _read_file(f_path), info) for t_id, f_path, info in zip(test_ids, file_paths, info_rows)]
 
     @property
@@ -99,8 +99,31 @@ class DataSet:
         info_table = info_table.apply(pd.to_numeric, errors='ignore')
         return info_table
 
+    # @info_table.setter
+    # def info_table(self, info_table: pd.DataFrame):
+    #     # Attempt to convert all columns to numeric, and ignore errors for non-numeric columns
+    #     info_table = info_table.apply(pd.to_numeric, errors='ignore')
+    #
+    #     data_item_dict = {data_item.test_id: data_item for data_item in self.data_items}
+    #     test_ids = info_table[self.test_id_key].tolist()
+    #
+    #     new_data_items = []
+    #     for test_id in test_ids:
+    #         data_item = data_item_dict.get(test_id)
+    #         if data_item:
+    #             # Get the corresponding row from the info_table
+    #             row = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
+    #             # Convert the row to a dictionary and update the data_item's info attribute
+    #             data_item.info = pd.Series({k: v for k, v in row.items()})
+    #             new_data_items.append(data_item)
+    #
+    #     self.data_items = new_data_items
+
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
+        # Attempt to convert all columns to numeric, and ignore errors for non-numeric columns
+        info_table = info_table.apply(pd.to_numeric, errors='ignore')
+
         data_item_dict = {data_item.test_id: data_item for data_item in self.data_items}
         test_ids = info_table[self.test_id_key].tolist()
 
@@ -108,10 +131,35 @@ class DataSet:
         for test_id in test_ids:
             data_item = data_item_dict.get(test_id)
             if data_item:
-                data_item.info = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
+                # Get the corresponding row from the info_table
+                row = info_table.loc[info_table[self.test_id_key] == test_id].iloc[0]
+                # Update the data_item's info attribute
+                data_item.info = row
                 new_data_items.append(data_item)
 
         self.data_items = new_data_items
+
+    #
+    #
+    # @info_table.setter
+    # def info_table(self, info_table: pd.DataFrame):
+    #     info_table = info_table.apply(pd.to_numeric, errors='ignore')
+    #
+    #     data_item_dict = {data_item.test_id: data_item for data_item in self.data_items}
+    #     test_ids = info_table[self.test_id_key].tolist()
+    #
+    #     new_data_items = []
+    #     for test_id in test_ids:
+    #         data_item = data_item_dict.get(test_id)
+    #         if data_item:
+    #             # data_item.info = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
+    #             # new_data_items.append(data_item)
+    #             row = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
+    #             updated_info = row.astype(data_item.info.dtypes)
+    #             data_item.info = updated_info
+    #             new_data_items.append(data_item)
+    #
+    #     self.data_items = new_data_items
 
 
 

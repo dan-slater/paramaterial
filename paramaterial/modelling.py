@@ -192,6 +192,6 @@ class ModelSet:
             model_items.append(DataItem(model_id, data=data, info=di_info))
         # create DataSet from model_items and return
         ds = DataSet(test_id_key=model_id_key)
-        ds.info_table = info_table
         ds.data_items = model_items
+        ds.info_table = info_table
         return ds
