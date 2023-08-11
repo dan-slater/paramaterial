@@ -1,76 +1,57 @@
 """Module for functions that are used to set up the examples."""
+import os
+import shutil
+import requests
+
+BASE_URL = 'https://github.com/dan-slater/paramaterial-examples/raw/main/examples'
+EXAMPLE_NAMES = ['dan_msc_basic_usage_0.1.0', 'dan_msc_cs1_0.1.0.tar.gz', 'dan_msc_cs2_0.1.0.tar.gz',
+                 'dan_msc_cs3_0.1.0.tar.gz', 'dan_msc_cs4_0.1.0.tar.gz']
 
 
-def download_example_data():
-    """Download example data from the internet."""
-    import urllib.request
-    import zipfile
-    import os
-    import pandas as pd
-    import paramaterial as pam
-    import numpy as np
+def download_example(to_directory: str, example_name: str):
+    """Download example data and Jupyter Notebook to the specified directory.
 
-    # make data and info directories if they don't exist
-    if not os.path.exists('data'):
-        os.mkdir('data')
-    if not os.path.exists('info'):
-        os.mkdir('info')
+    Args:
+        to_directory (str): The directory to download the example to.
+        example_name (str): The name of the example to download.
+    """
 
-    print('Downloading example data...')
-    
-    # Download the data
-    url = 'https://prod-dcd-datasets-cache-zipfiles.s3.eu-west-1.amazonaws.com/rd6jm9tyb6-2.zip'
-    urllib.request.urlretrieve(url, 'example_data.zip')
+    # Check if the example name is recognized
+    if example_name not in EXAMPLE_NAMES:
+        raise ValueError(f'Example name {example_name} not recognized. '
+                         f'Existing example names are: {", ".join(EXAMPLE_NAMES)}.')
 
-    # Unzip the data and store in a folder called data/00 raw data
-    with zipfile.ZipFile('example_data.zip', 'r') as zip_ref:
-        zip_ref.extractall('data/00 raw data')
+    # Create the output directory if it doesn't exist
+    os.makedirs(to_directory, exist_ok=True)
 
-    # if data/00 raw data contains a zip file, unzip it
-    for file in os.listdir('data/00 raw data'):
-        if file.endswith('.zip'):
-            with zipfile.ZipFile('data/00 raw data/' + file, 'r') as zip_ref:
-                zip_ref.extractall('data/00 raw data')
+    # Download the example tarball
+    url = f'{BASE_URL}/{example_name}.tar.gz'
+    tarball_path = f'{example_name}.tar.gz'
 
-    # any zip files in data/00 raw data
-    for file in os.listdir('data/00 raw data'):
-        if file.endswith('.zip'):
-            os.remove('data/00 raw data/' + file)
+    response = requests.get(url, stream=True)
+    if response.status_code == 200:
+        with open(tarball_path, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+    else:
+        raise Exception(f"Download tarball error occurred: {response.status_code}")
 
-    os.remove('example_data.zip')
+    # Extract the example tarball
+    try:
+        shutil.unpack_archive(tarball_path, to_directory)
+        # os.rename(extracted_dir, os.path.join(to_directory, example_name))
+    except FileNotFoundError as fnf_error:
+        print(f"No file: {fnf_error}")
+    except Exception as err:
+        print(f"An error occurred during extraction: {err}")
 
-    # Print a message
-    print(f'Example data downloaded, unzipped, and saved to {os.path.join(os.getcwd(), "data/00 raw data")}.')
+    # Clean up the downloaded tarball
+    try:
+        # pass
+        os.remove(tarball_path)
+    except Exception as e:
+        print(f"An error occurred while deleting file : {e}")
 
-    # Make the info table
-    info_lists = [[filename] + filename.split('_')[:4] for filename in os.listdir('data/00 raw data')]
-    info_table = pd.DataFrame(info_lists,
-                              columns=['old filename', 'test type', 'temperature', 'lot', 'number']
-                              ).sort_values(by='test type', ascending=False)
-    info_table['test_id'] = [f'test_ID_{i + 1:03d}' for i in range(len(info_table))]
-    info_table = info_table.set_index('test_id').reset_index()
-    info_table['test type'] = info_table['test type'].replace('T', 'UT')
-    info_table['test type'] = info_table['test type'].replace('P', 'PST')
-    info_table['rate'] = 8.66e-4  # units (/s) and all tests performed at same rate
-    info_table['A_0'] = np.where(info_table['test type'] == 'UT', 40.32, 20.16)
-    info_table['h_0'] = 3.175
-    info_table['temperature (C)'] = pd.to_numeric(info_table['temperature'])
-
-    # Check raw data
-    pam.preparing.check_column_headers('data/00 raw data')
-    pam.preparing.check_for_duplicate_files('data/00 raw data')
-    
-    # Make prepared data
-    pam.preparing.copy_data_and_rename_by_test_id(os.path.join(os.getcwd(), 'data/00 raw data'),
-                                                  os.path.join(os.getcwd(), 'data/01 prepared data'), info_table)
-    
-    # Save the info table
-    info_table.to_csv(os.path.join(os.getcwd(), "info/01 prepared info.csv"), index=False)
-    
-    # Print a message
-    print(f'Info table saved to {os.path.join(os.getcwd(), "info/01 prepared info.csv")}.')
-    
 
 if __name__ == '__main__':
-    # Download the example data
-    download_example_data()
+    download_example(to_directory='examples', example_name='dan_msc_basic_usage_0.1.0')

@@ -12,6 +12,7 @@ import matplotlib as mpl
 import seaborn as sns
 
 from paramaterial.plug import DataItem, DataSet
+from paramaterial.preparing import experimental_matrix
 
 
 def configure_plt_formatting():
@@ -112,7 +113,13 @@ class Styler:
         formatters = dict()
 
         if self.color_by is not None:
-            formatters['color'] = self.color_dict[di.info[self.color_by]]
+            if di.info[self.color_by] not in self.color_dict.keys():
+                try:
+                    formatters['color'] = self.color_dict[float(di.info[self.color_by])]
+                except ValueError:
+                    formatters['color'] = plt.gca()._get_lines.get_next_color()
+            else:
+                formatters['color'] = self.color_dict[di.info[self.color_by]]
             if all(str(x).isnumeric() for x in self.color_dict.keys()):
                 formatters['zorder'] = di.info[self.color_by]
         else:
@@ -140,6 +147,8 @@ class Styler:
 
         if self.color_by is not None:
             for color_val in ds.info_table[self.color_by].unique():
+                if color_val not in self.color_dict.keys():
+                    color_val = float(color_val)
                 handles.append(Line2D([], [], label=color_val, color=self.color_dict[color_val], marker='o', ls=''))
 
         if self.linestyle_by_label is not None:
@@ -220,58 +229,6 @@ def dataset_plot(
 
     return ax
 
-
-def info_plot(
-        ds: DataSet,
-        x: str,
-        y: str,
-        styler: Optional[Styler] = None,
-        ax: Optional[plt.Axes] = None,
-        plot_legend: bool = True,
-        err_between: Optional[Tuple[str, str]] = None,
-        **kwargs
-) -> plt.Axes:
-    """Make a single combined plot from the info of every dataitem in the dataset using pandas.DataFrame.plot.
-
-    Args:
-        ds: The dataset to plot.
-        x: The column to plot on the x-axis.
-        y: The column to plot on the y-axis.
-        styler: The styler to use for the plot.
-        ax: The axis to plot on.
-        plot_legend: Whether to plot the legend.
-        **kwargs: Additional keyword arguments to pass to the pandas.DataFrame.plot function.
-
-    Returns: The axis the plot was made on.
-    """
-    if ax is None:
-        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
-    kwargs['ax'] = ax
-
-    if ax.get_legend() is not None and plot_legend:
-        ax.get_legend().remove()
-
-    kwargs = {**styler.plot_kwargs, **kwargs}
-
-    # plot the dataitems
-    for di in ds:
-        # plot the curve
-        df = pd.DataFrame([[di.info[x], di.info[y]]], columns=[x, y])
-        ax = df.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
-        # ax = di.info.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
-        if err_between is not None:
-            ax = di.info.plot(x=x, y=y, yerr=[di.info[err_between[0]], di.info[err_between[1]]],
-                              **styler.curve_formatters(di), ax=ax)
-
-    # add the legend
-    handles = styler.legend_handles(ds)
-    if len(handles) > 0 and plot_legend:
-        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
-                  handletextpad=0.05)  # , labelspacing=0.1)
-        ax.get_legend().set_zorder(2000)
-    # colorbar
-
-    return ax
 
 
 def dataset_subplots(
@@ -363,6 +320,7 @@ def dataset_subplots(
             for col, col_val in enumerate(col_vals):
                 ax = axs[row, col]
                 subset = ds.subset({cols_by: col_val, rows_by: row_val})
+                if len(subset) == 0: continue
                 dataset_plot(subset, styler=styler, ax=ax, **kwargs)
 
     if subplot_cbar:
@@ -380,6 +338,59 @@ def dataset_subplots(
                                         bbox_to_anchor=(0.925, 0.5), markerfirst=True, handletextpad=0.05)
 
     return axs
+
+
+def info_plot(
+        ds: DataSet,
+        x: str,
+        y: str,
+        styler: Optional[Styler] = None,
+        ax: Optional[plt.Axes] = None,
+        plot_legend: bool = True,
+        err_between: Optional[Tuple[str, str]] = None,
+        **kwargs
+) -> plt.Axes:
+    """Make a single combined plot from the info of every dataitem in the dataset using pandas.DataFrame.plot.
+
+    Args:
+        ds: The dataset to plot.
+        x: The column to plot on the x-axis.
+        y: The column to plot on the y-axis.
+        styler: The styler to use for the plot.
+        ax: The axis to plot on.
+        plot_legend: Whether to plot the legend.
+        **kwargs: Additional keyword arguments to pass to the pandas.DataFrame.plot function.
+
+    Returns: The axis the plot was made on.
+    """
+    if ax is None:
+        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
+    kwargs['ax'] = ax
+
+    if ax.get_legend() is not None and plot_legend:
+        ax.get_legend().remove()
+
+    kwargs = {**styler.plot_kwargs, **kwargs}
+
+    # plot the dataitems
+    for di in ds:
+        # plot the curve
+        df = pd.DataFrame([[di.info[x], di.info[y]]], columns=[x, y])
+        ax = df.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
+        # ax = di.info.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
+        if err_between is not None:
+            ax = di.info.plot(x=x, y=y, yerr=[di.info[err_between[0]], di.info[err_between[1]]],
+                              **styler.curve_formatters(di), ax=ax)
+
+    # add the legend
+    handles = styler.legend_handles(ds)
+    if len(handles) > 0 and plot_legend:
+        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
+                  handletextpad=0.05)  # , labelspacing=0.1)
+        ax.get_legend().set_zorder(2000)
+    # colorbar
+
+    return ax
 
 
 def subplot_wrapper(
@@ -477,8 +488,6 @@ def matrix_plot(
         axs: plt.Axes = None,
         heatmap_kwargs: Dict[str, Any] = None,
 ) -> plt.Axes:
-    from paramaterial.preparing import make_experimental_matrix
-
     if axs is None:
         fig, axs = plt.subplots(1, len(group_by))
 
@@ -491,7 +500,7 @@ def matrix_plot(
     heatmap_kwargs = default_heatmap_kwargs.update(heatmap_kwargs)
 
     for sub_ds in ds_subsets:
-        exp_matrix = make_experimental_matrix(sub_ds.info_table, index=index, columns=columns)
+        exp_matrix = experimental_matrix(sub_ds.info_table, index=index, columns=columns)
         sns.heatmap(exp_matrix, **heatmap_kwargs)
 
     for i, ax in enumerate(axs):
@@ -499,6 +508,4 @@ def matrix_plot(
         if titles is not None:
             axs[i].set_title(titles[i])
 
-
     return axs
-
