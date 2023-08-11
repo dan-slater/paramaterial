@@ -51,7 +51,7 @@ class ModelTable:
                  variable_names: List[str] = None,
                  bounds: List[Tuple[float, float]] = None,
                  initial_guess: Tuple[float] = None,
-                 scipy_method_name: str = 'minimize',
+                 scipy_func: str = 'minimize',
                  scipy_method_kwargs: Dict[str, Any] = None
                  ):
         self.model_func = model_func
@@ -97,7 +97,8 @@ class ModelSet:
                  initial_guess: Tuple[float] = None,
                  sample_range: Tuple[float, float] = (None, None),
                  sample_size: int = 50,
-                 model_id_key: str = 'model_id'
+                 model_id_key: str = 'model_id',
+                 scipy_func: str = 'minimize',
                  ):
         self.model_func = model_func
         self.variable_names = var_names  # Updated name
@@ -107,24 +108,35 @@ class ModelSet:
         self.sample_range = sample_range
         self.sample_size = sample_size
         self.model_id_key = model_id_key
+        self.scipy_func = scipy_func
+        # self.fitting_table: pd.DataFrame = pd.DataFrame(
+        #     columns=[model_id_key] + ['var_' + var_name for var_name in var_names] +
+        #             ['param_' + param_name for param_name in param_names] + ['error'])
         self.fitting_table: pd.DataFrame = pd.DataFrame(
             columns=[model_id_key] + ['var_' + var_name for var_name in var_names] +
-                    ['param_' + param_name for param_name in param_names] + ['error'])
+                    [param_name for param_name in param_names] + ['error'])
 
     def fit_to(self, ds: DataSet, x_key: str, y_key: str, sample_range: Tuple[float, float] = (None, None),
-               sample_size: int = 50, scipy_method: str = 'minimize', **scipy_method_kwargs):
+               sample_size: int = 50, **scipy_method_kwargs):
         # Set the keys
         self.x_col = x_key
         self.y_col = y_key
 
         # Call the existing fit method
-        self.fit_items(ds, sample_range, sample_size, scipy_method, **scipy_method_kwargs)
+        self.fit_items(ds, sample_range, sample_size, self.scipy_func, **scipy_method_kwargs)
 
-    def predict(self, x_range: Optional[Tuple[float, float, float]] = None, info_table: Optional[pd.DataFrame] = None,
+    def predict(self, x_range: Optional[Tuple[float, float, float]] = None,
+                xmin: Optional[float] = None,
+                xmax: Optional[float] = None,
+                info_table: Optional[pd.DataFrame] = None,
                 model_id_key: str = 'model_id'):
+
+        # If x_range is not provided, check for xmin and xmax
         if x_range is None:
-            # Define x_range if necessary, based on the fitting data or default values
-            x_range = (0, 0.01, 0.0001)  # Example default value
+            if xmin is None or xmax is None:
+                x_range = (0, 0.01, 0.0001)  # Example default value
+            else:
+                x_range = (xmin, xmax, 0.0001)  # Example step value, adjust as needed
 
         return self.predict_ds(x_range, info_table, model_id_key)
 
@@ -172,7 +184,8 @@ class ModelSet:
             # add 'var_' prefix to variable names
             variables.index = 'var_' + variables.index
             # add 'param_' prefix to param names
-            params = pd.Series(params, index='param_' + pd.Series(self.param_names))
+            # params = pd.Series(params, index='param_' + pd.Series(self.param_names))
+            params = pd.Series(params, index=pd.Series(self.param_names))
             # add row to fitting_table
             # concatenate data
             data = np.hstack([model_id, variables, params, error, di.info.to_list()]).reshape(1, -1)
@@ -194,7 +207,8 @@ class ModelSet:
             # extract variables and optimised params from info_table
             variables_keys = self.variable_names if self.variable_names else []
             variables_keys = ['var_' + var_key for var_key in variables_keys]
-            params_keys = ['param_' + param_key for param_key in self.param_names]
+            # params_keys = ['param_' + param_key for param_key in self.param_names]
+            params_keys = [param_key for param_key in self.param_names]
             variables_and_params = di_info[variables_keys + params_keys].to_list()
             # generate model data and create DataItem
             x_model = np.arange(*x_range)

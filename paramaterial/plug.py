@@ -81,7 +81,6 @@ class DataSet:
             self.data_items: List[DataItem] = self._load_data_items()
 
     def _load_data_items(self) -> List[DataItem]:
-        file_paths = [self.data_dir + f'/{file}' for file in os.listdir(self.data_dir)]
         info_table = _read_file(self.info_path)
 
         try:
@@ -89,8 +88,17 @@ class DataSet:
         except KeyError:
             raise KeyError(f'Could not find test_id column "{self.test_id_key}" in info_table.')
 
-        info_rows = [info_table.loc[info_table[self.test_id_key] == test_id].iloc[0] for test_id in test_ids]
-        return [DataItem(t_id, _read_file(f_path), info) for t_id, f_path, info in zip(test_ids, file_paths, info_rows)]
+        data_items = []
+        for test_id in test_ids:
+            file_path = os.path.join(self.data_dir, f'{test_id}.csv')
+            if os.path.exists(file_path):
+                info = info_table.loc[info_table[self.test_id_key] == test_id].iloc[0]
+                data = _read_file(file_path)
+                data_items.append(DataItem(test_id, data, info))
+            else:
+                raise FileNotFoundError(f"File not found for test_id={test_id}: {file_path}")
+
+        return data_items
 
     @property
     def info_table(self) -> pd.DataFrame:
@@ -98,26 +106,6 @@ class DataSet:
         info_table.index = range(len(info_table))
         info_table = info_table.apply(pd.to_numeric, errors='ignore')
         return info_table
-
-    # @info_table.setter
-    # def info_table(self, info_table: pd.DataFrame):
-    #     # Attempt to convert all columns to numeric, and ignore errors for non-numeric columns
-    #     info_table = info_table.apply(pd.to_numeric, errors='ignore')
-    #
-    #     data_item_dict = {data_item.test_id: data_item for data_item in self.data_items}
-    #     test_ids = info_table[self.test_id_key].tolist()
-    #
-    #     new_data_items = []
-    #     for test_id in test_ids:
-    #         data_item = data_item_dict.get(test_id)
-    #         if data_item:
-    #             # Get the corresponding row from the info_table
-    #             row = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
-    #             # Convert the row to a dictionary and update the data_item's info attribute
-    #             data_item.info = pd.Series({k: v for k, v in row.items()})
-    #             new_data_items.append(data_item)
-    #
-    #     self.data_items = new_data_items
 
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
@@ -139,30 +127,6 @@ class DataSet:
 
         self.data_items = new_data_items
 
-    #
-    #
-    # @info_table.setter
-    # def info_table(self, info_table: pd.DataFrame):
-    #     info_table = info_table.apply(pd.to_numeric, errors='ignore')
-    #
-    #     data_item_dict = {data_item.test_id: data_item for data_item in self.data_items}
-    #     test_ids = info_table[self.test_id_key].tolist()
-    #
-    #     new_data_items = []
-    #     for test_id in test_ids:
-    #         data_item = data_item_dict.get(test_id)
-    #         if data_item:
-    #             # data_item.info = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
-    #             # new_data_items.append(data_item)
-    #             row = info_table.loc[info_table[self.test_id_key] == test_id].squeeze()
-    #             updated_info = row.astype(data_item.info.dtypes)
-    #             data_item.info = updated_info
-    #             new_data_items.append(data_item)
-    #
-    #     self.data_items = new_data_items
-
-
-
     def write_output(self, info_path: str, data_dir: str) -> None:
         _write_file(self.info_table, info_path)
         for di in self.data_items:
@@ -177,7 +141,7 @@ class DataSet:
 
     def apply(self, func: Callable[[DataItem, Dict], DataItem], **kwargs) -> 'DataSet':
         new_ds = self.copy()
-        new_ds.data_items = [func(di, **kwargs) for di in self.data_items]
+        new_ds.data_items = [func(di, **kwargs) for di in copy.deepcopy(self.data_items)]
         return new_ds
 
     def copy(self) -> 'DataSet':
@@ -186,17 +150,21 @@ class DataSet:
         return new_ds
 
     def sort_by(self, column: Union[str, List[str]], ascending: bool = True) -> 'DataSet':
-        """Sort the info table of the current DataSet in place by a column or list of columns."""
+        """Sort a copy of the ds by a column in the info table and return the copy."""
+        new_ds = self.copy()
+
         if isinstance(column, str):
             column = [column]
 
         # Ensure that the specified columns are numeric before sorting
         for col in column:
-            if self.info_table[col].dtype == 'object':
-                self.info_table[col] = pd.to_numeric(self.info_table[col], errors='ignore')
+            if new_ds.info_table[col].dtype == 'object':
+                new_ds.info_table[col] = pd.to_numeric(new_ds.info_table[col], errors='ignore')
 
-        self.info_table = self.info_table.sort_values(by=column, ascending=ascending)
-        return self
+        new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending).reset_index(drop=True)
+        return new_ds
+
+
 
     def __getitem__(self, specifier: Union[int, str, slice]) -> Union[List[DataItem], DataItem]:
         if isinstance(specifier, int):

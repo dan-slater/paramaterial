@@ -230,58 +230,6 @@ def dataset_plot(
     return ax
 
 
-def info_plot(
-        ds: DataSet,
-        x: str,
-        y: str,
-        styler: Optional[Styler] = None,
-        ax: Optional[plt.Axes] = None,
-        plot_legend: bool = True,
-        err_between: Optional[Tuple[str, str]] = None,
-        **kwargs
-) -> plt.Axes:
-    """Make a single combined plot from the info of every dataitem in the dataset using pandas.DataFrame.plot.
-
-    Args:
-        ds: The dataset to plot.
-        x: The column to plot on the x-axis.
-        y: The column to plot on the y-axis.
-        styler: The styler to use for the plot.
-        ax: The axis to plot on.
-        plot_legend: Whether to plot the legend.
-        **kwargs: Additional keyword arguments to pass to the pandas.DataFrame.plot function.
-
-    Returns: The axis the plot was made on.
-    """
-    if ax is None:
-        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
-    kwargs['ax'] = ax
-
-    if ax.get_legend() is not None and plot_legend:
-        ax.get_legend().remove()
-
-    kwargs = {**styler.plot_kwargs, **kwargs}
-
-    # plot the dataitems
-    for di in ds:
-        # plot the curve
-        df = pd.DataFrame([[di.info[x], di.info[y]]], columns=[x, y])
-        ax = df.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
-        # ax = di.info.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
-        if err_between is not None:
-            ax = di.info.plot(x=x, y=y, yerr=[di.info[err_between[0]], di.info[err_between[1]]],
-                              **styler.curve_formatters(di), ax=ax)
-
-    # add the legend
-    handles = styler.legend_handles(ds)
-    if len(handles) > 0 and plot_legend:
-        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
-                  handletextpad=0.05)  # , labelspacing=0.1)
-        ax.get_legend().set_zorder(2000)
-    # colorbar
-
-    return ax
-
 
 def dataset_subplots(
         ds: DataSet,
@@ -390,6 +338,59 @@ def dataset_subplots(
                                         bbox_to_anchor=(0.925, 0.5), markerfirst=True, handletextpad=0.05)
 
     return axs
+
+
+def info_plot(
+        ds: DataSet,
+        x: str,
+        y: str,
+        styler: Optional[Styler] = None,
+        ax: Optional[plt.Axes] = None,
+        plot_legend: bool = True,
+        err_between: Optional[Tuple[str, str]] = None,
+        **kwargs
+) -> plt.Axes:
+    """Make a single combined plot from the info of every dataitem in the dataset using pandas.DataFrame.plot.
+
+    Args:
+        ds: The dataset to plot.
+        x: The column to plot on the x-axis.
+        y: The column to plot on the y-axis.
+        styler: The styler to use for the plot.
+        ax: The axis to plot on.
+        plot_legend: Whether to plot the legend.
+        **kwargs: Additional keyword arguments to pass to the pandas.DataFrame.plot function.
+
+    Returns: The axis the plot was made on.
+    """
+    if ax is None:
+        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (6, 4)))
+    kwargs['ax'] = ax
+
+    if ax.get_legend() is not None and plot_legend:
+        ax.get_legend().remove()
+
+    kwargs = {**styler.plot_kwargs, **kwargs}
+
+    # plot the dataitems
+    for di in ds:
+        # plot the curve
+        df = pd.DataFrame([[di.info[x], di.info[y]]], columns=[x, y])
+        ax = df.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
+        # ax = di.info.plot(x=x, y=y, **styler.curve_formatters(di), **kwargs)
+        if err_between is not None:
+            ax = di.info.plot(x=x, y=y, yerr=[di.info[err_between[0]], di.info[err_between[1]]],
+                              **styler.curve_formatters(di), ax=ax)
+
+    # add the legend
+    handles = styler.legend_handles(ds)
+    if len(handles) > 0 and plot_legend:
+        ax.legend(handles=handles, loc='best', frameon=True, markerfirst=False,
+                  handletextpad=0.05)  # , labelspacing=0.1)
+        ax.get_legend().set_zorder(2000)
+    # colorbar
+
+    return ax
 
 
 def subplot_wrapper(
