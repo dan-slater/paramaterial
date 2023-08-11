@@ -91,10 +91,8 @@ class ModelSet:
 
     def __init__(self,
                  model_func: Callable[[np.ndarray, Tuple[float]], np.ndarray],
-                 x_col: str,
-                 y_col: str,
+                 var_names: List[str],
                  param_names: List[str],
-                 variable_names: List[str] = None,
                  bounds: List[Tuple[float, float]] = None,
                  initial_guess: Tuple[float] = None,
                  sample_range: Tuple[float, float] = (None, None),
@@ -102,20 +100,33 @@ class ModelSet:
                  model_id_key: str = 'model_id'
                  ):
         self.model_func = model_func
-        self.x_col = x_col
-        self.y_col = y_col
-        self.variable_names = variable_names
-
+        self.variable_names = var_names  # Updated name
         self.param_names = param_names
         self.bounds = bounds
         self.initial_guess = initial_guess if initial_guess else [0.0] * len(param_names)
         self.sample_range = sample_range
         self.sample_size = sample_size
-
         self.model_id_key = model_id_key
         self.fitting_table: pd.DataFrame = pd.DataFrame(
-            columns=[model_id_key] + ['var_' + var_name for var_name in variable_names] +
+            columns=[model_id_key] + ['var_' + var_name for var_name in var_names] +
                     ['param_' + param_name for param_name in param_names] + ['error'])
+
+    def fit_to(self, ds: DataSet, x_key: str, y_key: str, sample_range: Tuple[float, float] = (None, None),
+               sample_size: int = 50, scipy_method: str = 'minimize', **scipy_method_kwargs):
+        # Set the keys
+        self.x_col = x_key
+        self.y_col = y_key
+
+        # Call the existing fit method
+        self.fit_items(ds, sample_range, sample_size, scipy_method, **scipy_method_kwargs)
+
+    def predict(self, x_range: Optional[Tuple[float, float, float]] = None, info_table: Optional[pd.DataFrame] = None,
+                model_id_key: str = 'model_id'):
+        if x_range is None:
+            # Define x_range if necessary, based on the fitting data or default values
+            x_range = (0, 0.01, 0.0001)  # Example default value
+
+        return self.predict_ds(x_range, info_table, model_id_key)
 
     def _sample_data(self, di: DataItem) -> Tuple[np.ndarray, np.ndarray]:
         sample_range = self.sample_range
@@ -195,3 +206,36 @@ class ModelSet:
         ds.data_items = model_items
         ds.info_table = info_table
         return ds
+#
+# class ModelSet:
+#     """Class that acts as model DataSet."""
+#
+#     def __init__(self,
+#                  model_func: Callable[[np.ndarray, Tuple[float]], np.ndarray],
+#                  x_col: str,
+#                  y_col: str,
+#                  param_names: List[str],
+#                  variable_names: List[str] = None,
+#                  bounds: List[Tuple[float, float]] = None,
+#                  initial_guess: Tuple[float] = None,
+#                  sample_range: Tuple[float, float] = (None, None),
+#                  sample_size: int = 50,
+#                  model_id_key: str = 'model_id'
+#                  ):
+#         self.model_func = model_func
+#         self.x_col = x_col
+#         self.y_col = y_col
+#         self.variable_names = variable_names
+#
+#         self.param_names = param_names
+#         self.bounds = bounds
+#         self.initial_guess = initial_guess if initial_guess else [0.0] * len(param_names)
+#         self.sample_range = sample_range
+#         self.sample_size = sample_size
+#
+#         self.model_id_key = model_id_key
+#         self.fitting_table: pd.DataFrame = pd.DataFrame(
+#             columns=[model_id_key] + ['var_' + var_name for var_name in variable_names] +
+#                     ['param_' + param_name for param_name in param_names] + ['error'])
+#
+#
