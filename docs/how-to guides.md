@@ -32,7 +32,7 @@ import paramaterial as pam
 from paramaterial import DataSet
 
 dataset = DataSet("path/to/folder", "path/to/metadata.csv")
-representative_curves = pam.modelling.make_representative_data(dataset, "path/to/output_folder",
-                                                               "path/to/output_metadata.csv", repres_col="Stress_MPa")
+representative_curves = pam.modelling.make_repres_ds(dataset, "path/to/output_folder",
+                                                     "path/to/output_metadata.csv", repres_col="Stress_MPa")
 ```
 ```

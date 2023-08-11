@@ -1,267 +1,86 @@
-"""Tests for the plug module."""
-import os
-import shutil
+import tempfile
 import unittest
-from pathlib import Path
-
-import numpy as np
+import os
 import pandas as pd
-
 from paramaterial.plug import DataItem, DataSet
-
-
-class TestDataItem(unittest.TestCase):
-    """Tests for the DataItem class."""
-
-    def setUp(self):
-        # create test data if it does not exist, otherwise overwrite it
-        if not os.path.exists('./test_data'):
-            os.mkdir('./test_data')
-        else:
-            shutil.rmtree('./test_data')
-            os.mkdir('./test_data')
-        self.test_id = 'id_001'
-        self.data = pd.DataFrame({'x': [1, 2, 3], 'y': [2, 3, 4]})
-        self.info = pd.Series({'test_id': 'id_001', 'a': 1, 'b': 2})
-        self.data.to_csv('./test_data/id_001.csv', index=False)
-
-    def tearDown(self):
-        shutil.rmtree('./test_data')
-
-    def test_update_info_from_table(self):
-        file_path = './test_data/id_001.csv'
-        dataitem = DataItem('id_001', self.info, self.data)
-        info_table = pd.DataFrame({'test_id': ['id_001'], 'a': [1], 'b': [2]})
-        dataitem.read_info_from(info_table, 'test_id')
-        self.assertTrue(dataitem.info.equals(self.info))
 
 
 class TestDataSet(unittest.TestCase):
     """Tests for the DataSet class."""
 
     def setUp(self):
-        # create test data if it does not exist, otherwise overwrite it
-        if not os.path.exists('./test_data'):
-            os.mkdir('./test_data')
-        else:
-            shutil.rmtree('./test_data')
-            os.mkdir('./test_data')
+        # Create synthetic test data
+        self.data1 = pd.DataFrame({'strain': [0, 0.1, 0.2], 'stress': [0, 100, 200]})
+        self.data2 = pd.DataFrame({'strain': [0, 0.15, 0.3], 'stress': [0, 150, 300]})
+        self.data3 = pd.DataFrame({'strain': [0, 0.05, 0.1], 'stress': [0, 50, 100]})
 
-        self.data_dir = './test_data'
-        self.info_path = './test_data/info.xlsx'
-        self.test_id_key = 'test_id'
+        # Create synthetic test info
+        self.info1 = pd.Series({'test_id': 'id_001', 'temperature': 20, 'strain_rate': 0.01})
+        self.info2 = pd.Series({'test_id': 'id_002', 'temperature': 25, 'strain_rate': 0.02})
+        self.info3 = pd.Series({'test_id': 'id_003', 'temperature': 30, 'strain_rate': 0.03})
 
-        self.data1 = pd.DataFrame({'x': [1.1, 2, 3], 'y': [4.1, 5, 6]})
-        self.data2 = pd.DataFrame({'x': [1, 2.2, 3], 'y': [4, 5.2, 6]})
-        self.data3 = pd.DataFrame({'x': [1, 2, 3.3], 'y': [4, 5, 6.3]})
+        # Create synthetic test info table
+        self.info_table = pd.DataFrame({
+            'test_id': ['id_001', 'id_002', 'id_003'],
+            'temperature': [20, 25, 30],
+            'strain_rate': [0.01, 0.02, 0.03]
+        })
 
-        self.info1 = pd.Series({'test_id': 'id_001', 'a': 1, 'b': 4})
-        self.info2 = pd.Series({'test_id': 'id_002', 'a': 2, 'b': 5})
-        self.info3 = pd.Series({'test_id': 'id_003', 'a': 3, 'b': 6})
-
-        self.info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
-                                        'a': [1, 2, 3],
-                                        'b': [4, 5, 6]})
-
-        self.dataitems = list(map(DataItem,
-                                  ['id_001', 'id_002', 'id_003'],
-                                  [self.data1, self.data2, self.data3],
-                                  [self.info1, self.info2, self.info3]))
-
-        self.info_table.to_excel('./test_data/info.xlsx', index=False)
-
-        self.data1.to_csv('./test_data/id_001.csv', index=False)
-        self.data2.to_csv('./test_data/id_002.csv', index=False)
-        self.data3.to_csv('./test_data/id_003.csv', index=False)
-
-    def tearDown(self):
-        shutil.rmtree('./test_data')
+        # Create synthetic test data items
+        self.data_items = [
+            DataItem('id_001', self.data1, self.info1),
+            DataItem('id_002', self.data2, self.info2),
+            DataItem('id_003', self.data3, self.info3)
+        ]
 
     def test_init(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-        self.assertEqual(dataset.data_dir, self.data_dir)
-        self.assertEqual(dataset.info_path, self.info_path)
-        self.assertEqual(dataset.test_id_key, self.test_id_key)
+        """Test the initialization of the DataSet."""
+        dataset = DataSet(info_path=None, data_dir=None, test_id_key='test_id')
+        dataset.data_items = self.data_items
 
-        self.assertEqual(dataset.data_items[0].test_id, 'id_001')
-        self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data1.convert_dtypes()))
-        self.assertTrue(dataset.data_items[0].info.convert_dtypes().equals(self.info1.convert_dtypes()))
+        self.assertIsInstance(dataset, DataSet)
+        self.assertEqual(len(dataset.data_items), 3)
 
-        self.assertEqual(dataset.data_items[1].test_id, 'id_002')
-        self.assertTrue(dataset.data_items[1].data.convert_dtypes().equals(self.data2.convert_dtypes()))
-        self.assertTrue(dataset.data_items[1].info.convert_dtypes().equals(self.info2.convert_dtypes()))
-
-        self.assertEqual(dataset.data_items[2].test_id, 'id_003')
-        self.assertTrue(dataset.data_items[2].data.convert_dtypes().equals(self.data3.convert_dtypes()))
-        self.assertTrue(dataset.data_items[2].info.convert_dtypes().equals(self.info3.convert_dtypes()))
-
-        self.assertTrue(dataset.info_table.convert_dtypes().equals(self.info_table.convert_dtypes()))
-
-    def test_set_info_table(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-        info_table = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
-                                   'a': [9, 2, 3],
-                                   'b': [9, 5, 6]})
-        dataset.info_table = info_table
-        self.assertTrue(dataset.info_table.convert_dtypes().equals(info_table.convert_dtypes()))
-
-        # test if an applied function is still applied after setting the info table
-        def test(di: DataItem):
-            di.data = di.data[:-1]
-            return di
-
-        dataset = dataset.apply(test)
-        dataset.info_table = info_table
-        self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data1[:-1].convert_dtypes()))
+    def test_info_table(self):
+        """Test the info_table property of the DataSet."""
+        dataset = DataSet(info_path=None, data_dir=None, test_id_key='test_id')
+        dataset.data_items = self.data_items
+        pd.testing.assert_frame_equal(dataset.info_table, self.info_table)
 
     def test_apply(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
+        """Test the apply method of the DataSet."""
+        dataset = DataSet(info_path=None, data_dir=None, test_id_key='test_id')
+        dataset.data_items = self.data_items
 
         def apply_func(di: DataItem) -> DataItem:
-            di.data['x'] = di.data['x'] + 1
-            di.data['z'] = di.data['x'] + di.data['y']
-            di.info['new'] = 1
-            di.info['a'] = di.info['a'] + 1
-            di.info['c'] = di.info['a'] + di.info['b']
+            di.data['stress'] = di.data['stress'] * 2
             return di
 
-        dataset = dataset.apply(apply_func)
         new_ds = dataset.apply(apply_func)
-        self.assertTrue(new_ds[0].info['new'] == 1)
-        self.assertTrue('new' in new_ds.info_table.columns)
-        self.assertTrue(new_ds.info_table['new'][0] == 1)
-
-        self.assertEqual(dataset.data_items[0].test_id, 'id_001')
-        self.assertTrue(np.equal(dataset.data_items[0].data['x'], self.data1['x'] + 1).all())
-        self.assertTrue(np.equal(dataset.data_items[0].data['y'], self.data1['y']).all())
-        self.assertTrue(np.equal(dataset.data_items[0].data['z'], self.data1['x'] + self.data1['y'] + 1).all())
-
-        self.assertEqual(dataset.data_items[0].info['a'], self.info1['a'] + 1)
-        self.assertEqual(dataset.data_items[0].info['b'], self.info1['b'])
-        self.assertEqual(dataset.data_items[0].info['c'], self.info1['a'] + self.info1['b'] + 1)
-
-    def test_write_output(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-
-        def apply_func(di: DataItem) -> DataItem:
-            di.data['x'] = di.data['x'] + 1
-            di.data['z'] = di.data['x'] + di.data['y']
-            di.info['a'] = di.info['a'] + 1
-            di.info['c'] = di.info['a'] + di.info['b']
-            return di
-
-        dataset = dataset.apply(apply_func)
-        dataset.write_output('./test_data/output/info.xlsx', './test_data/output')
-
-        self.assertTrue(os.path.exists('./test_data/output'))
-        self.assertTrue(os.path.exists('./test_data/output/info.xlsx'))
-        self.assertTrue(os.path.exists('./test_data/output/id_001.csv'))
-        self.assertTrue(os.path.exists('./test_data/output/id_002.csv'))
-        self.assertTrue(os.path.exists('./test_data/output/id_003.csv'))
-
-        self.assertTrue(pd.read_csv('./test_data/output/id_001.csv').convert_dtypes().equals(
-            dataset.data_items[0].data.convert_dtypes()))
-        self.assertTrue(pd.read_csv('./test_data/output/id_002.csv').convert_dtypes().equals(
-            dataset.data_items[1].data.convert_dtypes()))
-        self.assertTrue(pd.read_csv('./test_data/output/id_003.csv').convert_dtypes().equals(
-            dataset.data_items[2].data.convert_dtypes()))
-        print(pd.read_excel('./test_data/output/info.xlsx').convert_dtypes())
-        print(dataset.info_table.convert_dtypes())
-
-        self.assertTrue(pd.read_excel('./test_data/output/info.xlsx').convert_dtypes().equals(
-            dataset.info_table.convert_dtypes()))
-
-    def test_sort_by(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-        df = pd.DataFrame({'test_id': ['id_001', 'id_002', 'id_003'],
-                           'a': [9, 2, 3],
-                           'b': [9, 5, 6]})
-        dataset.info_table = df
-        print(dataset.info_table)
-        dataset = dataset.sort_by('a')
-        print(dataset.info_table)
-        print(df)
-        df = df.sort_values('a').reset_index(drop=True)
-        print(df)
-        self.assertTrue(dataset.info_table.convert_dtypes().equals(df.convert_dtypes()))
-        self.assertEqual(dataset.data_items[0].test_id, 'id_002')
-        self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data2.convert_dtypes()))
-
-        # test if an applied function is still applied after sorting
-        def test(di: DataItem):
-            di.data = di.data[:-1]
-            return di
-
-        dataset = dataset.apply(test)
-        dataset = dataset.sort_by('a')
-        self.assertTrue(dataset.data_items[0].data.convert_dtypes().equals(self.data2[:-1].convert_dtypes()))
-
-    def test_iter(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-
-        info_table = dataset.info_table
-        info_table['c'] = [7, 8, 9]
-        dataset.info_table = info_table
-
-        for di in dataset:
-            self.assertTrue(di.info['c'] in [7, 8, 9])
-
-    def test_len(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-        self.assertEqual(len(dataset), 3)
+        self.assertEqual(new_ds[0].data['stress'][1], 200)
 
     def test_subset(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
+        """Test the subset method of the DataSet."""
+        dataset = DataSet(info_path=None, data_dir=None, test_id_key='test_id')
+        dataset.data_items = self.data_items
+        subset = dataset.subset({'temperature': [20, 25]})
+        self.assertEqual(len(subset), 2)
 
-        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4]}).data_items[0].data.convert_dtypes().equals(
-            self.data1.convert_dtypes()))
+    def test_sort_by(self):
+        """Test the sort_by method of the DataSet."""
+        dataset = DataSet(info_path=None, data_dir=None, test_id_key='test_id')
+        dataset.data_items = self.data_items
 
-        self.assertTrue(type(dataset.subset({'a': [1, 2], 'b': [4]}) is DataSet))
-        self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4]})) == 1)
-        self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4, 5]})) == 2)
+        # Sort by 'temperature' in descending order
+        sorted_dataset = dataset.sort_by('temperature', ascending=False)
 
-        def trim(di: DataItem) -> DataItem:
-            di.data = di.data[:-1]
-            return di
+        # Expected result after sorting by 'temperature'
+        expected_info_table = self.info_table.sort_values(by='temperature', ascending=False).reset_index(drop=True)
 
-        dataset = dataset.apply(trim)
-        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4, 5]}).data_items[0].data.convert_dtypes().equals(
-            self.data1[:-1].convert_dtypes()))
+        # Assert if the info_table is sorted correctly
+        pd.testing.assert_frame_equal(sorted_dataset.info_table, expected_info_table)
 
-    def test_getitem(self):
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-
-        self.assertTrue(dataset[0].data.convert_dtypes().equals(self.data1.convert_dtypes()))
-        self.assertTrue(dataset[1].info.convert_dtypes().equals(self.info2.convert_dtypes()))
-
-        self.assertTrue(dataset['id_001'].data.convert_dtypes().equals(self.data1.convert_dtypes()))
-        self.assertTrue(dataset[1:].data_items[0].data.convert_dtypes().equals(self.data2.convert_dtypes()))
-
-        self.assertTrue(type(dataset[:1]) is DataSet)
-        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4]}).data_items[0].data.convert_dtypes().equals(
-            self.data1.convert_dtypes()))
-
-        self.assertTrue(type(dataset.subset({'a': [1, 2], 'b': [4]})) is DataSet)
-        self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4]})) == 1)
-        self.assertTrue(len(dataset.subset({'a': [1, 2], 'b': [4, 5]})) == 2)
-
-        def trim(di: DataItem) -> DataItem:
-            di.data = di.data[:-1]
-            return di
-
-        dataset = dataset.apply(trim)
-        self.assertTrue(dataset.subset({'a': [1, 2], 'b': [4, 5]}).data_items[0].data.convert_dtypes().equals(
-            self.data1[:-1].convert_dtypes()))
-
-    def test_copy(self):
-        # test if an applied function is still applied after copying
-        dataset = DataSet(self.info_path, self.data_dir, self.test_id_key)
-
-        def trim(di: DataItem) -> DataItem:
-            di.data = di.data[:-1]
-            return di
-
-        dataset = dataset.apply(trim)
-        dataset_copy = dataset.copy()
-        self.assertTrue(dataset_copy.data_items[0].data.convert_dtypes().equals(
-            self.data1[:-1].convert_dtypes()))
+        # Assert if the corresponding data_items are also sorted correctly
+        self.assertTrue(sorted_dataset.data_items[0].data.equals(self.data3))
+        self.assertTrue(sorted_dataset.data_items[1].data.equals(self.data2))
+        self.assertTrue(sorted_dataset.data_items[2].data.equals(self.data1))

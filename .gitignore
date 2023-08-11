@@ -48,6 +48,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.idea
+workspace.xml
 
 # mkdocs documentation
 /site

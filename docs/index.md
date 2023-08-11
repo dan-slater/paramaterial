@@ -1,6 +1,7 @@
 # Paramaterial Documentation
 
 ![Paramaterial logo](https://github.com/dan-slater/paramaterial/blob/main/docs/img/paramaterial-logo.png?raw=true)
+
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/paramaterial)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/paramaterial)
