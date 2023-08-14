@@ -1,4 +1,4 @@
-__version__ = '0.0.11'
+__version__ = '0.0.13'
 from paramaterial import example, models
 from paramaterial.example import download_example
 from paramaterial.plug import DataItem, DataSet
@@ -8,6 +8,6 @@ from paramaterial.models import *
 from paramaterial.plotting import *
 from paramaterial.screening import *
 from paramaterial.modelling import *
-from paramaterial.representing import *
+from paramaterial.aggregating import *
 from paramaterial.receipts import TestReceipts
 

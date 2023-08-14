@@ -2,6 +2,7 @@
 import copy
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Dict, Callable, List, Any, Union, Optional
 
 import pandas as pd
@@ -128,6 +129,9 @@ class DataSet:
         self.data_items = new_data_items
 
     def write_output(self, info_path: str, data_dir: str) -> None:
+        # Create the data directory if it doesn't exist
+        Path(data_dir).mkdir(parents=True, exist_ok=True)
+
         _write_file(self.info_table, info_path)
         for di in self.data_items:
             _write_file(di.data, f'{data_dir}/{di.test_id}.csv')
