@@ -36,15 +36,16 @@ nav:
   - Example:
       - Basic Usage: example/paramaterial-basic-usage.ipynb
   - Reference:
-      - reference/aggregate.md
       - reference/example.md
-      - reference/models.md
-      - reference/plotting.md
+      - reference/preparing.md
       - reference/plug.md
-      - reference/prep.md
-      - reference/proc_ops.md
-      - reference/receipts.md
+      - reference/plotting.md
+      - reference/processing.md
       - reference/screening.md
+      - reference/aggregating.md
+      - reference/modelling.md
+      - reference/models.md
+      - reference/receipts.md
 
 extra_css:
   - stylesheets/extra.css

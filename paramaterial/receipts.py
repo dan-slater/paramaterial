@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Union, Callable
 
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
-from PyPDF2 import PdfFileMerger
+from PyPDF2 import PdfMerger
 from jinja2 import Environment, FileSystemLoader, meta
 from matplotlib import pyplot as plt
 
@@ -120,7 +120,7 @@ class TestReceipts:
 
         # merge pdfs
         pdfs = [os.path.join(receipts_dir, di.test_id, f'{di.test_id}_receipt.pdf') for di in ds.data_items]
-        merger = PdfFileMerger()
+        merger = PdfMerger()
         for pdf in pdfs:
             merger.append(pdf)
         merger.write(receipts_path)

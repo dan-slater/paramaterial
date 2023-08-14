@@ -4,11 +4,11 @@ import shutil
 import requests
 
 BASE_URL = 'https://github.com/dan-slater/paramaterial-examples/raw/main/examples'
-EXAMPLE_NAMES = ['dan_msc_basic_usage_0.1.0', 'dan_msc_cs1_0.1.0.tar.gz', 'dan_msc_cs2_0.1.0.tar.gz',
-                 'dan_msc_cs3_0.1.0.tar.gz', 'dan_msc_cs4_0.1.0.tar.gz']
+EXAMPLE_NAMES = ['dan_msc_basic_usage_0.1.0', 'dan_msc_cs1_0.1.0', 'dan_msc_cs2_0.1.0',
+                 'dan_msc_cs3_0.1.0', 'dan_msc_cs4_0.1.0']
 
 
-def download_example(to_directory: str, example_name: str):
+def download_example(example_name: str, to_directory: str = './'):
     """Download example data and Jupyter Notebook to the specified directory.
 
     Args:
