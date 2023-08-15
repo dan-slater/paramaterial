@@ -1,5 +1,12 @@
 """
 Module for modelling materials test data.
+
+This module provides functionalities to parameterize mechanical test data by fitting constitutive models to the data.
+It includes classes to fit mathematical models to materials test data and predict material behavior. The module integrates
+with the `plug` module for data handling.
+
+Classes:
+    - ModelSet: Acts as a model DataSet, used to fit, collect, and predict using constitutive models.
 """
 import copy
 import os
@@ -48,7 +55,6 @@ def _error_norm(y_data: np.ndarray, y_model: np.ndarray) -> float:
 
 
 class ModelTable:
-    """Class that fits a model between info_table columns."""
 
     def __init__(self,
                  model_func: Callable[[np.ndarray, Tuple[float]], np.ndarray],
@@ -94,7 +100,35 @@ class ModelTable:
 
 
 class ModelSet:
-    """Class that acts as model DataSet."""
+    """
+    Class that acts as a model DataSet, providing functionalities to fit, collect, and predict constitutive models
+    for material behavior.
+
+    This class is designed to fit mathematical models to mechanical test data and make predictions based on the fitted
+    parameters. It integrates with the DataSet and DataItem classes for handling data.
+
+    Attributes:
+        model_func (Callable): A function defining the mathematical model to be fitted. It should accept an array of
+                               x-values and a tuple of variables and parameters, and return an array of y-values.
+        variable_names (List[str]): List of variable names that may be used in the model_func.
+        param_names (List[str]): List of parameter names for the model.
+        bounds (List[Tuple[float, float]]): Bounds for the model parameters.
+        initial_guess (Tuple[float]): Initial guess for the model parameters.
+        sample_range (Tuple[float, float]): Range of samples for fitting.
+        sample_size (int): Size of the sample data.
+        model_id_key (str): Key for the model ID.
+        fitting_table (pd.DataFrame): Pandas DataFrame storing the fitting results.
+
+    Examples:
+        >>> import paramaterial as pam
+        >>> from paramaterial import DataSet, DataItem, ModelSet
+        >>> model_func = pam.models.linear
+        >>> param_names = ['E', 's_y']
+        >>> ms = ModelSet(model_func=model_func, param_names=param_names)
+        >>> ds = DataSet(info_path='info.csv', data_dir='data/')
+        >>> ms.fit_to(ds, x_key='strain', y_key='stress', sample_range=(0.0, 0.05), sample_size=100)
+        >>> prediction_ds = ms.predict(xmin=0, xmax=0.05)
+    """
 
     def __init__(self,
                  model_func: Callable[[np.ndarray, Tuple[float]], np.ndarray],
@@ -125,6 +159,26 @@ class ModelSet:
 
     def fit_to(self, ds: DataSet, x_key: str, y_key: str, sample_range: Tuple[float, float] = (None, None),
                sample_size: int = 50, **scipy_method_kwargs):
+        """
+    Fits the model to a given DataSet using the specified x and y keys for the independent and dependent variables.
+
+    Args:
+        ds (DataSet): The DataSet containing the data to be fitted.
+        x_key (str): The key for the independent variable (e.g., 'strain').
+        y_key (str): The key for the dependent variable (e.g., 'stress').
+        sample_range (Tuple[float, float], optional): The range of samples for fitting. Defaults to (None, None).
+        sample_size (int, optional): The size of the sample data. Defaults to 50.
+        **scipy_method_kwargs: Additional keyword arguments to pass to the SciPy optimization method.
+
+    Returns:
+        None: Updates the fitting_table attribute with the fitting results.
+
+    Examples:
+        >>> model_func = lambda x, args: args[0] * x + args[1]  # Example linear model
+        >>> model_set = ModelSet(model_func, var_names=['a', 'b'], param_names=['slope', 'intercept'])
+        >>> ds = DataSet()  # Assume this is a pre-loaded DataSet with 'strain' and 'stress' columns
+        >>> model_set.fit_to(ds, x_key='strain', y_key='stress')
+    """
         # Set the keys
         self.x_col = x_key
         self.y_col = y_key
@@ -137,7 +191,23 @@ class ModelSet:
                 xmax: Optional[float] = None,
                 info_table: Optional[pd.DataFrame] = None,
                 model_id_key: str = 'model_id'):
+        """
+        Makes predictions based on the fitted model over a specified x-range.
 
+        Args:
+            x_range (Tuple[float, float, float], optional): Range for prediction in the form (xmin, xmax, step).
+            xmin (float, optional): Minimum x value for prediction.
+            xmax (float, optional): Maximum x value for prediction.
+            info_table (pd.DataFrame, optional): Information table containing parameters and variables.
+            model_id_key (str, optional): Key for the model ID. Defaults to 'model_id'.
+
+        Returns:
+            DataSet: A DataSet containing the predicted values.
+
+        Examples:
+            >>> x_range = (0, 10, 0.1)  # Define x range for prediction
+            >>> predicted_ds = model_set.predict(x_range=x_range)
+        """
         # If x_range is not provided, check for xmin and xmax
         if x_range is None:
             if xmin is None or xmax is None:
@@ -175,6 +245,7 @@ class ModelSet:
 
     def fit_items(self, ds: DataSet, sample_range: Tuple[float, float] = (None, None), sample_size: int = 50,
                   scipy_method: str = 'minimize', **scipy_method_kwargs):
+
         self.sample_range = sample_range
         self.sample_size = sample_size
         # fit each DataItem and add a row to fitting_table for each
@@ -205,6 +276,7 @@ class ModelSet:
 
     def predict_ds(self, x_range: Tuple[float, float, float], info_table: Optional[pd.DataFrame] = None,
                    model_id_key: str = 'model_id'):
+
         if info_table is None:
             info_table = self.fitting_table
         # generate DataItems for each row of info_table

@@ -18,9 +18,9 @@ from paramaterial.preparing import experimental_matrix
 def configure_plt_formatting():
     plt.style.use('seaborn-dark')
     # mpl.rcParams['axes.facecolor'] = '#f0e6e6'
-    mpl.rcParams['text.usetex'] = False
-    mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
-    mpl.rcParams["font.family"] = "Times New Roman"
+    # mpl.rcParams['text.usetex'] = False
+    # mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
+    # mpl.rcParams["font.family"] = "Times New Roman"
     FONTSIZE = 11
     plt.rc('font', size=FONTSIZE)
     plt.rc('axes', titlesize=FONTSIZE, labelsize=FONTSIZE)

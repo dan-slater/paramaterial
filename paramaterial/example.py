@@ -1,4 +1,31 @@
-"""Module for functions that are used to set up the examples."""
+"""
+The example module is designed to facilitate the downloading and setup of predefined examples for the Paramaterial
+library.
+
+Function:
+    - `download_example`: A function to download a specified example, extract its content, and save it to a
+    designated directory.
+
+Currently Available Examples:
+    - 'dan_msc_basic_usage_0.1.0'
+    - 'dan_msc_cs1_0.1.0'
+    - 'dan_msc_cs2_0.1.0'
+    - 'dan_msc_cs3_0.1.0'
+    - 'dan_msc_cs4_0.1.0'
+
+Examples:
+    >>> # Download the 'dan_msc_basic_usage_0.1.0' example to the current directory
+    >>> from paramaterial import download_example
+    >>> download_example('dan_msc_basic_usage_0.1.0')
+
+About the Example Repository:
+    The examples are hosted in a GitHub repository and include datasets, notebooks, and other assets that showcase
+    the functionality and capabilities of the Paramaterial library. These examples can be downloaded and run locally,
+    providing an interactive way to explore and learn about the library.
+
+    The `download_example` function allows users to fetch any of the available examples by name. It takes care of
+    downloading and extracting the data, info, and notebook files to the specified directory.
+"""
 import os
 import shutil
 import requests
@@ -9,11 +36,26 @@ EXAMPLE_NAMES = ['dan_msc_basic_usage_0.1.0', 'dan_msc_cs1_0.1.0', 'dan_msc_cs2_
 
 
 def download_example(example_name: str, to_directory: str = './'):
-    """Download example data and Jupyter Notebook to the specified directory.
+    """Download and extract an example from the Paramaterial example repository.
 
     Args:
-        to_directory (str): The directory to download the example to.
-        example_name (str): The name of the example to download.
+        example_name: The name of the example to download. Must be one of the predefined
+            examples available in the Paramaterial example repository. Examples include:
+
+            - 'dan_msc_basic_usage_0.1.0'
+            - 'dan_msc_cs1_0.1.0'
+            - 'dan_msc_cs2_0.1.0'
+            - 'dan_msc_cs3_0.1.0'
+            - 'dan_msc_cs4_0.1.0'
+        to_directory: The directory to download and extract the example to.
+
+    Raises:
+        ValueError: If the specified example_name is not recognized.
+        Exception: If an error occurs during the download or extraction process.
+
+    Examples:
+        >>> download_example('dan_msc_basic_usage_0.1.0')
+        Example dan_msc_basic_usage_0.1.0 downloaded to ./
     """
 
     # Check if the example name is recognized
@@ -52,6 +94,4 @@ def download_example(example_name: str, to_directory: str = './'):
     except Exception as e:
         print(f"An error occurred while deleting file : {e}")
 
-
-if __name__ == '__main__':
-    download_example(to_directory='examples', example_name='dan_msc_basic_usage_0.1.0')
+    print(f"Example {example_name} downloaded to {to_directory}")

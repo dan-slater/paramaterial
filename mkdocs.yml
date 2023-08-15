@@ -11,12 +11,11 @@ theme:
     - navigation.sections
     - navigation.expand
     - toc.integrate
-    #    - navigation.top
-    - search.suggest
-    - search.highlight
+    - navigation.top
+#    - search.highlight
     - navigation.instant
-    - header.autohide
-  custom_dir: docs/overrides
+    - content.code.copy
+    - content.code.prettify
 
 plugins:
   - search
@@ -27,14 +26,6 @@ plugins:
 
 nav:
   - Home: index.md
-  - How-To Guides:
-      - how_to_guides/apply_proc_op.md
-      - how_to_guides/fit_model.md
-      - how_to_guides/make_repr_data.md
-      - how_to_guides/use_screening_pdf.md
-      - how_to_guides/zener_holloman_eg.ipynb
-  - Example:
-      - Basic Usage: example/paramaterial-basic-usage.ipynb
   - Reference:
       - reference/example.md
       - reference/preparing.md
@@ -53,6 +44,13 @@ extra_css:
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 extra_javascript:
   - javascripts/mathjax.js

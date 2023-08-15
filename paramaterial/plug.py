@@ -1,4 +1,42 @@
-""" In charge of handling data and executing I/O. """
+"""
+This module is responsible for handling data and executing I/O within the Paramaterial library.
+
+The central components of the plug module are the DataSet and DataItem classes:
+    - `DataItem`: A data structure that encapsulates a single test's information and data. A `DataItem` object holds:
+        - `test_id`: A string identifier for the test.
+        - `data`: A pandas DataFrame containing the test data.
+        - `info`: A pandas Series containing the metadata associated with the test.
+    - `DataSet`: A container class that manages a collection of `DataItem` objects. It provides various methods for
+    managing and manipulating the data, including reading from files, writing to files, filtering, sorting, and applying
+    custom functions.
+
+Key Interactions between DataSet and DataItem:
+    - Loading Data: A `DataSet` is initialized by providing paths to metadata and data files. It reads the files and
+    constructs a collection of `DataItem` objects.
+    - Accessing Data: You can access individual `DataItem` objects within a `DataSet` using index-based or test_id-based
+    access through the `__getitem__` method.
+    - Applying Functions: You can use the `apply` method in the `DataSet` class to apply a custom function to each
+    `DataItem`. This enables complex data transformations and analyses.
+    - Iterating: The `DataSet` class supports iteration over its `DataItem` objects, allowing you to loop through the
+    data items using a standard `for` loop.
+    - Writing Data: The `write_output` method allows you to save the information in the `DataSet` back to files,
+    preserving changes made to the `DataItem` objects.
+
+Examples:
+    >>> # Load a DataSet from files
+    >>> ds = DataSet('info.xlsx', 'data')
+    >>> # Access a specific DataItem by test_id
+    >>> di = ds['T01']
+    >>> # Apply a custom function to all DataItems
+    >>> def custom_function(di: DataItem) -> DataItem:
+    ...     di.data['Stress_MPa'] *= 2
+    ...     di.info['max_stress'] = di.data['Stress_MPa'].max()
+    ...     return di
+    >>> ds_modified = ds.apply(custom_function)
+    >>> # Save the DataSet to new files
+    >>> ds_modified.write_output('new_info.xlsx', 'new_data')
+"""
+
 import copy
 import os
 from dataclasses import dataclass, field
@@ -10,8 +48,6 @@ from tqdm import tqdm
 
 
 class UnsupportedExtensionError(Exception):
-    """Exception raised when an unsupported file extension is encountered."""
-
     def __init__(self, extension, message="Unsupported file extension."):
         self.extension = extension
         self.message = message
@@ -56,17 +92,37 @@ def _write_file(df: pd.DataFrame, path: str) -> None:
 
 @dataclass
 class DataItem:
+    """A storage class for data and metadata related to a single test.
+
+    Attributes:
+        test_id: The unique identifier for the test.
+        data: A pandas DataFrame containing the data related to the test.
+        info: A pandas Series containing metadata related to the test.
+    """
     test_id: str
     data: pd.DataFrame
     info: pd.Series
 
 
 class DataSet:
-    """A class for handling data.
+    """A class for handling data, loading from files, and performing various operations.
+
+    The DataSet class provides functionality for loading data from specified files, manipulating the data,
+    and writing output. It contains a collection of DataItem objects, each representing a single test.
+
     Args:
-        info_path: The path to the info table file.
+        info_path: The path to the info table file containing metadata.
         data_dir: The directory containing the data files.
-        test_id_key: The column name in the info table that contains the test ids.
+        test_id_key: The column name in the info table that contains the test IDs.
+
+    Examples:
+        >>> ds = DataSet(info_path='info/01_prepared_info.xlsx', data_dir='data/01_prepared_data')
+        >>> len(ds)
+        10
+
+    Raises:
+        ValueError: If only one of info_path and data_dir is specified.
+        FileNotFoundError: If a file is not found for a given test_id.
     """
 
     def __init__(self, info_path: Optional[str] = None, data_dir: Optional[str] = None, test_id_key: str = 'test_id'):
@@ -129,6 +185,18 @@ class DataSet:
         self.data_items = new_data_items
 
     def write_output(self, info_path: str, data_dir: str) -> None:
+        """Write the DataSet to files.
+
+        Args:
+            info_path: The path to the info table file to be written.
+            data_dir: The directory to write the data files to.
+
+        Examples:
+            >>> ds.write_output(info_path='info/processed_info.xlsx', data_dir='data/processed_data')
+
+        Raises:
+            FileNotFoundError: If the data_dir does not exist.
+        """
         # Create the data directory if it doesn't exist
         Path(data_dir).mkdir(parents=True, exist_ok=True)
 
@@ -137,6 +205,15 @@ class DataSet:
             _write_file(di.data, f'{data_dir}/{di.test_id}.csv')
 
     def __iter__(self):
+        """Iterate over the DataItems in the DataSet.
+
+        Yields:
+            DataItem: The next DataItem in the DataSet.
+
+        Examples:
+            >>> for di in ds:
+            ...     print(di.test_id)
+        """
         for test_id in tqdm(self.info_table[self.test_id_key].tolist(), unit='DataItems', leave=False):
             data_item = next((di for di in self.data_items if di.test_id == test_id), None)
             if data_item is None:
@@ -144,17 +221,53 @@ class DataSet:
             yield data_item
 
     def apply(self, func: Callable[[DataItem, Dict], DataItem], **kwargs) -> 'DataSet':
+        """Apply a function to each DataItem in the DataSet and return a new DataSet with the results.
+
+        Args:
+            func: The function to apply to each DataItem. It must take a DataItem and optional keyword arguments and
+            return a DataItem.
+            **kwargs: Additional keyword arguments to pass to the function.
+
+        Returns:
+            A new DataSet containing the DataItems after applying the function.
+
+        Examples:
+            >>> def double_stress(di: DataItem) -> DataItem:
+            ...     di.data['Stress_MPa'] *= 2
+            ...     return di
+            >>> ds_doubled = ds.apply(double_stress)
+        """
         new_ds = self.copy()
         new_ds.data_items = [func(di, **kwargs) for di in copy.deepcopy(self.data_items)]
         return new_ds
 
     def copy(self) -> 'DataSet':
+        """Create a copy of the DataSet.
+
+        Returns:
+            A copy of the DataSet.
+
+        Examples:
+            >>> ds_copy = ds.copy()
+        """
         new_ds = DataSet(test_id_key=self.test_id_key)
         new_ds.data_items = [DataItem(di.test_id, di.data.copy(), di.info.copy()) for di in self.data_items]
         return new_ds
 
     def sort_by(self, column: Union[str, List[str]], ascending: bool = True) -> 'DataSet':
-        """Sort a copy of the ds by a column in the info table and return the copy."""
+        """Sort a copy of the DataSet by a column in the info table and return the copy.
+
+        Args:
+            column: Column or list of columns to sort by.
+            ascending: Whether to sort in ascending order. (Default: True)
+
+        Returns:
+            A new DataSet sorted by the specified column(s).
+
+        Examples:
+            >>> ds = DataSet(info_path='info/prepared_info.xlsx', data_dir='data/prepared_data')
+            >>> ds_sorted = ds.sort_by('temperature')
+        """
         new_ds = self.copy()
 
         if isinstance(column, str):
@@ -169,6 +282,22 @@ class DataSet:
         return new_ds
 
     def __getitem__(self, specifier: Union[int, str, slice]) -> Union[List[DataItem], DataItem]:
+        """Get a DataItem or a list of DataItems by index, test_id, or slice.
+
+        Args:
+            specifier: An int for index-based access, a str for test_id-based access, or a slice for slicing.
+
+        Returns:
+            A DataItem or a list of DataItems depending on the specifier.
+
+        Examples:
+            >>> di = ds[0]         # Get the first DataItem
+            >>> di = ds['T01']     # Get the DataItem with test_id='T01'
+            >>> dis = ds[0:5]      # Get the first five DataItems
+
+        Raises:
+            ValueError: If an invalid specifier type is provided.
+        """
         if isinstance(specifier, int):
             return self.data_items[specifier]
         elif isinstance(specifier, str):
@@ -180,6 +309,20 @@ class DataSet:
                 f'Invalid ds[<specifier>] specifier type: {type(specifier)}. Must be int, str (test_id), or slice.')
 
     def subset(self, filter_dict: Dict[str, Union[str, List[Any]]]) -> 'DataSet':
+        """Create a subset of the DataSet based on specified filters.
+
+        Args:
+            filter_dict: A dictionary containing column names as keys and values or list of values to filter by.
+
+        Returns:
+            A new DataSet containing only the filtered DataItems.
+
+        Examples:
+            >>> ds_tensile = ds.subset({'test_type': ['T']})
+
+        Raises:
+            ValueError: If an invalid filter key is provided.
+        """
         new_ds = self.copy()
         for key, value in filter_dict.items():
             if key not in new_ds.info_table.columns:

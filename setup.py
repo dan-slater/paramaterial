@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = '0.0.13'
+VERSION = '0.1.1'
 DESCRIPTION = 'Software toolkit for parameterising materials test data. ' \
               'Easily batch process experimental measurements to determine mechanical properties and material model ' \
               'parameters.'
