@@ -2,87 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://dan-slater.github.io/paramaterial/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/ParaMat%20Manifesto/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/aggregating/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/architectural%20design/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/example/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/getting%20started/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/modelling/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/how-to%20guides/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/models/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/manifesto/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/plotting/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/modelling/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/plug/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/plotting/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/preparing/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/plug/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/processing/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/preparing/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/receipts/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://dan-slater.github.io/paramaterial/processing/</loc>
-         <lastmod>2023-03-17</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://dan-slater.github.io/paramaterial/receipts/</loc>
-         <lastmod>2023-03-17</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://dan-slater.github.io/paramaterial/screening/</loc>
-         <lastmod>2023-03-17</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://dan-slater.github.io/paramaterial/vision/</loc>
-         <lastmod>2023-03-17</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://dan-slater.github.io/paramaterial/example/paramaterial-basic-usage/</loc>
-         <lastmod>2023-03-17</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://dan-slater.github.io/paramaterial/how_to_guides/apply_proc_op/</loc>
-         <lastmod>2023-03-17</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://dan-slater.github.io/paramaterial/how_to_guides/zener_holloman_eg/</loc>
-         <lastmod>2023-03-17</lastmod>
+         <loc>https://dan-slater.github.io/paramaterial/reference/screening/</loc>
+         <lastmod>2023-08-15</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
