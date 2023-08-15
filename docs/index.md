@@ -23,19 +23,40 @@ used to determine material properties and constitutive model parameters.
 
 * **PyPI**: [https://pypi.org/project/paramaterial/](https://pypi.org/project/paramaterial/)
 
+* **Examples**: [https://github.com/dan-slater/paramaterial-examples](https://github.com/dan-slater/paramaterial-examples)
+
 The package was designed to help improve the quality and quantity of data available for materials modeling and
 simulation. It is hoped that using Paramaterial will help improve repeatability and reproducibility of materials test
 data analyses, and help to reduce the time and effort required to perform such analyses.
 
-## Usage
-
-Usage of the toolkit is demonstrated in the [example]() notebook.
 
 ## Installation
 
 ```shell
 pip install paramaterial
 ```
+
+## Usage
+
+Please see the [API reference](reference/example.md) for details on the toolkit's
+functions and classes.
+
+Usage examples are available in the [examples repository](https://github.com/dan-slater/paramaterial-examples).
+These examples can be downloaded using the `download_example` function:
+
+```python
+# Download the basic usage example to the current directory
+from paramaterial import download_example
+download_example('dan_msc_basic_usage_0.1.0')
+# Other examples are also currently available:
+# download_example('dan_msc_cs1_0.1.0')
+# download_example('dan_msc_cs2_0.1.0')
+# download_example('dan_msc_cs3_0.1.0')
+# download_example('dan_msc_cs4_0.1.0')
+```
+
+The examples include datasets, notebooks, and other assets that showcase the functionality and capabilities of the Paramaterial library. These examples can be downloaded and run locally, providing an interactive way to explore and learn about the library.
+For more details see the documentation for the `download_example` function at [reference/example](reference/example.md).
 
 ## Contributing
 
