@@ -2,7 +2,8 @@
 Module for modelling materials test data.
 
 This module provides functionalities to parameterize mechanical test data by fitting constitutive models to the data.
-It includes classes to fit mathematical models to materials test data and predict material behavior. The module integrates
+It includes classes to fit mathematical models to materials test data and predict material behavior. The module
+integrates
 with the `plug` module for data handling.
 
 Classes:
@@ -154,7 +155,7 @@ class ModelSet:
         #     columns=[model_id_key] + ['var_' + var_name for var_name in var_names] +
         #             ['param_' + param_name for param_name in param_names] + ['error'])
         self.fitting_table: pd.DataFrame = pd.DataFrame(
-            columns=[model_id_key] + ['var_' + var_name for var_name in var_names] +
+            columns=[model_id_key] + [var_name for var_name in var_names] +
                     [param_name for param_name in param_names] + ['error'])
 
     def fit_to(self, ds: DataSet, x_key: str, y_key: str, sample_range: Tuple[float, float] = (None, None),
@@ -183,6 +184,31 @@ class ModelSet:
         self.x_col = x_key
         self.y_col = y_key
 
+        # calculate overall max and min values
+        if sample_range[0] is None:
+            xmin = ds.data_items[0].data[x_key].min()
+        else:
+            xmin = sample_range[0]
+
+        if sample_range[1] is None:
+            xmax = ds.data_items[0].data[x_key].max()
+        else:
+            xmax = sample_range[1]
+
+        for di in ds:
+            x_data = di.data[x_key].values
+            y_data = di.data[y_key].values
+            if sample_range[0] is not None and sample_range[1] is not None:
+                mask = (x_data > sample_range[0]) & (x_data < sample_range[1])
+                x_data, y_data = x_data[mask], y_data[mask]
+            if x_data.min() < xmin:
+                xmin = x_data.min()
+            if x_data.max() > xmax:
+                xmax = x_data.max()
+
+        self._xmin_overall = xmin
+        self._xmax_overall = xmax
+
         # Call the existing fit method
         self.fit_items(ds, sample_range, sample_size, self.scipy_func, **scipy_method_kwargs)
 
@@ -210,10 +236,12 @@ class ModelSet:
         """
         # If x_range is not provided, check for xmin and xmax
         if x_range is None:
-            if xmin is None or xmax is None:
-                x_range = (0, 0.01, 0.0001)  # Example default value
-            else:
-                x_range = (xmin, xmax, 0.0001)  # Example step value, adjust as needed
+            if xmin is None:
+                xmin = self._xmin_overall
+            if xmax is None:
+                xmax = self._xmax_overall
+            step_size = (xmax - xmin) / 200
+            x_range = (xmin, xmax, step_size)
 
         return self.predict_ds(x_range, info_table, model_id_key)
 
@@ -252,7 +280,7 @@ class ModelSet:
         fitting_dfs = []
         pad = int(np.log10(len(ds))) + 1
         for i, di in enumerate(ds):
-            model_id = f'{self.model_id_key}_{i+1:0{pad}}'
+            model_id = f'{self.model_id_key}_{i + 1:0{pad}}'
             # run optimisation
             fitting_result = self._fit_item(di, scipy_method, **scipy_method_kwargs)
             # extract results
@@ -260,15 +288,16 @@ class ModelSet:
             error = fitting_result.fun
             variables = di.info[self.variable_names]
             # add 'var_' prefix to variable names
-            variables.index = 'var_' + variables.index
+            # variables.index = 'var_' + variables.index
             # add 'param_' prefix to param names
             # params = pd.Series(params, index='param_' + pd.Series(self.param_names))
             params = pd.Series(params, index=pd.Series(self.param_names))
             # add row to fitting_table
             # concatenate data
-            data = np.hstack([model_id, variables, params, error, di.info.to_list()]).reshape(1, -1)
+            data = np.hstack([model_id, variables, params, error, di.info.drop(self.variable_names).to_list()]).reshape(
+                1, -1)
             # define columns
-            columns = self.fitting_table.columns.tolist() + di.info.index.to_list()
+            columns = self.fitting_table.columns.tolist() + di.info.drop(self.variable_names).index.to_list()
             # create DataFrame and append
             fitting_dfs.append(pd.DataFrame(data, columns=columns))
         # concatenate fitting_dfs into fitting_table
@@ -285,7 +314,7 @@ class ModelSet:
             di_info = info_table.loc[info_table[model_id_key] == model_id, :].squeeze()
             # extract variables and optimised params from info_table
             variables_keys = self.variable_names if self.variable_names else []
-            variables_keys = ['var_' + var_key for var_key in variables_keys]
+            # variables_keys = ['var_' + var_key for var_key in variables_keys]
             # params_keys = ['param_' + param_key for param_key in self.param_names]
             params_keys = [param_key for param_key in self.param_names]
             variables_and_params = di_info[variables_keys + params_keys].to_list()
@@ -299,6 +328,14 @@ class ModelSet:
         ds.data_items = model_items
         ds.info_table = info_table
         return ds
+
+    @property
+    def fitting_results(self):
+        """Returns a DataFrame containing the fitting results, including values for variables, optimised parameters,
+        and fitting error"""
+        variables_keys = self.variable_names if self.variable_names else []
+        params_keys = self.param_names
+        return self.fitting_table[['model_id'] + variables_keys + params_keys + ['error']]
 #
 # class ModelSet:
 #     """Class that acts as model DataSet."""
