@@ -14,16 +14,17 @@ import seaborn as sns
 from paramaterial.plug import DataItem, DataSet
 from paramaterial.preparing import experimental_matrix
 
+FONTSIZE = 9
+
 
 def configure_plt_formatting():
     plt.style.use('seaborn-dark')
     # mpl.rcParams['axes.facecolor'] = '#f0e6e6'
     # mpl.rcParams['text.usetex'] = False
     # mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
-    # mpl.rcParams["font.family"] = "Times New Roman"
-    FONTSIZE = 11
+    mpl.rcParams["font.family"] = "serif"
     plt.rc('font', size=FONTSIZE)
-    plt.rc('axes', titlesize=FONTSIZE, labelsize=FONTSIZE)
+    plt.rc('axes', titlesize=FONTSIZE, labelsize=FONTSIZE-1)
     plt.rc('xtick', labelsize=FONTSIZE - 1)
     plt.rc('ytick', labelsize=FONTSIZE - 1)
     plt.rc('legend', fontsize=FONTSIZE - 1)
@@ -191,7 +192,7 @@ def dataset_plot(
     Returns: The axis the plot was made on.
     """
     if ax is None:
-        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (4, 3)))
+        fig, (ax) = plt.subplots(1, 1, figsize=kwargs.get('figsize', (4.2, 3.6)))
     kwargs['ax'] = ax
 
     if ax.get_legend() is not None and plot_legend:
@@ -296,7 +297,7 @@ def dataset_subplots(
     if row_titles is not None:
         for ax, row_title in zip(axs[:, 0], row_titles):
             ax.annotate(row_title, xy=(0, 0.5), xytext=(-ax.yaxis.labelpad - 5, 0), xycoords=ax.yaxis.label,
-                        textcoords='offset points', ha='right', va='center', rotation=90, fontsize=11)
+                        textcoords='offset points', ha='right', va='center', rotation=90, fontsize=FONTSIZE)
 
     if col_titles is not None:
         for ax, column_title in zip(axs[0, :], col_titles):
