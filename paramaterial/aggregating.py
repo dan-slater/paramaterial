@@ -123,8 +123,10 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_
         if repres_subset.info_table.empty:
             continue
         # add row to repr_info_table
-        repr_info_table = pd.concat([repr_info_table, pd.DataFrame(
-            {'repres_id': [repres_id], **subset_filter, 'nr averaged': [len(repres_subset)]})])
+        repr_info_table = pd.concat([repr_info_table.dropna(axis=1, how='all'),
+                                     pd.DataFrame({'repres_id': [repres_id],
+                                                   **subset_filter,
+                                                   'nr averaged': [len(repres_subset)]})])
 
         # add means of group info columns to repr_info_table
         if group_info_cols is not None:
@@ -204,10 +206,12 @@ def make_representative_info(ds: DataSet, group_by_keys: List[str], group_info_c
         (PS), Ultimate Tensile Strength (UTS), for each temperature and material type:
 
         >>> import paramaterial as pam
-        >>> table = pam.make_representative_info(ds, group_by_keys=['temperature', 'material'], group_info_cols=['E', 'PS', 'UTS'])
+        >>> table = pam.make_representative_info(ds, group_by_keys=['temperature', 'material'], group_info_cols=['E',
+        'PS', 'UTS'])
         >>> print(table.head())
 
-        The result will be a DataFrame containing representative information for each group, including the mean, standard
+        The result will be a DataFrame containing representative information for each group, including the mean,
+        standard
         deviation, maximum, minimum, and 1st and 3rd quartiles of the specified columns.
     """
     subset_filters = []
