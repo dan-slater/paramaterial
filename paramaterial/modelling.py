@@ -336,36 +336,4 @@ class ModelSet:
         variables_keys = self.variable_names if self.variable_names else []
         params_keys = self.param_names
         return self.fitting_table[['model_id'] + variables_keys + params_keys + ['error']]
-#
-# class ModelSet:
-#     """Class that acts as model DataSet."""
-#
-#     def __init__(self,
-#                  model_func: Callable[[np.ndarray, Tuple[float]], np.ndarray],
-#                  x_col: str,
-#                  y_col: str,
-#                  param_names: List[str],
-#                  variable_names: List[str] = None,
-#                  bounds: List[Tuple[float, float]] = None,
-#                  initial_guess: Tuple[float] = None,
-#                  sample_range: Tuple[float, float] = (None, None),
-#                  sample_size: int = 50,
-#                  model_id_key: str = 'model_id'
-#                  ):
-#         self.model_func = model_func
-#         self.x_col = x_col
-#         self.y_col = y_col
-#         self.variable_names = variable_names
-#
-#         self.param_names = param_names
-#         self.bounds = bounds
-#         self.initial_guess = initial_guess if initial_guess else [0.0] * len(param_names)
-#         self.sample_range = sample_range
-#         self.sample_size = sample_size
-#
-#         self.model_id_key = model_id_key
-#         self.fitting_table: pd.DataFrame = pd.DataFrame(
-#             columns=[model_id_key] + ['var_' + var_name for var_name in variable_names] +
-#                     ['param_' + param_name for param_name in param_names] + ['error'])
-#
-#
+
