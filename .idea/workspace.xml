@@ -4,34 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="38d0a4ca-8e28-491c-bb26-f3aa489327f8" name="Changes" comment="msc commit pre- final checks">
+    <list default="true" id="38d0a4ca-8e28-491c-bb26-f3aa489327f8" name="Changes" comment="Updated readme to match updated docs for examiners received submission">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/info/00 backup info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/info/01 prepared info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/info/02 processed info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/info/02 rejected items.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/info/03 temp repres info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/info/foot correction screening marked.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/info/foot correction screening.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/example/paramaterial-basic-usage.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/how-to guides.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/how_to_guides/apply_proc_op.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/how_to_guides/info/zh_eg_info.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/how_to_guides/zener_holloman_eg.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/overrides/main.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/reference/aggregating.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/reference/aggregating.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/reference/modelling.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/reference/modelling.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/reference/preparing.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/reference/preparing.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/reference/processing.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/reference/processing.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/vision.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mkdocs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mkdocs.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/aggregating.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/aggregating.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/example.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/example.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plotting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/plug.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plug.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -82,7 +59,9 @@
       <workItem from="1692003373026" duration="1758000" />
       <workItem from="1692028317344" duration="169000" />
       <workItem from="1692089817015" duration="3175000" />
-      <workItem from="1692107847972" duration="8957000" />
+      <workItem from="1692107847972" duration="9990000" />
+      <workItem from="1693290533049" duration="965000" />
+      <workItem from="1693496761591" duration="4878000" />
     </task>
     <task id="LOCAL-00001" summary="msc commit pre- final checks">
       <option name="closed" value="true" />
@@ -100,7 +79,23 @@
       <option name="project" value="LOCAL" />
       <updated>1692028474626</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="msc commit updated docs on day examiners received">
+      <option name="closed" value="true" />
+      <created>1692118022406</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1692118022406</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Updated readme to match updated docs for examiners received submission">
+      <option name="closed" value="true" />
+      <created>1692118155501</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1692118155501</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -112,6 +107,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="msc commit pre- final checks" />
-    <option name="LAST_COMMIT_MESSAGE" value="msc commit pre- final checks" />
+    <MESSAGE value="msc commit updated docs on day examiners received" />
+    <MESSAGE value="Updated readme to match updated docs for examiners received submission" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated readme to match updated docs for examiners received submission" />
   </component>
 </project>
