@@ -58,6 +58,19 @@ download_example('dan_msc_basic_usage_0.1.0')
 The examples include datasets, notebooks, and other assets that showcase the functionality and capabilities of the Paramaterial library. These examples can be downloaded and run locally, providing an interactive way to explore and learn about the library.
 For more details see the documentation for the `download_example` function at [reference/example](reference/example.md).
 
+## Overview
+
+Paramaterial is an open-source Python package for parameterising materials test
+data. Paramaterial provides functionality for the repeatable processing of mechanical test results,
+such as stress-strain data from a tensile test. An example of various stages of data processing that
+might be performed using the toolkit is shown in the figure below.
+
+![Paramaterial overview](https://github.com/dan-slater/paramaterial/blob/main/docs/img/readme-graphic-1.png?raw=true)
+
+Paramaterial is also useful for generating a table of parameters from raw data, as illustrated below. Various data analysis techniques can then be applied to this table of parameters.
+
+![Paramaterial overview](https://github.com/dan-slater/paramaterial/blob/main/docs/img/readme-graphic-2.png?raw=true)
+
 ## Contributing
 
 Please go to the GitHub repository and submit an issue or pull request.
