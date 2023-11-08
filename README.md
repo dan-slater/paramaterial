@@ -11,7 +11,7 @@
 
 ## About
 
-A Python package for parameterizing materials test data. Given a set of experimental measurements, Paramaterial can be
+A Python package for parameterising materials test data. Given a set of experimental measurements, Paramaterial can be
 used to determine material properties and constitutive model parameters.
 
 * **Source Code**: [https://github.com/dan-slater/paramaterial](https://github.com/dan-slater/paramaterial)
