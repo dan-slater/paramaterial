@@ -26,6 +26,20 @@ plugins:
 
 nav:
   - Home: index.md
+  - Example Notebooks:
+      - examples/basic-usage.ipynb
+      - examples/dan-msc-cs1.ipynb
+      - examples/dan-msc-cs2.ipynb
+      - examples/dan-msc-cs3.ipynb
+      - examples/dan-msc-cs4.ipynb
+  - How-To Guides:
+      - guides/prepare-data.md
+      - guides/plot-data.md
+      - guides/process-data.md
+      - guides/screen-data.md
+      - guides/aggregate-data.md
+      - guides/model-data.md
+      - guides/receipts.md
   - Reference:
       - reference/example.md
       - reference/preparing.md

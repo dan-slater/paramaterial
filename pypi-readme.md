@@ -1,7 +1,4 @@
-# Paramaterial Documentation
-
 ![Paramaterial logo](https://github.com/dan-slater/paramaterial/blob/main/docs/img/paramaterial-logo.png?raw=true)
-
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/paramaterial)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/paramaterial)
@@ -57,24 +54,18 @@ download_example('dan_msc_basic_usage_0.1.0')
 
 The examples include datasets, notebooks, and other assets that showcase the functionality and capabilities of the Paramaterial library. These examples can be downloaded and run locally, providing an interactive way to explore and learn about the library.
 For more details see the documentation for the `download_example` function at [reference/example](reference/example.md).
+## Overview
 
-The example Jupyter notebooks can also be viewed online as part of the documentation:
+Paramaterial is an open-source Python package for parameterising materials test
+data. Paramaterial provides functionality for the repeatable processing of mechanical test results,
+such as stress-strain data from a tensile test. An example of various stages of data processing that
+might be performed using the toolkit is shown in the figure below.
 
-* [Basic usage](https://dan-slater.github.io/paramaterial/examples/basic_usage.html)
-* [Case study 1](https://dan-slater.github.io/paramaterial/examples/case_study_1.html)
-* [Case study 2](https://dan-slater.github.io/paramaterial/examples/case_study_2.html)
-* [Case study 3](https://dan-slater.github.io/paramaterial/examples/case_study_3.html)
-* [Case study 4](https://dan-slater.github.io/paramaterial/examples/case_study_4.html)
+![Paramaterial overview](https://github.com/dan-slater/paramaterial/blob/main/docs/img/readme-graphic-1.png?raw=true)
 
-Some more detailed how-to guides are also available:
+Paramaterial is also useful for generating a table of parameters from raw data, as illustrated below. Various data analysis techniques can then be applied to this table of parameters.
 
-* [Prepare data](https://dan-slater.github.io/paramaterial/how-to-guides/prepare-data.html)
-* [Visualize data](https://dan-slater.github.io/paramaterial/how-to-guides/visualize-data.html)
-* [Trim data](https://dan-slater.github.io/paramaterial/how-to-guides/trim-data.html)
-* [Apply processing functions](https://dan-slater.github.io/paramaterial/how-to-guides/apply-processing-functions.html)
-* [Identify material properties](https://dan-slater.github.io/paramaterial/how-to-guides/identify-material-properties.html)
-* [Fit models](https://dan-slater.github.io/paramaterial/how-to-guides/fit-models.html)
-* [Apply quality control](https://dan-slater.github.io/paramaterial/how-to-guides/apply-quality-control.html)
+![Paramaterial overview](https://github.com/dan-slater/paramaterial/blob/main/docs/img/readme-graphic-2.png?raw=true)
 
 ## Contributing
 

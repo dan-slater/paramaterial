@@ -4,11 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="38d0a4ca-8e28-491c-bb26-f3aa489327f8" name="Changes" comment="Updated readme to match updated docs for examiners received submission">
+    <list default="true" id="38d0a4ca-8e28-491c-bb26-f3aa489327f8" name="Changes" comment="removed overview section from readme">
+      <change afterPath="$PROJECT_DIR$/docs/examples/basic-usage.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/guides/prepare-data.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/guides/visualise-data.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pypi-readme.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mkdocs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mkdocs.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/modelling.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/modelling.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paramaterial/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plotting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paramaterial/preparing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/preparing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -19,6 +26,20 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;dan-slater&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="2f41028b-6e0a-4262-878f-c78382992ab3" />
+        <option name="url" value="https://github.com/dan-slater/paramaterial.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -26,6 +47,9 @@
   &quot;associatedIndex&quot;: 2
 }</component>
   <component name="ProjectId" id="2TvkCS0T0xMfn9dV4oJVwNhaAik" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -37,7 +61,7 @@
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/DS/paramaterial&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/DS/paramaterial/docs/examples&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -47,6 +71,12 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\DS\paramaterial\docs\examples" />
+      <recent name="C:\Users\DS\paramaterial\docs\img" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -62,6 +92,12 @@
       <workItem from="1692107847972" duration="9990000" />
       <workItem from="1693290533049" duration="965000" />
       <workItem from="1693496761591" duration="4878000" />
+      <workItem from="1693509666588" duration="551000" />
+      <workItem from="1693575007251" duration="1917000" />
+      <workItem from="1693658393969" duration="1309000" />
+      <workItem from="1693836101866" duration="3000" />
+      <workItem from="1701690635927" duration="13700000" />
+      <workItem from="1701759986724" duration="307000" />
     </task>
     <task id="LOCAL-00001" summary="msc commit pre- final checks">
       <option name="closed" value="true" />
@@ -95,7 +131,79 @@
       <option name="project" value="LOCAL" />
       <updated>1692118155501</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Updated to version 0.1.2">
+      <option name="closed" value="true" />
+      <created>1693509845364</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1693509845364</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Added dropna to repr_info_table concat to appease future warning.">
+      <option name="closed" value="true" />
+      <created>1693509895601</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1693509895601</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Removed 'var' prefix for variables, added automatic overall max and min detection, and added fitting_results property.">
+      <option name="closed" value="true" />
+      <created>1693509975311</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1693509975311</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Changed fontsize to 9 and made FONTSIZE global constant.">
+      <option name="closed" value="true" />
+      <created>1693510016941</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1693510016941</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Updated to version 0.1.2">
+      <option name="closed" value="true" />
+      <created>1693510038467</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1693510038467</updated>
+    </task>
+    <task id="LOCAL-00010" summary="workspace">
+      <option name="closed" value="true" />
+      <created>1693510058885</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1693510058885</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Cleaned old comments from bottom">
+      <option name="closed" value="true" />
+      <created>1693510175284</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1693510175284</updated>
+    </task>
+    <task id="LOCAL-00012" summary="added overview section to readme">
+      <option name="closed" value="true" />
+      <created>1693575447913</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1693575447914</updated>
+    </task>
+    <task id="LOCAL-00013" summary="removed overview section from readme">
+      <option name="closed" value="true" />
+      <created>1693575570916</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1693575570916</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -109,6 +217,14 @@
     <MESSAGE value="msc commit pre- final checks" />
     <MESSAGE value="msc commit updated docs on day examiners received" />
     <MESSAGE value="Updated readme to match updated docs for examiners received submission" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated readme to match updated docs for examiners received submission" />
+    <MESSAGE value="Added dropna to repr_info_table concat to appease future warning." />
+    <MESSAGE value="Removed 'var' prefix for variables, added automatic overall max and min detection, and added fitting_results property." />
+    <MESSAGE value="Changed fontsize to 9 and made FONTSIZE global constant." />
+    <MESSAGE value="Updated to version 0.1.2" />
+    <MESSAGE value="workspace" />
+    <MESSAGE value="Cleaned old comments from bottom" />
+    <MESSAGE value="added overview section to readme" />
+    <MESSAGE value="removed overview section from readme" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed overview section from readme" />
   </component>
 </project>

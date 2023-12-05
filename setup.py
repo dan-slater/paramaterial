@@ -1,13 +1,13 @@
 from setuptools import setup
 
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 DESCRIPTION = 'Software toolkit for parameterising materials test data. ' \
               'Easily batch process experimental measurements to determine mechanical properties and material model ' \
               'parameters.'
 
 
 def readme():
-    with open('README.md') as f:
+    with open('pypi-readme.md') as f:
         return f.read()
 
 
