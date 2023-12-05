@@ -17,29 +17,9 @@ from paramaterial.preparing import experimental_matrix
 FONTSIZE = 9
 
 
-def configure_plt_formatting():
-    plt.style.use('seaborn-dark')
-    # mpl.rcParams['axes.facecolor'] = '#f0e6e6'
-    # mpl.rcParams['text.usetex'] = False
-    # mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
-    mpl.rcParams["font.family"] = "serif"
-    plt.rc('font', size=FONTSIZE)
-    plt.rc('axes', titlesize=FONTSIZE, labelsize=FONTSIZE-1)
-    plt.rc('xtick', labelsize=FONTSIZE - 1)
-    plt.rc('ytick', labelsize=FONTSIZE - 1)
-    plt.rc('legend', fontsize=FONTSIZE - 1)
-    plt.rc('figure', titlesize=FONTSIZE + 1)
-    mpl.rcParams.update({"axes.grid": True})
-    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (85/255, 49/255, 0)])
-    # mpl.rcParams['axes.facecolor'] = cmap(0.1)
-    # mpl.rcParams['legend.facecolor'] = "white"
-    # mpl.rcParams["grid.linewidth"] = 2
-    # mpl.rcParams["text.color"] = (40/255, 40/255, 40/255)
-    # cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["white", (0.2124, 0.3495, 0.1692)])
-    # mpl.rcParams["axes.facecolor"]= cmap(0.1)
-
-
-configure_plt_formatting()
+# todo: move plotting formatting to exampels
+# todo: add example notebooks to docs
+# todo: create list of outdated examples and available examples
 
 
 @dataclass
@@ -144,7 +124,7 @@ class Styler:
             return handles
 
         if self.color_by_label is not None:
-            handles.append(mpatches.Patch(label=self.color_by_label.title(), alpha=0))
+            handles.append(mpatches.Patch(label=self.color_by_label, alpha=0))
 
         if self.color_by is not None:
             for color_val in ds.info_table[self.color_by].unique():
@@ -175,8 +155,10 @@ def dataset_plot(
         ax: Optional[plt.Axes] = None,
         fill_between: Optional[Tuple[str, str]] = None,
         plot_legend: bool = True,
-        handletextpad: float = 0.05,
-        labelspacing: float = 0.1,
+        leg_loc: str = 'best',
+        leg_handletextpad: float = 0.05,
+        leg_labelspacing: float = 0.1,
+        leg_outside: bool = False,
         **kwargs
 ) -> plt.Axes:
     """Make a single combined plot from the data of every dataitem in the dataset using pandas.DataFrame.plot.
@@ -216,9 +198,14 @@ def dataset_plot(
     # add the legend
     handles = styler.legend_handles(ds)
     if len(handles) > 0 and plot_legend:
-        ax.legend(handles=handles, loc='best', frameon=False, markerfirst=True, handletextpad=handletextpad,
-                  labelspacing=labelspacing)  # handletextpad=0.05)  # , labelspacing=0.1)
-        ax.get_legend().set_zorder(2000)
+        if leg_outside:
+            ax.get_figure().legend(handles=handles, loc='center right', frameon=False, bbox_to_anchor=(1.1, 0.5),
+                                   markerfirst=True, handletextpad=0.05)
+        else:
+            ax.legend(handles=handles, loc=leg_loc, markerfirst=True,
+                      handletextpad=leg_handletextpad, labelspacing=leg_labelspacing)
+            ax.get_legend().set_zorder(2000)  # put the legend on top of the plot
+
     # colorbar
     if styler.cbar and plot_legend:
         sm = plt.cm.ScalarMappable(cmap=styler.cmap, norm=styler.color_norm)
@@ -229,7 +216,6 @@ def dataset_plot(
         cbar.ax.yaxis.set_label_position('right')
 
     return ax
-
 
 
 def dataset_subplots(
@@ -292,6 +278,7 @@ def dataset_subplots(
 
     if styler is None:
         styler = Styler()
+        styler.style_to(ds)
 
     # set the titles of the rows and columns
     if row_titles is not None:
