@@ -322,7 +322,7 @@ def dataset_subplots(
 
     if subplot_legend:
         plt.subplots_adjust(right=0.835 + subplots_adjust)
-        axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', frameon=False,
+        axs.flat[0].get_figure().legend(handles=styler.legend_handles(), loc='center right', 
                                         bbox_to_anchor=(0.925, 0.5), markerfirst=True, handletextpad=0.05)
 
     return axs
