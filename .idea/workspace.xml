@@ -4,20 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="38d0a4ca-8e28-491c-bb26-f3aa489327f8" name="Changes" comment="removed overview section from readme">
-      <change afterPath="$PROJECT_DIR$/docs/examples/basic-usage.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/guides/prepare-data.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/guides/visualise-data.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pypi-readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mkdocs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mkdocs.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/plotting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paramaterial/preparing.py" beforeDir="false" afterPath="$PROJECT_DIR$/paramaterial/preparing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
-    </list>
+    <list default="true" id="38d0a4ca-8e28-491c-bb26-f3aa489327f8" name="Changes" comment="made several changes towards v0.1.4 while working on graham-analysis project" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,6 +19,13 @@
     &quot;assignee&quot;: &quot;dan-slater&quot;
   }
 }</component>
+  <component name="GithubProjectSettings">
+    <option name="branchProtectionPatterns">
+      <list>
+        <option value="main" />
+      </list>
+    </option>
+  </component>
   <component name="GithubPullRequestsUISettings">
     <option name="selectedUrlAndAccountId">
       <UrlAndAccount>
@@ -98,6 +92,7 @@
       <workItem from="1693836101866" duration="3000" />
       <workItem from="1701690635927" duration="13700000" />
       <workItem from="1701759986724" duration="307000" />
+      <workItem from="1701787188700" duration="106000" />
     </task>
     <task id="LOCAL-00001" summary="msc commit pre- final checks">
       <option name="closed" value="true" />
@@ -203,7 +198,15 @@
       <option name="project" value="LOCAL" />
       <updated>1693575570916</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="made several changes towards v0.1.4 while working on graham-analysis project">
+      <option name="closed" value="true" />
+      <created>1701787229771</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1701787229771</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -212,6 +215,17 @@
   <component name="UnknownFeatures">
     <option featureType="dependencySupport" implementationName="executable:docker" />
     <option featureType="dependencySupport" implementationName="executable:kubectl" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="msc commit pre- final checks" />
@@ -225,6 +239,7 @@
     <MESSAGE value="Cleaned old comments from bottom" />
     <MESSAGE value="added overview section to readme" />
     <MESSAGE value="removed overview section from readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed overview section from readme" />
+    <MESSAGE value="made several changes towards v0.1.4 while working on graham-analysis project" />
+    <option name="LAST_COMMIT_MESSAGE" value="made several changes towards v0.1.4 while working on graham-analysis project" />
   </component>
 </project>
