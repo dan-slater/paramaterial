@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ParaMaterial Web App</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>ParaMaterial Web App</h1>
+    <form method="post" action="/upload" enctype="multipart/form-data">
+        <label for="file">Upload Stress-Strain Data (.csv, .xlsx):</label>
+        <input type="file" name="file" id="file" accept=".csv,.xlsx" required>
+        <button type="submit">Upload</button>
+    </form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>
