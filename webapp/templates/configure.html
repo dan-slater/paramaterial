@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Configure Analysis - Paramaterial{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Configure Analysis (Job ID: {{ job_id }})</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <p>Your files have been successfully uploaded and validated.</p>
+    
+    <p><strong>Next Steps (Placeholder):</strong></p>
+    <ul>
+        <li>Display summary of uploaded files (Info Table rows, Time Series file names).</li>
+        <li>Provide UI elements to select columns for analysis.</li>
+        <li>Allow selection of parameterization model/options.</li>
+        <li>Add a 'Run Analysis' button.</li>
+    </ul>
+
+    <a href="{{ url_for('upload_data') }}" class="btn btn-secondary">Upload New Data</a>
+    <!-- Placeholder for Run button -->
+    <!-- <button type="button" class="btn btn-primary" disabled>Run Analysis (Not Implemented)</button> -->
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }} 
+{# Add specific JS for this page if needed later #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Use logger if needed, assuming logger.js is included via base.html or here
+        if (window.logger) {
+            logger.info('Configure page loaded', { jobId: '{{ job_id }}' });
+        } else {
+            console.log('Configure page loaded (logger not found)', { jobId: '{{ job_id }}' });
+        }
+    });
+</script>
+{% endblock %}

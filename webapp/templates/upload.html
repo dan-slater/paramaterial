@@ -36,11 +36,12 @@
                 <div class="form-group">
                     <label for="info_table">Info Table (CSV or XLSX):</label>
                     <div class="file-upload">
-                        <input type="file" id="info_table" name="info_table" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
+                        <input type="file" id="info_table" name="info_table" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                         <label for="info_table">
                             <div class="icon">📄</div>
                             <span>Click to browse or drag & drop Info Table file</span>
                         </label>
+                        <span class="error-message" id="info-table-error" style="color: red; display: none;"></span>
                     </div>
                     <span class="form-hint">Contains metadata for each test/sample.</span>
                 </div>
@@ -48,11 +49,12 @@
                 <div class="form-group">
                     <label for="time_series_files">Time Series Files (CSV):</label>
                     <div class="file-upload">
-                        <input type="file" id="time_series_files" name="time_series_files[]" multiple accept=".csv" required>
+                        <input type="file" id="time_series_files" name="time_series_files[]" multiple accept=".csv">
                         <label for="time_series_files">
                             <div class="icon">📊</div>
                             <span>Click to browse or drag & drop Time Series files</span>
                         </label>
+                        <span class="error-message" id="time-series-error" style="color: red; display: none;"></span>
                     </div>
                     <span class="form-hint">One CSV file per test, named according to the identifier in the Info Table.</span>
                 </div>
@@ -134,22 +136,20 @@
         }
     }
     
-    /* File upload appearance and animation */
-    .file-upload label {
-        transition: all 0.2s;
-    }
-    
-    .file-upload:hover label {
-        transform: scale(1.01);
-    }
-    
     /* Make file inputs work with the styled upload boxes */
     #info_table, #time_series_files {
         opacity: 0;
         position: absolute;
         z-index: -1;
     }
-    
+
+    /* Style for drag-over state */
+    .file-upload.drag-over {
+        border-color: var(--accent-blue);
+        border-style: dashed;
+        background-color: var(--background-highlight);
+    }
+
     /* Example download buttons */
     .example-download {
         margin-top: 1rem;
@@ -180,31 +180,143 @@
         margin-top: 1.5rem;
     }
 </style>
+{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/logger.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        logger.info('Upload page DOM loaded');
+
         // Add visual feedback for file selection
         const fileInputs = document.querySelectorAll('input[type="file"]');
         fileInputs.forEach(input => {
             input.addEventListener('change', function() {
+                logger.debug('File input changed', { inputId: this.id, files: this.files.length });
                 const label = this.nextElementSibling;
+                const fileUploadDiv = this.closest('.file-upload');
                 if (this.files.length) {
                     if (this.multiple) {
                         label.querySelector('span').textContent = `${this.files.length} files selected`;
                     } else {
                         label.querySelector('span').textContent = this.files[0].name;
                     }
-                    this.closest('.file-upload').style.borderColor = 'var(--accent-purple)';
+                    fileUploadDiv.style.borderColor = 'var(--accent-purple)';
                     label.querySelector('.icon').textContent = '✓';
                 } else {
+                    logger.debug('File input reset (no file selected)', { inputId: this.id });
+                    // Reset if no file is selected (e.g., user cancels browse)
                     label.querySelector('span').textContent = this.multiple ? 
-                        'Click to browse or drag & drop Time Series files' : 
+                        'Click to browse or drag & drop Time Series files' :
                         'Click to browse or drag & drop Info Table file';
-                    this.closest('.file-upload').style.borderColor = '';
                     label.querySelector('.icon').textContent = this.multiple ? '📊' : '📄';
+                    fileUploadDiv.style.borderColor = ''; // Reset border
                 }
             });
         });
+
+        // --- Drag and Drop Functionality ---
+        const uploadAreas = document.querySelectorAll('.file-upload');
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Global prevention for drops outside designated areas
+        window.addEventListener('dragover', preventDefaults, false);
+        window.addEventListener('drop', preventDefaults, false);
+
+        uploadAreas.forEach(area => {
+            const inputElement = area.querySelector('input[type="file"]');
+            const inputId = inputElement ? inputElement.id : 'unknown';
+
+            logger.monitorEvent(area, 'dragenter', `Drag enter on ${inputId} area`);
+            logger.monitorEvent(area, 'dragover', `Drag over on ${inputId} area`);
+            logger.monitorEvent(area, 'dragleave', `Drag leave from ${inputId} area`);
+            
+            // Prevent default behaviors specifically for the drop zone
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                area.addEventListener(eventName, preventDefaults, false);
+            });
+
+            // Highlight drop zone when item is dragged over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                area.addEventListener(eventName, () => area.classList.add('drag-over'), false);
+            });
+
+            // Remove highlight when item leaves drop zone
+            ['dragleave', 'drop'].forEach(eventName => {
+                area.addEventListener(eventName, () => area.classList.remove('drag-over'), false);
+            });
+
+            // Handle dropped files
+            area.addEventListener('drop', handleDrop, false);
+        });
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            const inputId = this.querySelector('input[type="file"]').id; // Get the ID of the input within this drop area
+            const inputElement = document.getElementById(inputId);
+
+            logger.info(`Files dropped on ${inputId}`, { count: files.length, names: Array.from(files).map(f => f.name) });
+
+            // Assign dropped files to the corresponding file input
+            inputElement.files = files;
+
+            // Manually trigger the 'change' event for the visual feedback script
+            const changeEvent = new Event('change', { bubbles: true });
+            inputElement.dispatchEvent(changeEvent);
+        }
+
+        // Log form submission attempt
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                logger.debug('Submit button clicked. Performing client-side validation.');
+                let isValid = true;
+                
+                const infoTableInput = document.getElementById('info_table');
+                const timeSeriesInput = document.getElementById('time_series_files');
+                const infoTableError = document.getElementById('info-table-error');
+                const timeSeriesError = document.getElementById('time-series-error');
+
+                // Clear previous errors
+                infoTableError.textContent = '';
+                infoTableError.style.display = 'none';
+                timeSeriesError.textContent = '';
+                timeSeriesError.style.display = 'none';
+                
+                // Validate Info Table
+                if (infoTableInput.files.length === 0) {
+                    infoTableError.textContent = 'Info Table file is required.';
+                    infoTableError.style.display = 'block';
+                    isValid = false;
+                    logger.warn('Client Validation Failed: Info Table missing.');
+                }
+
+                // Validate Time Series Files
+                if (timeSeriesInput.files.length === 0) {
+                    timeSeriesError.textContent = 'At least one Time Series file is required.';
+                    timeSeriesError.style.display = 'block';
+                    isValid = false;
+                    logger.warn('Client Validation Failed: Time Series files missing.');
+                }
+
+                if (!isValid) {
+                    event.preventDefault(); // Stop form submission
+                    logger.error('Form submission prevented due to client-side validation errors.');
+                } else {
+                    logger.info('Client-side validation passed. Proceeding with form submission.');
+                }
+                 // You could add more details here, like form data, if needed
+                 // Note: Preventing default submission might be needed for AJAX uploads, but not for standard form POST
+                 // e.preventDefault(); 
+            });
+        } else {
+            logger.error('Upload form not found on the page');
+        }
     });
 </script>
 {% endblock %}

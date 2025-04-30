@@ -95,3 +95,5 @@ def download_example(example_name: str, to_directory: str = './'):
         print(f"An error occurred while deleting file : {e}")
 
     print(f"Example {example_name} downloaded to {to_directory}")
+
+

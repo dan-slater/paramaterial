@@ -1,0 +1,30 @@
+
+\documentclass{article}
+
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[paperheight=15cm, paperwidth=18cm, margin=0.2cm, bottom=2cm]{geometry}
+\usepackage{float}
+\usepackage[absolute]{textpos}
+
+
+\begin{document}
+
+
+\begin{textblock*}{0.5\textwidth}(0cm, 0.5cm)
+\centering
+\vspace{1cm}
+\textbf{\sffamily Paramaterial Processing Report\\ for \VAR{test_id}}
+
+\vspace{1cm}
+    \VAR{table_info}
+\end{textblock*}
+
+\begin{textblock*}{0.45\textwidth}(8.5cm, 0.5cm)
+\centering
+    \includegraphics[width=\textwidth]{\VAR{plot_raw}}
+\\
+    \includegraphics[width=\textwidth]{\VAR{plot_processed}}
+\end{textblock*}
+
+\end{document}
