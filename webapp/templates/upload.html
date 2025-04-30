@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Upload Data - ParaMaterial{% endblock %}
+{% block content %}
+<div class="upload-container">
+    <div class="steps">
+        <div class="step completed">
+            <div class="step-indicator">1</div>
+            <span class="step-label">Start Job</span>
+        </div>
+        <div class="step active">
+            <div class="step-indicator">2</div>
+            <span class="step-label">Prepare & Validate</span>
+        </div>
+        <div class="step">
+            <div class="step-indicator">3</div>
+            <span class="step-label">Process</span>
+        </div>
+        <div class="step">
+            <div class="step-indicator">4</div>
+            <span class="step-label">Visualize</span>
+        </div>
+        <div class="step">
+            <div class="step-indicator">5</div>
+            <span class="step-label">Export</span>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">Step 2: Prepare & Validate Data</div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <p>Upload your Info Table and the corresponding Time Series data files to continue.</p>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="info_table">Info Table (CSV or XLSX):</label>
+                    <div class="file-upload">
+                        <input type="file" id="info_table" name="info_table" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
+                        <label for="info_table">
+                            <div class="icon">📄</div>
+                            <span>Click to browse or drag & drop Info Table file</span>
+                        </label>
+                    </div>
+                    <span class="form-hint">Contains metadata for each test/sample.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="time_series_files">Time Series Files (CSV):</label>
+                    <div class="file-upload">
+                        <input type="file" id="time_series_files" name="time_series_files[]" multiple accept=".csv" required>
+                        <label for="time_series_files">
+                            <div class="icon">📊</div>
+                            <span>Click to browse or drag & drop Time Series files</span>
+                        </label>
+                    </div>
+                    <span class="form-hint">One CSV file per test, named according to the identifier in the Info Table.</span>
+                </div>
+
+                <!-- Placeholder for validation messages -->
+                <div id="validation-results"></div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-accent">Upload & Validate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">Expected Data Format</div>
+        <div class="card-body">
+            <div class="two-column">
+                <div>
+                    <h4>Info Table Structure</h4>
+                    <p>A spreadsheet where each row represents one test/sample:</p>
+                    <ul>
+                        <li>Must include a <strong>key identifier column</strong></li>
+                        <li>Each column represents a property or metadata field</li>
+                        <li>Accepted formats: CSV, XLSX</li>
+                    </ul>
+                    <div class="example-download">
+                        <a href="{{ url_for('static', filename='examples/info_table_example.xlsx') }}" class="btn btn-sm">
+                            <span class="download-icon">📥</span> Download Excel Example
+                        </a>
+                        <a href="{{ url_for('static', filename='examples/info_table_example.csv') }}" class="btn btn-sm">
+                            <span class="download-icon">📥</span> Download CSV Example
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4>Time Series Files</h4>
+                    <p>Individual CSV files containing raw data for each test:</p>
+                    <ul>
+                        <li>One file per test/row in the info table</li>
+                        <li>Filename must match the identifier in the info table</li>
+                        <li>Columns represent measured variables</li>
+                        <li>Rows represent time steps</li>
+                    </ul>
+                    <div class="example-download">
+                        <a href="{{ url_for('static', filename='examples/time_series_example.zip') }}" class="btn btn-sm">
+                            <span class="download-icon">📥</span> Download Example Data Files
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="example-note">
+                <div class="alert alert-success">
+                    <strong>Pro Tip:</strong> Download and examine both examples to understand the required relationship between the Info Table and Time Series files.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    .form-actions {
+        margin-top: 2rem;
+        text-align: right;
+    }
+    
+    .two-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .two-column {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+    }
+    
+    /* File upload appearance and animation */
+    .file-upload label {
+        transition: all 0.2s;
+    }
+    
+    .file-upload:hover label {
+        transform: scale(1.01);
+    }
+    
+    /* Make file inputs work with the styled upload boxes */
+    #info_table, #time_series_files {
+        opacity: 0;
+        position: absolute;
+        z-index: -1;
+    }
+    
+    /* Example download buttons */
+    .example-download {
+        margin-top: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.75rem;
+        background-color: var(--primary-gray);
+        color: var(--text-dark);
+        border: 1px solid var(--secondary-gray);
+    }
+    
+    .btn-sm:hover {
+        background-color: var(--secondary-gray);
+        color: var(--text-dark);
+    }
+    
+    .download-icon {
+        display: inline-block;
+        margin-right: 0.25rem;
+    }
+    
+    .example-note {
+        margin-top: 1.5rem;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add visual feedback for file selection
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                if (this.files.length) {
+                    if (this.multiple) {
+                        label.querySelector('span').textContent = `${this.files.length} files selected`;
+                    } else {
+                        label.querySelector('span').textContent = this.files[0].name;
+                    }
+                    this.closest('.file-upload').style.borderColor = 'var(--accent-purple)';
+                    label.querySelector('.icon').textContent = '✓';
+                } else {
+                    label.querySelector('span').textContent = this.multiple ? 
+                        'Click to browse or drag & drop Time Series files' : 
+                        'Click to browse or drag & drop Info Table file';
+                    this.closest('.file-upload').style.borderColor = '';
+                    label.querySelector('.icon').textContent = this.multiple ? '📊' : '📄';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

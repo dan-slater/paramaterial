@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ParaMaterial{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/plasma-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="brand">
+                <img src="{{ url_for('static', filename='img/paramaterial-logo.png') }}" alt="ParaMaterial Logo" class="logo">
+                <h1 class="site-title">ParaMaterial</h1>
+            </div>
+            <nav class="main-nav">
+                <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Dashboard</a>
+                {% if active_job %}
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle">Tools</a>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('tool_prepare', job_id=active_job) }}" {% if 'prepare' in request.path %}class="active"{% endif %}>Data Preparation</a>
+                        <a href="{{ url_for('tool_processing', job_id=active_job) }}" {% if 'processing' in request.path %}class="active"{% endif %}>Processing</a>
+                        <a href="{{ url_for('tool_modelling', job_id=active_job) }}" {% if 'modelling' in request.path %}class="active"{% endif %}>Modelling</a>
+                        <a href="{{ url_for('tool_plotting', job_id=active_job) }}" {% if 'plotting' in request.path %}class="active"{% endif %}>Plotting</a>
+                    </div>
+                </div>
+                {% endif %}
+                <a href="/jobs" {% if '/jobs' in request.path %}class="active"{% endif %}>Jobs</a>
+                <a href="/about" {% if '/about' in request.path %}class="active"{% endif %}>About</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="footer">
+        &copy; {{ year|default(2025) }} ParaMaterial
+    </footer>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

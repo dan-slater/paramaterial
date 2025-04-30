@@ -1,0 +1,7 @@
+SampleID,Material,Thickness,Width,Temperature,Strain_Rate,TestMachine,Operator,Date
+sample_001,Steel_A36,2.0,15.0,25,0.001,UTM-5000,J.Smith,2025-03-01
+sample_002,Steel_A36,2.0,15.0,200,0.001,UTM-5000,J.Smith,2025-03-01
+sample_003,Steel_A36,2.0,15.0,400,0.001,UTM-5000,J.Smith,2025-03-02
+sample_004,Al_6061-T6,3.0,12.5,25,0.001,UTM-5000,A.Jones,2025-03-02
+sample_005,Al_6061-T6,3.0,12.5,25,0.01,UTM-5000,A.Jones,2025-03-03
+sample_006,Al_6061-T6,3.0,12.5,25,0.1,UTM-5000,A.Jones,2025-03-03

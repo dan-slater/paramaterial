@@ -1,0 +1,63 @@
+2025-04-28 13:11:34,368 INFO _internal: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.3.3:5001
+2025-04-28 13:11:34,368 INFO _internal: [33mPress CTRL+C to quit[0m
+2025-04-28 13:11:34,369 INFO _internal:  * Restarting with stat
+2025-04-28 13:11:35,195 WARNING _internal:  * Debugger is active!
+2025-04-28 13:11:35,203 INFO _internal:  * Debugger PIN: 126-996-286
+2025-04-28 13:12:01,792 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:01] "GET / HTTP/1.1" 200 -
+2025-04-28 13:12:01,803 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:01] "GET /static/style.css HTTP/1.1" 200 -
+2025-04-28 13:12:01,815 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:01] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-04-28 13:12:14,700 INFO app: File uploaded: P_150_I_3_093_151_02.csv (Job ID: a8830ef6-9f1c-4c73-9a39-538b903a1a0f)
+2025-04-28 13:12:14,706 INFO app: Original file P_150_I_3_093_151_02.csv copied to job directory jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f
+2025-04-28 13:12:14,706 INFO app: File validated and parsed for Job ID: a8830ef6-9f1c-4c73-9a39-538b903a1a0f
+2025-04-28 13:12:14,707 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:14] "[32mPOST /upload HTTP/1.1[0m" 302 -
+2025-04-28 13:12:14,709 INFO app: Files listed for job a8830ef6-9f1c-4c73-9a39-538b903a1a0f: ['P_150_I_3_093_151_02.csv', 'data.pkl']
+2025-04-28 13:12:14,709 INFO app: Attempting to preview file: jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:12:14,717 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:14] "GET /results/a8830ef6-9f1c-4c73-9a39-538b903a1a0f?file=P_150_I_3_093_151_02.csv HTTP/1.1" 200 -
+2025-04-28 13:12:14,727 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:14] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-04-28 13:12:14,740 INFO app: Column request received for job_id: a8830ef6-9f1c-4c73-9a39-538b903a1a0f, filename: P_150_I_3_093_151_02.csv
+2025-04-28 13:12:14,741 INFO app: Full path for column request: /Users/ds/CascadeProjects/paramaterial/webapp/jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:12:14,741 INFO app: File exists: False
+2025-04-28 13:12:14,741 ERROR app: File not found for column listing: /Users/ds/CascadeProjects/paramaterial/webapp/jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:12:14,741 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:14] "[33mGET /columns/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv HTTP/1.1[0m" 404 -
+2025-04-28 13:12:23,939 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:23] "GET /tool/prepare/a8830ef6-9f1c-4c73-9a39-538b903a1a0f HTTP/1.1" 200 -
+2025-04-28 13:12:23,955 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:23] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-04-28 13:12:26,117 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:26] "GET /tool/processing/a8830ef6-9f1c-4c73-9a39-538b903a1a0f HTTP/1.1" 200 -
+2025-04-28 13:12:26,138 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:26] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-04-28 13:12:27,861 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:27] "GET /tool/modelling/a8830ef6-9f1c-4c73-9a39-538b903a1a0f HTTP/1.1" 200 -
+2025-04-28 13:12:27,881 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:27] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-04-28 13:12:32,680 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:32] "GET /tool/plotting/a8830ef6-9f1c-4c73-9a39-538b903a1a0f HTTP/1.1" 200 -
+2025-04-28 13:12:32,701 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:32] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-04-28 13:12:34,236 INFO _internal:  * Detected change in '/Users/ds/CascadeProjects/paramaterial/webapp/app.py', reloading
+2025-04-28 13:12:34,377 INFO _internal:  * Restarting with stat
+2025-04-28 13:12:35,409 WARNING _internal:  * Debugger is active!
+2025-04-28 13:12:35,414 INFO _internal:  * Debugger PIN: 126-996-286
+2025-04-28 13:12:39,370 INFO app: Files listed for job a8830ef6-9f1c-4c73-9a39-538b903a1a0f: ['P_150_I_3_093_151_02.csv', 'data.pkl']
+2025-04-28 13:12:39,371 INFO app: Attempting to preview file: jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:12:39,392 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:39] "GET /results/a8830ef6-9f1c-4c73-9a39-538b903a1a0f HTTP/1.1" 200 -
+2025-04-28 13:12:39,401 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:39] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-04-28 13:12:39,410 INFO app: Column request received for job_id: a8830ef6-9f1c-4c73-9a39-538b903a1a0f, filename: P_150_I_3_093_151_02.csv
+2025-04-28 13:12:39,410 INFO app: Full path for column request: /Users/ds/CascadeProjects/paramaterial/webapp/jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:12:39,411 INFO app: File exists: False
+2025-04-28 13:12:39,411 ERROR app: File not found for column listing: /Users/ds/CascadeProjects/paramaterial/webapp/jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:12:39,411 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:12:39] "[33mGET /columns/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv HTTP/1.1[0m" 404 -
+2025-04-28 13:13:12,805 INFO _internal:  * Detected change in '/Users/ds/CascadeProjects/paramaterial/webapp/app.py', reloading
+2025-04-28 13:13:13,022 INFO _internal:  * Restarting with stat
+2025-04-28 13:13:13,829 WARNING _internal:  * Debugger is active!
+2025-04-28 13:13:13,834 INFO _internal:  * Debugger PIN: 126-996-286
+2025-04-28 13:13:41,413 INFO app: Files listed for job a8830ef6-9f1c-4c73-9a39-538b903a1a0f: ['P_150_I_3_093_151_02.csv', 'data.pkl']
+2025-04-28 13:13:41,413 INFO app: Attempting to preview file: jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:13:41,435 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:13:41] "GET /results/a8830ef6-9f1c-4c73-9a39-538b903a1a0f HTTP/1.1" 200 -
+2025-04-28 13:13:41,445 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:13:41] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-04-28 13:13:41,451 INFO app: Column request received for job_id: a8830ef6-9f1c-4c73-9a39-538b903a1a0f, filename: P_150_I_3_093_151_02.csv
+2025-04-28 13:13:41,451 INFO app: Full path for column request: /Users/ds/CascadeProjects/paramaterial/webapp/jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:13:41,451 INFO app: File exists: False
+2025-04-28 13:13:41,451 ERROR app: File not found for column listing: /Users/ds/CascadeProjects/paramaterial/webapp/jobs/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv
+2025-04-28 13:13:41,451 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:13:41] "[33mGET /columns/a8830ef6-9f1c-4c73-9a39-538b903a1a0f/P_150_I_3_093_151_02.csv HTTP/1.1[0m" 404 -
+2025-04-28 13:13:44,179 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:13:44] "GET /tool/plotting/a8830ef6-9f1c-4c73-9a39-538b903a1a0f HTTP/1.1" 200 -
+2025-04-28 13:13:44,204 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:13:44] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-04-28 13:13:44,216 INFO _internal: 127.0.0.1 - - [28/Apr/2025 13:13:44] "GET /plotting/functions HTTP/1.1" 200 -
+2025-04-28 13:26:42,912 INFO _internal:  * Detected change in '/Users/ds/CascadeProjects/paramaterial/webapp/app.py', reloading
+2025-04-28 13:26:43,054 INFO _internal:  * Restarting with stat
