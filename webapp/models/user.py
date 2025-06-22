@@ -1,32 +1,35 @@
-from flask_login import UserMixin
-from sqlalchemy.dialects.postgresql import UUID
-from .database import db, UUIDMixin, TimestampMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import Column, String, Boolean, DateTime
+from sqlalchemy.orm import relationship
+from passlib.context import CryptContext
+from .database import Base, UUIDMixin, TimestampMixin
 
-class User(UserMixin, UUIDMixin, TimestampMixin, db.Model):
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class User(Base, UUIDMixin, TimestampMixin):
     __tablename__ = 'users'
     
-    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(255), nullable=False)
-    first_name = db.Column(db.String(100))
-    last_name = db.Column(db.String(100))
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
-    is_verified = db.Column(db.Boolean, default=False, nullable=False)
-    last_login = db.Column(db.DateTime(timezone=True))
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    is_active = Column(Boolean, default=True, nullable=False)
+    is_verified = Column(Boolean, default=False, nullable=False)
+    last_login = Column(DateTime(timezone=True))
     
     # Relationships
-    organization_memberships = db.relationship('OrganizationMembership', back_populates='user', cascade='all, delete-orphan')
-    jobs = db.relationship('Job', back_populates='user', cascade='all, delete-orphan')
-    created_templates = db.relationship('AnalysisTemplate', back_populates='creator', cascade='all, delete-orphan')
-    sent_invitations = db.relationship('OrganizationInvitation', foreign_keys='OrganizationInvitation.invited_by', back_populates='inviter')
+    organization_memberships = relationship('OrganizationMembership', back_populates='user', cascade='all, delete-orphan')
+    jobs = relationship('Job', back_populates='user', cascade='all, delete-orphan')
+    created_templates = relationship('AnalysisTemplate', back_populates='creator', cascade='all, delete-orphan')
+    sent_invitations = relationship('OrganizationInvitation', foreign_keys='OrganizationInvitation.invited_by', back_populates='inviter')
     
     def set_password(self, password):
         """Set password hash"""
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = pwd_context.hash(password)
     
     def check_password(self, password):
         """Check password against hash"""
-        return check_password_hash(self.password_hash, password)
+        return pwd_context.verify(password, self.password_hash)
     
     @property
     def full_name(self):

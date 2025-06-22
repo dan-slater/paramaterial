@@ -1,29 +1,33 @@
+from sqlalchemy import Column, String, Integer, Text, DateTime, Enum, ForeignKey, BigInteger, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from .database import db, UUIDMixin, TimestampMixin
+from sqlalchemy.orm import relationship
+from .database import Base, UUIDMixin, TimestampMixin
 from datetime import datetime
 
-class Job(UUIDMixin, TimestampMixin, db.Model):
+class Job(Base, UUIDMixin, TimestampMixin):
     __tablename__ = 'jobs'
     
-    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey('users.id'), nullable=False)
-    organization_id = db.Column(UUID(as_uuid=False), db.ForeignKey('organizations.id'))
-    template_id = db.Column(UUID(as_uuid=False), db.ForeignKey('analysis_templates.id'))
-    equipment_id = db.Column(UUID(as_uuid=False), db.ForeignKey('equipment.id'))
+    user_id = Column(UUID(as_uuid=False), ForeignKey('users.id'), nullable=False)
+    organization_id = Column(UUID(as_uuid=False), ForeignKey('organizations.id'))
+    template_id = Column(UUID(as_uuid=False), ForeignKey('analysis_templates.id'))
+    equipment_id = Column(UUID(as_uuid=False), ForeignKey('equipment.id'))
     
-    status = db.Column(db.Enum('pending', 'uploading', 'validating', 'processing', 'completed', 'failed', name='job_status'), 
-                      nullable=False, default='pending')
-    completed_at = db.Column(db.DateTime(timezone=True))
-    error_message = db.Column(db.Text)
-    metadata = db.Column(JSONB, default=dict)
-    processing_parameters = db.Column(JSONB, default=dict)  # Actual parameters used
-    template_version = db.Column(db.Integer, default=1)
+    status = Column(Enum('pending', 'uploading', 'validating', 'processing', 'completed', 'failed', name='job_status'), 
+                   nullable=False, default='pending')
+    completed_at = Column(DateTime(timezone=True))
+    started_at = Column(DateTime(timezone=True))
+    error_message = Column(Text)
+    results = Column(JSONB, default=dict)
+    analysis_config = Column(JSONB, default=dict)
+    processing_parameters = Column(JSONB, default=dict)  # Actual parameters used
+    template_version = Column(Integer, default=1)
     
     # Relationships
-    user = db.relationship('User', back_populates='jobs')
-    organization = db.relationship('Organization', back_populates='jobs')
-    template = db.relationship('AnalysisTemplate', back_populates='jobs')
-    equipment = db.relationship('Equipment', back_populates='jobs')
-    files = db.relationship('JobFile', back_populates='job', cascade='all, delete-orphan')
+    user = relationship('User', back_populates='jobs')
+    organization = relationship('Organization', back_populates='jobs')
+    template = relationship('AnalysisTemplate', back_populates='jobs')
+    equipment = relationship('Equipment', back_populates='jobs')
+    files = relationship('JobFile', back_populates='job', cascade='all, delete-orphan')
     
     @property
     def is_completed(self):
@@ -77,9 +81,11 @@ class Job(UUIDMixin, TimestampMixin, db.Model):
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None,
             'error_message': self.error_message,
-            'metadata': self.metadata,
+            'results': self.results,
+            'analysis_config': self.analysis_config,
             'processing_parameters': self.processing_parameters,
             'template_version': self.template_version,
             'duration_seconds': self.duration.total_seconds() if self.duration else None,
@@ -89,23 +95,20 @@ class Job(UUIDMixin, TimestampMixin, db.Model):
     def __repr__(self):
         return f'<Job {self.id} ({self.status})>'
 
-class JobFile(UUIDMixin, TimestampMixin, db.Model):
+class JobFile(Base, UUIDMixin, TimestampMixin):
     __tablename__ = 'job_files'
     
-    job_id = db.Column(UUID(as_uuid=False), db.ForeignKey('jobs.id'), nullable=False)
-    file_name = db.Column(db.String(255), nullable=False)
-    file_type = db.Column(db.Enum('info_table', 'time_series', name='file_types'), nullable=False)
-    file_size = db.Column(db.BigInteger)  # in bytes
-    storage_path = db.Column(db.String(500), nullable=False)  # local file path or cloud storage URL
-    upload_completed = db.Column(db.Boolean, default=False, nullable=False)
-    mime_type = db.Column(db.String(100))
-    checksum = db.Column(db.String(64))  # SHA-256 hash for integrity
+    job_id = Column(UUID(as_uuid=False), ForeignKey('jobs.id'), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    file_type = Column(Enum('info_table', 'time_series', name='file_types'), nullable=False)
+    file_size = Column(BigInteger)  # in bytes
+    storage_path = Column(String(500), nullable=False)  # local file path or cloud storage URL
+    upload_completed = Column(Boolean, default=False, nullable=False)
+    mime_type = Column(String(100))
+    checksum = Column(String(64))  # SHA-256 hash for integrity
     
     # Relationships
-    job = db.relationship('Job', back_populates='files')
-    
-    # Unique constraint on job_id + file_name
-    __table_args__ = (db.UniqueConstraint('job_id', 'file_name'),)
+    job = relationship('Job', back_populates='files')
     
     @property
     def file_size_mb(self):

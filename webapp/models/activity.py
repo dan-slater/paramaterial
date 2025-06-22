@@ -1,25 +1,27 @@
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
-from .database import db, UUIDMixin, TimestampMixin
+from sqlalchemy.orm import relationship
+from .database import Base, UUIDMixin
 
-class ActivityLog(UUIDMixin, db.Model):
-    __tablename__ = 'activity_log'
+class ActivityLog(Base, UUIDMixin):
+    __tablename__ = 'activity_logs'
     
-    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey('users.id'))
-    organization_id = db.Column(UUID(as_uuid=False), db.ForeignKey('organizations.id'))
+    user_id = Column(UUID(as_uuid=False), ForeignKey('users.id'))
+    organization_id = Column(UUID(as_uuid=False), ForeignKey('organizations.id'))
     
-    action_type = db.Column(db.String(100), nullable=False)  # 'job_created', 'template_shared', 'invitation_sent'
-    resource_type = db.Column(db.String(50))  # 'job', 'template', 'organization', 'user'
-    resource_id = db.Column(UUID(as_uuid=False))
+    action_type = Column(String(100), nullable=False)  # 'job_created', 'template_shared', 'invitation_sent'
+    resource_type = Column(String(50))  # 'job', 'template', 'organization', 'user'
+    resource_id = Column(UUID(as_uuid=False))
     
-    details = db.Column(JSONB, default=dict)
-    ip_address = db.Column(INET)
-    user_agent = db.Column(db.Text)
+    details = Column(JSONB, default=dict)
+    ip_address = Column(String(45))  # IPv6 support
+    user_agent = Column(Text)
     
-    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=db.func.now())
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     
     # Relationships
-    user = db.relationship('User')
-    organization = db.relationship('Organization')
+    user = relationship('User')
+    organization = relationship('Organization')
     
     @classmethod
     def log_activity(cls, user_id, action_type, resource_type=None, resource_id=None, 
@@ -35,18 +37,7 @@ class ActivityLog(UUIDMixin, db.Model):
             ip_address=ip_address,
             user_agent=user_agent
         )
-        db.session.add(activity)
         return activity
-    
-    @classmethod
-    def get_user_activity(cls, user_id, limit=50):
-        """Get recent activity for a user"""
-        return cls.query.filter_by(user_id=user_id).order_by(cls.created_at.desc()).limit(limit).all()
-    
-    @classmethod
-    def get_organization_activity(cls, organization_id, limit=50):
-        """Get recent activity for an organization"""
-        return cls.query.filter_by(organization_id=organization_id).order_by(cls.created_at.desc()).limit(limit).all()
     
     def to_dict(self):
         """Convert to dictionary"""
@@ -60,7 +51,7 @@ class ActivityLog(UUIDMixin, db.Model):
             'resource_type': self.resource_type,
             'resource_id': self.resource_id,
             'details': self.details,
-            'ip_address': str(self.ip_address) if self.ip_address else None,
+            'ip_address': self.ip_address,
             'user_agent': self.user_agent,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

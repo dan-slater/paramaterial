@@ -5,7 +5,7 @@ from typing import List, Optional
 import os
 import uuid
 from datetime import datetime
-from werkzeug.utils import secure_filename
+import re
 import aiofiles
 import logging
 
@@ -17,6 +17,21 @@ from config_fastapi import get_settings
 from services.materials_processor import process_materials_data
 
 router = APIRouter()
+
+def _secure_filename(filename: str) -> str:
+    """Secure a filename by removing path components and dangerous characters"""
+    # Remove path components
+    filename = os.path.basename(filename)
+    # Remove or replace dangerous characters
+    filename = re.sub(r'[^\w\s\-_\.]', '', filename)
+    # Replace multiple dots with single dot
+    filename = re.sub(r'\.+', '.', filename)
+    # Remove leading/trailing spaces and dots
+    filename = filename.strip(' .')
+    # Ensure we have a filename
+    if not filename:
+        filename = 'unnamed_file'
+    return filename
 
 @router.get("/", response_model=JobListResponse)
 async def list_jobs(
@@ -115,7 +130,7 @@ async def create_job(
         saved_files = []
         
         # Save info table file
-        info_filename = secure_filename(info_table.filename)
+        info_filename = _secure_filename(info_table.filename)
         info_path = os.path.join(job_dir, info_filename)
         
         async with aiofiles.open(info_path, 'wb') as f:
@@ -138,7 +153,7 @@ async def create_job(
         # Save time series files
         for ts_file in time_series_files:
             if ts_file.filename:
-                ts_filename = secure_filename(ts_file.filename)
+                ts_filename = _secure_filename(ts_file.filename)
                 ts_path = os.path.join(job_dir, ts_filename)
                 
                 async with aiofiles.open(ts_path, 'wb') as f:

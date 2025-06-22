@@ -1,21 +1,21 @@
-from .database import db
+from .database import Base
 from .user import User
 from .organization import Organization, OrganizationMembership, OrganizationInvitation
 from .job import Job, JobFile
 from .equipment import Equipment
-from .template import AnalysisTemplate, TemplateUsage
+from .template import AnalysisTemplate
 from .activity import ActivityLog
 
+# Export all models for easy importing
 __all__ = [
-    'db',
-    'User',
-    'Organization',
+    'Base',
+    'User', 
+    'Organization', 
     'OrganizationMembership', 
     'OrganizationInvitation',
-    'Job',
+    'Job', 
     'JobFile',
     'Equipment',
     'AnalysisTemplate',
-    'TemplateUsage',
     'ActivityLog'
 ]

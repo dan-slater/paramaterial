@@ -1,11 +1,10 @@
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, String, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import func
 import uuid
 
-# Initialize SQLAlchemy
-db = SQLAlchemy()
+# Create the declarative base
+Base = declarative_base()
 
 # UUID type for use across models
 def generate_uuid():
@@ -13,8 +12,8 @@ def generate_uuid():
 
 # Mixin for common fields
 class TimestampMixin:
-    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
 class UUIDMixin:
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=generate_uuid)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=generate_uuid)
