@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}My Jobs - ParaMaterial{% endblock %}
+{% block content %}
+<div class="jobs-container">
+    <div class="page-header">
+        <h1>My Jobs</h1>
+        <a href="{{ url_for('upload_data') }}" class="btn btn-accent">New Job</a>
+    </div>
+    
+    {% if jobs %}
+        <div class="jobs-grid">
+            {% for job in jobs %}
+                <div class="job-card card">
+                    <div class="job-header">
+                        <div class="job-id">{{ job.id[:8] }}...</div>
+                        <div class="job-status status-{{ job.status }}">{{ job.status.title() }}</div>
+                    </div>
+                    <div class="job-body">
+                        <div class="job-date">
+                            Created: {{ job.created_at[:19] | replace('T', ' ') }}
+                        </div>
+                        {% if job.error_message %}
+                            <div class="job-error">
+                                Error: {{ job.error_message }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="job-actions">
+                        {% if job.status == 'pending' %}
+                            <a href="{{ url_for('configure_analysis', job_id=job.id) }}" class="btn btn-sm">Configure</a>
+                        {% elif job.status == 'completed' %}
+                            <a href="{{ url_for('configure_analysis', job_id=job.id) }}" class="btn btn-sm">View Results</a>
+                        {% else %}
+                            <a href="{{ url_for('configure_analysis', job_id=job.id) }}" class="btn btn-sm">View</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <h3>No jobs yet</h3>
+            <p>Start by uploading your first dataset to begin analysis.</p>
+            <a href="{{ url_for('upload_data') }}" class="btn btn-accent">Upload Data</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    .jobs-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .jobs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .job-card {
+        padding: 1.5rem;
+    }
+    
+    .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .job-id {
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+    
+    .job-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-uploading {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-validating {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .status-processing {
+        background-color: #b3d4fc;
+        color: #0c5460;
+    }
+    
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-failed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .job-date {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+    
+    .job-error {
+        font-size: 0.85rem;
+        color: #dc3545;
+        background-color: #f8d7da;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .job-actions {
+        margin-top: 1rem;
+        text-align: right;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}

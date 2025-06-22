@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: paramaterial_postgres
+    environment:
+      POSTGRES_DB: paramaterial
+      POSTGRES_USER: paramaterial_user
+      POSTGRES_PASSWORD: paramaterial_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - paramaterial_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paramaterial_user -d paramaterial"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: paramaterial_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - paramaterial_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: redis-server --appendonly yes
+
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paramaterial_webapp
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://paramaterial_user:paramaterial_password@postgres:5432/paramaterial
+      - REDIS_URL=redis://redis:6379/0
+      - FLASK_SECRET_KEY=dev-secret-key-change-in-production
+    ports:
+      - "5555:5555"
+    volumes:
+      - .:/app
+      - uploads_data:/app/uploads
+    networks:
+      - paramaterial_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: python app.py
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+
+networks:
+  paramaterial_network:
+    driver: bridge

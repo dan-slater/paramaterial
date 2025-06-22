@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Register - ParaMaterial{% endblock %}
+{% block content %}
+<div class="auth-container">
+    <div class="card auth-card">
+        <div class="card-header">
+            <h2>Create Account</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                    <span class="form-hint">Minimum 6 characters</span>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-accent">Create Account</button>
+                </div>
+            </form>
+            
+            <div class="auth-links">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 60vh;
+        padding: 2rem;
+    }
+    
+    .auth-card {
+        max-width: 400px;
+        width: 100%;
+    }
+    
+    .auth-links {
+        text-align: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--secondary-gray);
+    }
+    
+    .auth-links a {
+        color: var(--accent-blue);
+        text-decoration: none;
+    }
+    
+    .auth-links a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

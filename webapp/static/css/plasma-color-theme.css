@@ -1,0 +1,260 @@
+/* ParaMaterial Plasma Color Theme */
+/* Based on Python Matplotlib Plasma Colormap */
+
+:root {
+  /* Primary Plasma Colors (extracted from matplotlib plasma colormap) */
+  --plasma-dark-purple: #0d0887;    /* Deep purple - darkest */
+  --plasma-purple: #46039f;         /* Rich purple */
+  --plasma-magenta: #7201a8;        /* Purple-magenta */
+  --plasma-pink: #9c179e;           /* Pink-magenta */
+  --plasma-red: #bd3786;            /* Pink-red */
+  --plasma-orange: #d8576b;         /* Red-orange */
+  --plasma-coral: #ed7953;          /* Coral */
+  --plasma-yellow: #fb9f3a;         /* Orange-yellow */
+  --plasma-bright-yellow: #fdca26;  /* Bright yellow */
+  --plasma-light-yellow: #f0f921;   /* Lightest yellow */
+
+  /* UI Color Assignments */
+  
+  /* Primary Brand Colors */
+  --primary: var(--plasma-purple);           /* Main brand color #46039f */
+  --primary-dark: var(--plasma-dark-purple); /* Darker variant #0d0887 */
+  --primary-light: var(--plasma-magenta);    /* Lighter variant #7201a8 */
+  
+  /* Accent Colors */
+  --accent-primary: var(--plasma-pink);      /* Interactive elements #9c179e */
+  --accent-secondary: var(--plasma-coral);   /* Secondary actions #ed7953 */
+  --accent-tertiary: var(--plasma-yellow);   /* Highlights #fb9f3a */
+  
+  /* Status Colors */
+  --status-info: var(--plasma-purple);       /* Info states #46039f */
+  --status-success: #059669;                 /* Success (complementary green) */
+  --status-warning: var(--plasma-yellow);    /* Warning states #fb9f3a */
+  --status-error: var(--plasma-red);         /* Error states #bd3786 */
+  --status-processing: var(--plasma-orange); /* In progress #d8576b */
+  
+  /* Gradient Definitions */
+  --gradient-primary: linear-gradient(135deg, var(--plasma-dark-purple) 0%, var(--plasma-purple) 50%, var(--plasma-magenta) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--plasma-pink) 0%, var(--plasma-orange) 50%, var(--plasma-yellow) 100%);
+  --gradient-warm: linear-gradient(135deg, var(--plasma-coral) 0%, var(--plasma-yellow) 50%, var(--plasma-bright-yellow) 100%);
+  
+  /* Neutral Colors */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  /* Background Colors */
+  --bg-primary: var(--gray-50);              /* Main background */
+  --bg-secondary: white;                     /* Card backgrounds */
+  --bg-tertiary: var(--gray-100);            /* Subtle backgrounds */
+  --bg-accent: var(--plasma-light-yellow);   /* Accent backgrounds */
+  
+  /* Text Colors */
+  --text-primary: var(--gray-900);           /* Main text */
+  --text-secondary: var(--gray-700);         /* Secondary text */
+  --text-muted: var(--gray-500);             /* Muted text */
+  --text-inverse: white;                     /* Text on dark backgrounds */
+  --text-accent: var(--plasma-dark-purple);  /* Accent text */
+  
+  /* Border Colors */
+  --border-light: var(--gray-200);
+  --border-medium: var(--gray-300);
+  --border-dark: var(--gray-400);
+  --border-accent: var(--plasma-purple);
+  
+  /* Interactive States */
+  --hover-overlay: rgba(70, 3, 159, 0.1);    /* Plasma purple with opacity */
+  --active-overlay: rgba(70, 3, 159, 0.2);   /* Plasma purple with opacity */
+  --focus-ring: var(--plasma-purple);
+  
+  /* Data Visualization Colors (Plasma Sequence) */
+  --viz-color-1: var(--plasma-dark-purple);  /* #0d0887 */
+  --viz-color-2: var(--plasma-purple);       /* #46039f */
+  --viz-color-3: var(--plasma-magenta);      /* #7201a8 */
+  --viz-color-4: var(--plasma-pink);         /* #9c179e */
+  --viz-color-5: var(--plasma-red);          /* #bd3786 */
+  --viz-color-6: var(--plasma-orange);       /* #d8576b */
+  --viz-color-7: var(--plasma-coral);        /* #ed7953 */
+  --viz-color-8: var(--plasma-yellow);       /* #fb9f3a */
+  --viz-color-9: var(--plasma-bright-yellow); /* #fdca26 */
+  --viz-color-10: var(--plasma-light-yellow); /* #f0f921 */
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode adjustments */
+    --bg-primary: var(--gray-900);
+    --bg-secondary: var(--gray-800);
+    --bg-tertiary: var(--gray-700);
+    --bg-accent: var(--plasma-dark-purple);
+    
+    --text-primary: var(--gray-100);
+    --text-secondary: var(--gray-300);
+    --text-muted: var(--gray-400);
+    --text-accent: var(--plasma-bright-yellow);
+    
+    --border-light: var(--gray-700);
+    --border-medium: var(--gray-600);
+    --border-dark: var(--gray-500);
+    
+    /* Adjust plasma colors for dark mode visibility */
+    --primary: var(--plasma-coral);           /* Brighter in dark mode */
+    --accent-primary: var(--plasma-yellow);   /* More visible in dark */
+    --status-info: var(--plasma-coral);
+  }
+}
+
+/* Component-Specific Color Classes */
+
+/* Buttons */
+.btn-plasma {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+  border: none;
+}
+
+.btn-plasma:hover {
+  background: var(--gradient-accent);
+  transform: translateY(-1px);
+}
+
+.btn-plasma-outline {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-plasma-outline:hover {
+  background: var(--primary);
+  color: var(--text-inverse);
+}
+
+/* Status Indicators */
+.status-pending {
+  background-color: var(--plasma-purple);
+  color: var(--text-inverse);
+}
+
+.status-processing {
+  background: var(--gradient-warm);
+  color: var(--text-inverse);
+}
+
+.status-completed {
+  background-color: var(--status-success);
+  color: var(--text-inverse);
+}
+
+.status-failed {
+  background-color: var(--status-error);
+  color: var(--text-inverse);
+}
+
+/* Progress Indicators */
+.progress-plasma {
+  background: var(--gradient-accent);
+  height: 8px;
+  border-radius: 4px;
+}
+
+.progress-bar-plasma {
+  background: var(--gradient-primary);
+  transition: width 0.3s ease;
+}
+
+/* Cards with Plasma Accents */
+.card-plasma {
+  border-left: 4px solid var(--primary);
+  background: var(--bg-secondary);
+  box-shadow: 0 1px 3px rgba(13, 8, 135, 0.1);
+}
+
+.card-plasma:hover {
+  box-shadow: 0 4px 12px rgba(13, 8, 135, 0.15);
+  border-left-color: var(--accent-primary);
+}
+
+/* Navigation */
+.nav-plasma .nav-link.active {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+}
+
+.nav-plasma .nav-link:hover {
+  background: var(--hover-overlay);
+  color: var(--primary);
+}
+
+/* Data Visualization */
+.chart-plasma {
+  --chart-primary: var(--plasma-purple);
+  --chart-secondary: var(--plasma-coral);
+  --chart-tertiary: var(--plasma-yellow);
+}
+
+/* File Upload Zones */
+.upload-zone-plasma {
+  border: 2px dashed var(--primary);
+  background: linear-gradient(45deg, transparent 0%, rgba(70, 3, 159, 0.05) 100%);
+  transition: all 0.3s ease;
+}
+
+.upload-zone-plasma:hover,
+.upload-zone-plasma.drag-over {
+  border-color: var(--accent-primary);
+  background: var(--gradient-accent);
+  color: var(--text-inverse);
+}
+
+/* Alerts and Notifications */
+.alert-plasma-info {
+  background: linear-gradient(90deg, rgba(70, 3, 159, 0.1) 0%, rgba(156, 23, 158, 0.1) 100%);
+  border-left: 4px solid var(--primary);
+  color: var(--text-primary);
+}
+
+.alert-plasma-success {
+  background: rgba(5, 150, 105, 0.1);
+  border-left: 4px solid var(--status-success);
+  color: var(--text-primary);
+}
+
+.alert-plasma-warning {
+  background: linear-gradient(90deg, rgba(251, 159, 58, 0.1) 0%, rgba(253, 202, 38, 0.1) 100%);
+  border-left: 4px solid var(--status-warning);
+  color: var(--text-primary);
+}
+
+/* Form Elements */
+.form-control-plasma:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(70, 3, 159, 0.1);
+}
+
+/* Loading Animations */
+.loading-plasma {
+  background: var(--gradient-accent);
+  background-size: 200% 200%;
+  animation: plasma-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes plasma-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Utility Classes */
+.text-plasma { color: var(--primary); }
+.text-plasma-accent { color: var(--accent-primary); }
+.bg-plasma { background: var(--gradient-primary); }
+.bg-plasma-light { background: var(--plasma-light-yellow); }
+.border-plasma { border-color: var(--primary); }

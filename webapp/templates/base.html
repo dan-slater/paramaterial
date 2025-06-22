@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ParaMaterial{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/plasma-color-theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/plasma-theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     {% block head_extra %}{% endblock %}
@@ -17,18 +18,17 @@
             </div>
             <nav class="main-nav">
                 <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Dashboard</a>
-                {% if active_job %}
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle">Tools</a>
-                    <div class="dropdown-menu">
-                        <a href="{{ url_for('tool_prepare', job_id=active_job) }}" {% if 'prepare' in request.path %}class="active"{% endif %}>Data Preparation</a>
-                        <a href="{{ url_for('tool_processing', job_id=active_job) }}" {% if 'processing' in request.path %}class="active"{% endif %}>Processing</a>
-                        <a href="{{ url_for('tool_modelling', job_id=active_job) }}" {% if 'modelling' in request.path %}class="active"{% endif %}>Modelling</a>
-                        <a href="{{ url_for('tool_plotting', job_id=active_job) }}" {% if 'plotting' in request.path %}class="active"{% endif %}>Plotting</a>
+                {% if session.user %}
+                    <a href="{{ url_for('upload_data') }}" {% if request.path == '/upload' %}class="active"{% endif %}>Upload</a>
+                    <a href="{{ url_for('list_jobs') }}" {% if '/jobs' in request.path %}class="active"{% endif %}>My Jobs</a>
+                    <div class="user-menu">
+                        <span class="user-email">{{ session.user.email }}</span>
+                        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
                     </div>
-                </div>
+                {% else %}
+                    <a href="{{ url_for('login') }}" {% if request.path == '/login' %}class="active"{% endif %}>Login</a>
+                    <a href="{{ url_for('register') }}" {% if request.path == '/register' %}class="active"{% endif %}>Register</a>
                 {% endif %}
-                <a href="/jobs" {% if '/jobs' in request.path %}class="active"{% endif %}>Jobs</a>
                 <a href="/about" {% if '/about' in request.path %}class="active"{% endif %}>About</a>
             </nav>
         </div>
