@@ -41,7 +41,6 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile.fastapi
     container_name: paramaterial_api
     environment:
       - DEBUG=true

@@ -19,11 +19,11 @@ help:
 
 # Install dependencies
 install:
-	pip install -r requirements_fastapi.txt
+	pip install -r requirements.txt
 
 # Install Flask dependencies (legacy)
 install-flask:
-	pip install -r requirements.txt
+	pip install -r archive/requirements_flask.txt
 
 # Start development environment
 dev:
