@@ -19,11 +19,25 @@ help:
 
 # Install dependencies
 install:
+	pip install -r requirements_fastapi.txt
+
+# Install Flask dependencies (legacy)
+install-flask:
 	pip install -r requirements.txt
 
 # Start development environment
 dev:
-	@echo "Starting development environment..."
+	@echo "Starting FastAPI development environment..."
+	@echo "1. Starting database and Redis..."
+	docker-compose up -d postgres redis
+	@echo "2. Waiting for database to be ready..."
+	@sleep 5
+	@echo "3. Starting FastAPI app on port 8000..."
+	uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+# Start Flask development (legacy)
+dev-flask:
+	@echo "Starting Flask development environment..."
 	@echo "1. Starting database and Redis..."
 	docker-compose up -d postgres redis
 	@echo "2. Waiting for database to be ready..."
@@ -40,7 +54,8 @@ build:
 # Start all services
 up:
 	docker-compose up -d
-	@echo "Services started. Application available at http://localhost:5555"
+	@echo "Services started. FastAPI available at http://localhost:8000"
+	@echo "API documentation available at http://localhost:8000/docs"
 
 # Stop all services
 down:
