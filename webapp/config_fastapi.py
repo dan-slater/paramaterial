@@ -50,7 +50,7 @@ class Settings(BaseSettings):
         fields = {
             'database_url': {'env': 'DATABASE_URL'},
             'redis_url': {'env': 'REDIS_URL'},
-            'secret_key': {'env': 'FLASK_SECRET_KEY'},
+            'secret_key': {'env': 'SECRET_KEY'},
             'jwt_secret_key': {'env': 'JWT_SECRET_KEY'},
             'max_content_length': {'env': 'MAX_CONTENT_LENGTH'},
             'upload_folder': {'env': 'UPLOAD_FOLDER'},

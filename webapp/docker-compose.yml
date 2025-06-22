@@ -1,4 +1,4 @@
-version: '3.8'
+# Docker Compose for ParaMaterial
 
 services:
   postgres:
@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: paramaterial_password
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d
@@ -26,7 +26,7 @@ services:
     image: redis:7-alpine
     container_name: paramaterial_redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -62,23 +62,8 @@ services:
         condition: service_healthy
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: paramaterial_frontend
-    environment:
-      - VITE_API_URL=http://localhost:8000
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    networks:
-      - paramaterial_network
-    depends_on:
-      - api
-    command: npm run dev
+  # Frontend runs separately in development mode
+  # Use: cd frontend && npm run dev
 
 volumes:
   postgres_data:
