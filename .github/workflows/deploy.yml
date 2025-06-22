@@ -1,0 +1,79 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DROPLET_IP: 159.89.0.169
+  DEPLOY_PATH: /opt/paramaterial
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ env.DROPLET_IP }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to droplet
+      run: |
+        # Copy files to droplet
+        scp -r ./webapp root@${{ env.DROPLET_IP }}:${{ env.DEPLOY_PATH }}/
+        
+        # Execute deployment commands on droplet
+        ssh root@${{ env.DROPLET_IP }} << 'EOF'
+          cd ${{ env.DEPLOY_PATH }}/webapp
+          
+          # Create environment file with secrets
+          cat > .env.production << ENV_EOF
+        DATABASE_URL=postgresql://paramaterial_user:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/paramaterial
+        REDIS_URL=redis://:${{ secrets.REDIS_PASSWORD }}@redis:6379/0
+        SECRET_KEY=${{ secrets.SECRET_KEY }}
+        JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+        POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+        REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+        CORS_ORIGINS=http://${{ env.DROPLET_IP }},https://paramaterial.vercel.app
+        ENV_EOF
+          
+          # Stop existing containers
+          docker-compose -f docker-compose.prod.yml down || true
+          
+          # Pull latest images and rebuild
+          docker-compose -f docker-compose.prod.yml build --no-cache
+          
+          # Start services
+          docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
+          
+          # Wait for database to be ready
+          sleep 10
+          
+          # Run database migrations
+          docker-compose -f docker-compose.prod.yml exec -T api alembic upgrade head
+          
+          # Clean up old images
+          docker system prune -f
+          
+          echo "Deployment completed successfully!"
+        EOF
+
+    - name: Verify deployment
+      run: |
+        # Wait for services to start
+        sleep 30
+        
+        # Check if API is responding
+        curl -f http://${{ env.DROPLET_IP }}/health || exit 1
+        echo "✅ API health check passed"
+        
+        # Check if documentation is accessible
+        curl -f http://${{ env.DROPLET_IP }}/docs || exit 1
+        echo "✅ API documentation accessible"

@@ -21,9 +21,6 @@ help:
 install:
 	pip install -r requirements.txt
 
-# Install Flask dependencies (legacy)
-install-flask:
-	pip install -r archive/requirements_flask.txt
 
 # Start development environment
 dev:
@@ -35,17 +32,6 @@ dev:
 	@echo "3. Starting FastAPI app on port 8000..."
 	uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-# Start Flask development (legacy)
-dev-flask:
-	@echo "Starting Flask development environment..."
-	@echo "1. Starting database and Redis..."
-	docker-compose up -d postgres redis
-	@echo "2. Waiting for database to be ready..."
-	@sleep 5
-	@echo "3. Running migrations..."
-	FLASK_APP=app_postgres.py flask db upgrade
-	@echo "4. Starting Flask app on port 5555..."
-	FLASK_APP=app_postgres.py FLASK_ENV=development python app_postgres.py
 
 # Build Docker containers
 build:
@@ -69,20 +55,20 @@ clean:
 
 # Run tests
 test:
-	FLASK_ENV=testing python -m pytest tests/ -v
+	pytest tests/ -v
 
-# Run database migrations
+# Run database migrations (use Alembic directly)
 migrate:
-	FLASK_APP=app_postgres.py flask db upgrade
+	alembic upgrade head
 
 # Create new migration
 migration:
 	@read -p "Migration message: " msg; \
-	FLASK_APP=app_postgres.py flask db migrate -m "$$msg"
+	alembic revision --autogenerate -m "$$msg"
 
-# Open Python shell with app context
+# Open Python shell
 shell:
-	FLASK_APP=app_postgres.py flask shell
+	python
 
 # Open PostgreSQL shell
 db-shell:
@@ -105,36 +91,25 @@ reset-db:
 		docker volume rm webapp_postgres_data; \
 		docker-compose up -d postgres redis; \
 		sleep 5; \
-		FLASK_APP=app_postgres.py flask db upgrade; \
+		alembic upgrade head; \
 		echo "Database reset complete."; \
 	else \
 		echo "Reset cancelled."; \
 	fi
 
-# Initialize Flask-Migrate
+# Initialize Alembic
 init-db:
-	FLASK_APP=app_postgres.py flask db init
-	FLASK_APP=app_postgres.py flask db migrate -m "Initial migration"
-	FLASK_APP=app_postgres.py flask db upgrade
+	alembic init alembic
+	alembic revision --autogenerate -m "Initial migration"
+	alembic upgrade head
 
 # Check services status
 status:
 	docker-compose ps
 
-# Create admin user
+# Create admin user (implement as needed)
 create-admin:
-	@read -p "Admin email: " email; \
-	read -s -p "Admin password: " password; \
-	echo ""; \
-	FLASK_APP=app_postgres.py python -c "\
-		from app_postgres import app; \
-		from models import db, User; \
-		with app.app_context(): \
-			user = User(email='$$email', first_name='Admin', last_name='User', is_verified=True); \
-			user.set_password('$$password'); \
-			db.session.add(user); \
-			db.session.commit(); \
-			print('Admin user created successfully!')"
+	@echo "Admin user creation needs to be implemented via FastAPI script"
 
 # Backup database
 backup:

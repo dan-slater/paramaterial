@@ -3,9 +3,10 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6  # For file uploads
 
-# Database
-sqlalchemy==2.0.23
+# Database - SQLModel (includes SQLAlchemy + Pydantic integration)
+sqlmodel==0.0.14
 psycopg2-binary==2.9.7
+asyncpg==0.30.0
 alembic==1.12.1
 
 # Authentication
@@ -20,9 +21,9 @@ aioredis==2.0.1
 pandas>=2.2.0
 numpy>=1.24.0
 
-# Validation and serialization
-pydantic==2.5.0
+# Settings (SQLModel includes Pydantic)
 pydantic-settings==2.1.0
+email-validator==2.2.0
 
 # Utilities
 python-dotenv==1.0.0

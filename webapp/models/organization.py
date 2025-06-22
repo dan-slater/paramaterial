@@ -1,28 +1,45 @@
-from sqlalchemy import Column, String, Text, Boolean, DateTime, ForeignKey, Integer, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
-from .database import Base, UUIDMixin, TimestampMixin, generate_uuid
-import secrets
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, timedelta
+import secrets
+from .database import BaseModel, generate_uuid
 
-class Organization(Base, UUIDMixin, TimestampMixin):
+if TYPE_CHECKING:
+    from .user import User
+    from .equipment import Equipment
+    from .template import AnalysisTemplate
+    from .job import Job
+
+class Organization(BaseModel, table=True):
     __tablename__ = 'organizations'
     
-    name = Column(String(200), nullable=False)
-    description = Column(Text)
-    website = Column(String(255))
-    location = Column(String(100))
-    domain = Column(String(100))  # Optional email domain for auto-suggestions
-    logo_url = Column(String(500))
-    settings = Column(JSONB, default=dict)
-    is_active = Column(Boolean, default=True, nullable=False)
+    name: str = Field(max_length=200)
+    description: Optional[str] = Field(default=None)
+    website: Optional[str] = Field(default=None, max_length=255)
+    location: Optional[str] = Field(default=None, max_length=100)
+    domain: Optional[str] = Field(default=None, max_length=100)  # Optional email domain for auto-suggestions
+    logo_url: Optional[str] = Field(default=None, max_length=500)
+    # settings: Optional[dict] = Field(default_factory=dict)  # TODO: Add back with proper JSON type
+    is_active: bool = Field(default=True)
     
     # Relationships
-    memberships = relationship('OrganizationMembership', back_populates='organization', cascade='all, delete-orphan')
-    invitations = relationship('OrganizationInvitation', back_populates='organization', cascade='all, delete-orphan')
-    equipment = relationship('Equipment', back_populates='organization', cascade='all, delete-orphan')
-    templates = relationship('AnalysisTemplate', back_populates='organization', cascade='all, delete-orphan')
-    jobs = relationship('Job', back_populates='organization')
+    memberships: List["OrganizationMembership"] = Relationship(
+        back_populates="organization",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    invitations: List["OrganizationInvitation"] = Relationship(
+        back_populates="organization",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    equipment: List["Equipment"] = Relationship(
+        back_populates="organization",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    templates: List["AnalysisTemplate"] = Relationship(
+        back_populates="organization",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    jobs: List["Job"] = Relationship(back_populates="organization")
     
     def get_members(self):
         """Get all members of organization"""
@@ -74,34 +91,35 @@ class Organization(Base, UUIDMixin, TimestampMixin):
     def __repr__(self):
         return f'<Organization {self.name}>'
 
-class OrganizationMembership(Base, UUIDMixin, TimestampMixin):
+class OrganizationMembership(BaseModel, table=True):
     __tablename__ = 'organization_memberships'
     
-    organization_id = Column(UUID(as_uuid=False), ForeignKey('organizations.id'), nullable=False)
-    user_id = Column(UUID(as_uuid=False), ForeignKey('users.id'), nullable=False)
-    role = Column(String(20), nullable=False, default='member')  # owner, admin, member, viewer
-    invited_by = Column(UUID(as_uuid=False), ForeignKey('users.id'))
-    joined_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    organization_id: str = Field(foreign_key="organizations.id")
+    user_id: str = Field(foreign_key="users.id")
+    role: str = Field(default="member")
+    invited_by: Optional[str] = Field(default=None, foreign_key="users.id")
+    joined_at: datetime = Field(default_factory=datetime.utcnow)
     
     # Relationships
-    organization = relationship('Organization', back_populates='memberships')
-    user = relationship('User', back_populates='organization_memberships')
-    inviter = relationship('User', foreign_keys=[invited_by])
+    organization: Optional["Organization"] = Relationship(back_populates="memberships")
+    user: Optional["User"] = Relationship(back_populates="organization_memberships")
+    inviter: Optional["User"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "OrganizationMembership.invited_by"}
+    )
     
-    # Unique constraint to prevent duplicate memberships
-    __table_args__ = (UniqueConstraint('organization_id', 'user_id'),)
+    # TODO: Add unique constraint for (organization_id, user_id)
     
-    def is_admin(self):
+    def is_admin(self) -> bool:
         """Check if member has admin privileges"""
-        return self.role in ['owner', 'admin']
+        return self.role in ["owner", "admin"]
     
-    def can_invite_members(self):
+    def can_invite_members(self) -> bool:
         """Check if member can invite others"""
-        return self.role in ['owner', 'admin']
+        return self.role in ["owner", "admin"]
     
-    def can_manage_organization(self):
+    def can_manage_organization(self) -> bool:
         """Check if member can manage organization settings"""
-        return self.role == 'owner'
+        return self.role == "owner"
     
     def to_dict(self):
         """Convert to dictionary"""
@@ -118,37 +136,46 @@ class OrganizationMembership(Base, UUIDMixin, TimestampMixin):
     def __repr__(self):
         return f'<OrganizationMembership {self.user_id} -> {self.organization_id} ({self.role})>'
 
-class OrganizationInvitation(Base, UUIDMixin, TimestampMixin):
+class OrganizationInvitation(BaseModel, table=True):
     __tablename__ = 'organization_invitations'
     
-    organization_id = Column(UUID(as_uuid=False), ForeignKey('organizations.id'), nullable=False)
-    email = Column(String(255), nullable=False)
-    role = Column(String(20), nullable=False, default='member')
-    invited_by = Column(UUID(as_uuid=False), ForeignKey('users.id'), nullable=False)
-    token = Column(String(64), unique=True, nullable=False, default=lambda: secrets.token_urlsafe(48))
-    expires_at = Column(DateTime(timezone=True), nullable=False)
-    is_accepted = Column(Boolean, default=False, nullable=False)
-    accepted_at = Column(DateTime(timezone=True))
-    accepted_by = Column(UUID(as_uuid=False), ForeignKey('users.id'))
+    organization_id: str = Field(foreign_key="organizations.id")
+    email: str = Field(max_length=255)
+    role: str = Field(default="member")
+    invited_by: str = Field(foreign_key="users.id")
+    token: str = Field(
+        max_length=64,
+        unique=True,
+        default_factory=lambda: secrets.token_urlsafe(48)
+    )
+    expires_at: datetime
+    is_accepted: bool = Field(default=False)
+    accepted_at: Optional[datetime] = Field(default=None)
+    accepted_by: Optional[str] = Field(default=None, foreign_key="users.id")
     
     # Relationships
-    organization = relationship('Organization', back_populates='invitations')
-    inviter = relationship('User', foreign_keys=[invited_by], back_populates='sent_invitations')
-    accepter = relationship('User', foreign_keys=[accepted_by])
+    organization: Optional["Organization"] = Relationship(back_populates="invitations")
+    inviter: Optional["User"] = Relationship(
+        back_populates="sent_invitations",
+        sa_relationship_kwargs={"foreign_keys": "OrganizationInvitation.invited_by"}
+    )
+    accepter: Optional["User"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "OrganizationInvitation.accepted_by"}
+    )
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if not self.expires_at:
+        if 'expires_at' not in kwargs:
             # Default expiry is 7 days from creation
-            self.expires_at = datetime.utcnow() + timedelta(days=7)
+            kwargs['expires_at'] = datetime.utcnow() + timedelta(days=7)
+        super().__init__(**kwargs)
     
     @property
-    def is_expired(self):
+    def is_expired(self) -> bool:
         """Check if invitation is expired"""
         return datetime.utcnow() > self.expires_at
     
     @property
-    def is_valid(self):
+    def is_valid(self) -> bool:
         """Check if invitation is valid (not expired and not accepted)"""
         return not self.is_expired and not self.is_accepted
     

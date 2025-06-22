@@ -1,31 +1,44 @@
-from sqlalchemy import Column, String, Text, ForeignKey, DateTime, func
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
-from sqlalchemy.orm import relationship
-from .database import Base, UUIDMixin
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, TYPE_CHECKING
+from datetime import datetime
+from sqlalchemy import func
+from .database import BaseModel
 
-class ActivityLog(Base, UUIDMixin):
+if TYPE_CHECKING:
+    from .user import User
+    from .organization import Organization
+
+class ActivityLog(BaseModel, table=True):
     __tablename__ = 'activity_logs'
     
-    user_id = Column(UUID(as_uuid=False), ForeignKey('users.id'))
-    organization_id = Column(UUID(as_uuid=False), ForeignKey('organizations.id'))
+    user_id: Optional[str] = Field(default=None, foreign_key="users.id")
+    organization_id: Optional[str] = Field(default=None, foreign_key="organizations.id")
     
-    action_type = Column(String(100), nullable=False)  # 'job_created', 'template_shared', 'invitation_sent'
-    resource_type = Column(String(50))  # 'job', 'template', 'organization', 'user'
-    resource_id = Column(UUID(as_uuid=False))
+    action_type: str = Field(max_length=100)  # 'job_created', 'template_shared', 'invitation_sent'
+    resource_type: Optional[str] = Field(default=None, max_length=50)  # 'job', 'template', 'organization', 'user'
+    resource_id: Optional[str] = Field(default=None)
     
-    details = Column(JSONB, default=dict)
-    ip_address = Column(String(45))  # IPv6 support
-    user_agent = Column(Text)
+    # details: Optional[dict] = Field(default_factory=dict)  # TODO: Add back with proper JSON type
+    ip_address: Optional[str] = Field(default=None, max_length=45)  # IPv6 support
+    user_agent: Optional[str] = Field(default=None)
     
-    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     
     # Relationships
-    user = relationship('User')
-    organization = relationship('Organization')
+    user: Optional["User"] = Relationship()
+    organization: Optional["Organization"] = Relationship()
     
     @classmethod
-    def log_activity(cls, user_id, action_type, resource_type=None, resource_id=None, 
-                     organization_id=None, details=None, ip_address=None, user_agent=None):
+    def log_activity(
+        cls,
+        user_id: Optional[str],
+        action_type: str,
+        resource_type: Optional[str] = None,
+        resource_id: Optional[str] = None,
+        organization_id: Optional[str] = None,
+        details: Optional[dict] = None,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None
+    ) -> "ActivityLog":
         """Log an activity"""
         activity = cls(
             user_id=user_id,

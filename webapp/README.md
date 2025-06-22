@@ -8,7 +8,7 @@ Materials testing data parameterization platform built with FastAPI backend and 
 - **FastAPI** - Modern async Python web framework
 - **PostgreSQL** - Primary database with async SQLAlchemy
 - **Redis** - Caching and session storage
-- **Pydantic** - Data validation and serialization
+- **SQLModel** - Single source of truth for database models and API schemas
 - **JWT** - Token-based authentication
 - **Background Tasks** - Async materials data processing
 
@@ -77,10 +77,9 @@ webapp/
 ├── database.py            # Async SQLAlchemy setup
 ├── requirements.txt       # Python dependencies
 ├── api/                   # FastAPI route modules
-├── models/                # SQLAlchemy models
-├── schemas/               # Pydantic schemas
+├── models/                # SQLModel database models
+├── schemas/               # Additional Pydantic schemas
 ├── services/              # Business logic
-├── archive/               # Deprecated Flask files
 └── frontend/              # React application
 ```
 
@@ -116,13 +115,20 @@ DEBUG=true
 
 ## Migration from Flask
 
-This codebase was migrated from Flask to FastAPI. Legacy Flask files are archived in the `archive/` directory. Key changes:
+This codebase was migrated from Flask to FastAPI with SQLModel. Key changes:
 
-- Flask-SQLAlchemy → Pure SQLAlchemy with async support
+- Flask-SQLAlchemy → SQLModel with async SQLAlchemy backend
 - Flask routes → FastAPI routers with automatic OpenAPI docs
 - Session-based auth → JWT token authentication
 - Synchronous processing → Async background tasks
 - Jinja2 templates → React frontend
+- Separate models + schemas → Unified SQLModel classes
+
+### SQLModel Benefits
+- Single source of truth for database and API schemas
+- Type safety with automatic validation
+- Better editor support and autocompletion
+- Reduced code duplication between models and Pydantic schemas
 
 ## Contributing
 

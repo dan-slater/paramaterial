@@ -1,27 +1,48 @@
-from sqlalchemy import Column, String, Boolean, DateTime
-from sqlalchemy.orm import relationship
+from sqlmodel import SQLModel, Field, Relationship
 from passlib.context import CryptContext
-from .database import Base, UUIDMixin, TimestampMixin
+from typing import Optional, List, TYPE_CHECKING
+from datetime import datetime
+from .database import BaseModel
+
+if TYPE_CHECKING:
+    from .organization import OrganizationMembership, OrganizationInvitation
+    from .job import Job
+    from .template import AnalysisTemplate
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-class User(Base, UUIDMixin, TimestampMixin):
+class User(BaseModel, table=True):
     __tablename__ = 'users'
     
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
-    first_name = Column(String(100))
-    last_name = Column(String(100))
-    is_active = Column(Boolean, default=True, nullable=False)
-    is_verified = Column(Boolean, default=False, nullable=False)
-    last_login = Column(DateTime(timezone=True))
+    email: str = Field(max_length=255, unique=True, index=True)
+    password_hash: str = Field(max_length=255)
+    first_name: Optional[str] = Field(default=None, max_length=100)
+    last_name: Optional[str] = Field(default=None, max_length=100)
+    is_active: bool = Field(default=True)
+    is_verified: bool = Field(default=False)
+    last_login: Optional[datetime] = Field(default=None)
     
     # Relationships
-    organization_memberships = relationship('OrganizationMembership', back_populates='user', cascade='all, delete-orphan')
-    jobs = relationship('Job', back_populates='user', cascade='all, delete-orphan')
-    created_templates = relationship('AnalysisTemplate', back_populates='creator', cascade='all, delete-orphan')
-    sent_invitations = relationship('OrganizationInvitation', foreign_keys='OrganizationInvitation.invited_by', back_populates='inviter')
+    organization_memberships: List["OrganizationMembership"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    jobs: List["Job"] = Relationship(
+        back_populates="user", 
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    created_templates: List["AnalysisTemplate"] = Relationship(
+        back_populates="creator",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    sent_invitations: List["OrganizationInvitation"] = Relationship(
+        back_populates="inviter",
+        sa_relationship_kwargs={
+            "foreign_keys": "OrganizationInvitation.invited_by",
+            "cascade": "all, delete-orphan"
+        }
+    )
     
     def set_password(self, password):
         """Set password hash"""

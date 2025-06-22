@@ -1,35 +1,41 @@
-from sqlalchemy import Column, String, Text, Boolean, Integer, Enum, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
-from sqlalchemy.orm import relationship
-from .database import Base, UUIDMixin, TimestampMixin
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, List, TYPE_CHECKING
+from .database import BaseModel
 
-class AnalysisTemplate(Base, UUIDMixin, TimestampMixin):
+if TYPE_CHECKING:
+    from .organization import Organization
+    from .equipment import Equipment
+    from .user import User
+    from .job import Job
+
+class AnalysisTemplate(BaseModel, table=True):
     __tablename__ = 'analysis_templates'
     
-    organization_id = Column(UUID(as_uuid=False), ForeignKey('organizations.id'), nullable=False)
-    equipment_id = Column(UUID(as_uuid=False), ForeignKey('equipment.id'))
-    created_by = Column(UUID(as_uuid=False), ForeignKey('users.id'), nullable=False)
+    organization_id: str = Field(foreign_key="organizations.id")
+    equipment_id: Optional[str] = Field(default=None, foreign_key="equipment.id")
+    created_by: str = Field(foreign_key="users.id")
     
-    name = Column(String(200), nullable=False)
-    description = Column(Text)
-    template_type = Column(Enum('processing', 'analysis', 'visualization', name='template_types'), 
-                          nullable=False)
-    template_data = Column(JSONB, nullable=False, default=dict)
-    parameters = Column(JSONB, nullable=False, default=dict)
-    is_public = Column(Boolean, default=False, nullable=False)
-    usage_count = Column(Integer, default=0, nullable=False)
-    tags = Column(ARRAY(String), default=list)
+    name: str = Field(max_length=200)
+    description: Optional[str] = Field(default=None)
+    template_type: str
+    # template_data: dict = Field(default_factory=dict)  # TODO: Add back with proper JSON type
+    # parameters: dict = Field(default_factory=dict)  # TODO: Add back with proper JSON type
+    is_public: bool = Field(default=False)
+    usage_count: int = Field(default=0)
+    # tags: Optional[List[str]] = Field(default_factory=list)  # TODO: Add back with proper ARRAY type
     
     # Template versioning
-    version = Column(Integer, default=1, nullable=False)
-    parent_template_id = Column(UUID(as_uuid=False), ForeignKey('analysis_templates.id'))
+    version: int = Field(default=1)
+    parent_template_id: Optional[str] = Field(default=None, foreign_key="analysis_templates.id")
     
     # Relationships
-    organization = relationship('Organization', back_populates='templates')
-    equipment = relationship('Equipment', back_populates='templates')
-    creator = relationship('User', back_populates='created_templates')
-    jobs = relationship('Job', back_populates='template')
-    parent_template = relationship('AnalysisTemplate', remote_side='AnalysisTemplate.id')
+    organization: Optional["Organization"] = Relationship(back_populates="templates")
+    equipment: Optional["Equipment"] = Relationship(back_populates="templates")
+    creator: Optional["User"] = Relationship(back_populates="created_templates")
+    jobs: List["Job"] = Relationship(back_populates="template")
+    parent_template: Optional["AnalysisTemplate"] = Relationship(
+        sa_relationship_kwargs={"remote_side": "AnalysisTemplate.id"}
+    )
     
     def increment_usage(self):
         """Increment usage count when template is used"""

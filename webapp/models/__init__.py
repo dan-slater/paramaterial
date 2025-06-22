@@ -1,4 +1,4 @@
-from .database import Base
+from .database import BaseModel
 from .user import User
 from .organization import Organization, OrganizationMembership, OrganizationInvitation
 from .job import Job, JobFile
@@ -8,7 +8,7 @@ from .activity import ActivityLog
 
 # Export all models for easy importing
 __all__ = [
-    'Base',
+    'BaseModel',
     'User', 
     'Organization', 
     'OrganizationMembership', 
