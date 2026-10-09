@@ -1,0 +1,3 @@
+# test data, so the tests in the sdist can run (the example-notebook reference dumps are left out)
+recursive-include tests/modelling_test_data *
+include tests/reference/modelling.json
