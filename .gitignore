@@ -53,3 +53,8 @@ workspace.xml
 
 # mkdocs documentation
 /site
+
+# release/0.2.0 tooling: examples clone, reference venv and 0.1.3 source used to record tests/reference
+.examples/
+.venv-ref/
+.ref-src*/
