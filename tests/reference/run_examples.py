@@ -5,13 +5,15 @@ Used to pin the MSc thesis results (CS1-CS4 + basic usage) across dependency upg
     python tests/reference/run_examples.py --examples .examples/examples --out tests/reference/examples
     python tests/reference/run_examples.py --examples .examples/examples --out /tmp/new --compare tests/reference/examples
 
-Each notebook is run in a scratch copy of its folder. A final cell is appended that walks the kernel's globals and
-records every DataSet (info table + per-item data summary), ModelSet (fitting table) and DataFrame. Spreadsheets and
-LaTeX tables the notebook writes into info/ are recorded too.
+Each notebook is run in a scratch copy of its folder, after a prelude cell (PRELUDE_CELL). A final cell is appended
+that walks the kernel's globals and records every DataSet (info table + per-item data summary), ModelSet (fitting
+table) and DataFrame. Spreadsheets and LaTeX tables the notebook writes into info/ are recorded too. See README.md in
+this folder for the comparison policy.
 """
 import argparse
 import json
 import math
+import re
 import shutil
 import sys
 import tempfile
@@ -38,6 +40,10 @@ _mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
 import os as _os
 _listdir = _os.listdir
 _os.listdir = lambda path='.': sorted(_listdir(path))
+# CS4's own code calls plt.cm.get_cmap, which matplotlib 3.9 removed.
+import matplotlib.cm as _cm
+if not hasattr(_cm, 'get_cmap'):
+    _cm.get_cmap = _mpl.colormaps.get_cmap
 '''
 
 DUMP_CELL = r'''
@@ -120,10 +126,51 @@ def _cell_text(cell) -> str:
     return ''.join(parts)
 
 
+# Numbers that come out of a scipy optimiser: the Ramberg-Osgood parameters (C or H, n) from ModelSet, the
+# Zener-Hollomon regression from curve_fit, statistics over those, and curves predicted from fitted parameters. The
+# optimiser's stopping point moves in the 6th significant figure between scipy versions and platforms (the fit error
+# itself agrees to ~1e-10), and a std over a tight spread of parameters amplifies that, so they get a looser tolerance.
+# Everything else must match to `rtol`.
+OPTIMISER_COLUMN = re.compile(r'^(std_|upstd_|downstd_|max_|min_|q1_|q3_)?(C|H|n|lnZ_fit\w*|ZH_fit\w*)$')
+OPTIMISER_PATH = re.compile(r'/data/model_id'  # curves predicted from fitted parameters
+                            r'|^/datasets/repres_ds/data/repres_id')  # CS2 averages those curves into repres_ds
+OPTIMISER_RTOL = 1e-3
+
+
+def _number(x):
+    """Floats stored as strings (ModelSet.fitting_table holds its values as strings) compare as floats."""
+    if isinstance(x, str):
+        try:
+            return float(x)
+        except ValueError:
+            return x
+    return x
+
+
+def _tex_frame(tex: str) -> dict:
+    """A LaTeX table as columns and rows, ignoring the whitespace and escaping that differ between pandas versions."""
+    rows = [[_number(c.strip().replace(r'\_', '_').replace('{}', '')) for c in line.rstrip(' \\').split('&')]
+            for line in tex.splitlines() if '&' in line]
+    return {'columns': [str(c) for c in rows[0]], 'rows': rows[1:]} if rows else {'columns': [], 'rows': []}
+
+
 def compare(ref, new, path='', rtol=1e-9, diffs=None):
-    """Recursively compare two dumps. Floats match when equal to within rtol; everything else must be equal."""
+    """Recursively compare two dumps. Floats match when equal to within rtol (OPTIMISER_RTOL for optimiser outputs);
+    everything else must be equal."""
     diffs = [] if diffs is None else diffs
-    if isinstance(ref, dict) and isinstance(new, dict):
+    if OPTIMISER_PATH.search(path):
+        rtol = max(rtol, OPTIMISER_RTOL)
+    if isinstance(ref, str) and isinstance(new, str) and path.endswith('.tex'):
+        ref, new = _tex_frame(ref), _tex_frame(new)
+    if isinstance(ref, dict) and isinstance(new, dict) and set(ref) == set(new) == {'columns', 'rows'}:
+        compare(ref['columns'], new['columns'], f'{path}/columns', rtol, diffs)
+        if len(ref['rows']) != len(new['rows']):
+            diffs.append((f'{path}/rows', f"length {len(ref['rows'])} != {len(new['rows'])}", None))
+        for i, (row_a, row_b) in enumerate(zip(ref['rows'], new['rows'])):
+            for col, a, b in zip(ref['columns'], row_a, row_b):
+                col_rtol = max(rtol, OPTIMISER_RTOL) if OPTIMISER_COLUMN.match(col) else rtol
+                compare(_number(a), _number(b), f'{path}/rows[{i}]/{col}', col_rtol, diffs)
+    elif isinstance(ref, dict) and isinstance(new, dict):
         for k in sorted(set(ref) | set(new)):
             if k not in ref or k not in new:
                 diffs.append((f'{path}/{k}', 'missing in ' + ('new' if k not in new else 'ref'), None))
@@ -135,7 +182,7 @@ def compare(ref, new, path='', rtol=1e-9, diffs=None):
         for i, (a, b) in enumerate(zip(ref, new)):
             compare(a, b, f'{path}[{i}]', rtol, diffs)
     elif isinstance(ref, float) and isinstance(new, (int, float)) and not isinstance(new, bool):
-        if not math.isclose(ref, new, rel_tol=rtol, abs_tol=1e-12):
+        if not (math.isclose(ref, new, rel_tol=rtol, abs_tol=1e-12) or (math.isnan(ref) and math.isnan(new))):
             diffs.append((path, f'{ref!r} != {new!r}', abs(ref - new) / max(abs(ref), 1e-300)))
     elif ref != new:
         diffs.append((path, f'{str(ref)[:120]!r} != {str(new)[:120]!r}', None))

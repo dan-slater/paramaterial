@@ -272,7 +272,10 @@ def make_repres_info(info_table: pd.DataFrame, group_by: Union[str, List[str]], 
 
     # make representative info row for each subset
     for fltr, repres_id in zip(subset_filters, repres_ids):
-        subset_info_table = info_table.query(' and '.join([f"`{key}` in {str(vals)}" for key, vals in fltr.items()]))
+        mask = pd.Series(True, index=info_table.index)
+        for key, val in fltr.items():
+            mask &= info_table[key].isin([val])
+        subset_info_table = info_table[mask]
 
         if subset_info_table.empty:  # skip empty subsets
             continue

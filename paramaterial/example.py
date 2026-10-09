@@ -28,6 +28,8 @@ About the Example Repository:
 """
 import os
 import shutil
+import tarfile
+
 import requests
 
 BASE_URL = 'https://github.com/dan-slater/paramaterial-examples/raw/main/examples'
@@ -80,7 +82,9 @@ def download_example(example_name: str, to_directory: str = './'):
 
     # Extract the example tarball
     try:
-        shutil.unpack_archive(tarball_path, to_directory)
+        # the 'data' filter (Python 3.12, backported to 3.9.17+) refuses archive members that escape to_directory
+        unpack_kwargs = {'filter': 'data'} if hasattr(tarfile, 'data_filter') else {}
+        shutil.unpack_archive(tarball_path, to_directory, **unpack_kwargs)
         # os.rename(extracted_dir, os.path.join(to_directory, example_name))
     except FileNotFoundError as fnf_error:
         print(f"No file: {fnf_error}")

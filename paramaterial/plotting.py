@@ -66,10 +66,10 @@ class Styler:
             if all(str(x).isnumeric() for x in color_vals):
                 if self.color_norm is None:
                     self.color_norm = plt.Normalize(color_vals.min(), color_vals.max())
-                self.color_dict = {x: plt.cm.get_cmap(self.cmap)(self.color_norm(x)) for x in color_vals}
+                self.color_dict = {x: mpl.colormaps.get_cmap(self.cmap)(self.color_norm(x)) for x in color_vals}
             else:
                 self.color_norm = plt.Normalize(0, len(color_vals))
-                self.color_dict = {x: plt.cm.get_cmap(self.cmap)(self.color_norm(i)) for i, x in enumerate(color_vals)}
+                self.color_dict = {x: mpl.colormaps.get_cmap(self.cmap)(self.color_norm(i)) for i, x in enumerate(color_vals)}
 
         if self.linestyle_by is not None:
             linestyle_vals = ds.info_table[self.linestyle_by].unique().tolist()

@@ -19,9 +19,13 @@ HERE = Path(__file__).resolve().parent
 DATA_DIR = HERE / 'modelling_test_data'
 REFERENCE = HERE / 'reference' / 'modelling.json'
 
-# Fitted parameters agree with the reference to the 6 significant figures pandas prints. The optimiser's last digits
-# move with the scipy version and platform.
-RTOL = 1e-6
+# The minimum the optimiser finds (the fit error) matches the reference to ~1e-10 on every scipy tried (1.10 to 1.18,
+# numpy 1.24 to 2.5). Where L-BFGS-B stops along the flat H-n valley moves the 6th significant figure of H and n
+# (worst seen 9.4e-6), so those, and the curves predicted from them, are held to 1e-4. The thesis reports them to
+# 3 or 4 significant figures.
+EXACT_RTOL = 1e-12
+ERROR_RTOL = 1e-9
+PARAM_RTOL = 1e-4
 
 
 def fit_ramberg() -> dict:
@@ -55,13 +59,16 @@ def test_fitting_table_shape(fitted, reference):
 
 
 def test_fitted_parameters_match_reference(fitted, reference):
-    np.testing.assert_allclose([r[1:] for r in fitted['rows']], [r[1:] for r in reference['rows']], rtol=RTOL)
+    new, ref = np.array([r[1:] for r in fitted['rows']]), np.array([r[1:] for r in reference['rows']])
+    np.testing.assert_allclose(new[:, 0:2], ref[:, 0:2], rtol=EXACT_RTOL, err_msg='E, UPL_1 (inputs)')
+    np.testing.assert_allclose(new[:, 2:4], ref[:, 2:4], rtol=PARAM_RTOL, err_msg='H, n')
+    np.testing.assert_allclose(new[:, 4], ref[:, 4], rtol=ERROR_RTOL, err_msg='error')
 
 
 def test_predictions_match_reference(fitted, reference):
     assert fitted['predicted_stress_sum'].keys() == reference['predicted_stress_sum'].keys()
     np.testing.assert_allclose(list(fitted['predicted_stress_sum'].values()),
-                               list(reference['predicted_stress_sum'].values()), rtol=RTOL)
+                               list(reference['predicted_stress_sum'].values()), rtol=PARAM_RTOL)
 
 
 if __name__ == '__main__':

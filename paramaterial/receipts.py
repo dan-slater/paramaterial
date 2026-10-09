@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Union, Callable
 
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
-from PyPDF2 import PdfMerger
+from pypdf import PdfWriter
 from jinja2 import Environment, FileSystemLoader, meta
 from matplotlib import pyplot as plt
 
@@ -35,11 +35,11 @@ class TestReceipts:
         if jinja_env_kwargs is None:
             env_kwargs = default_jinja_env_kwargs
         else:
-            env_kwargs = default_jinja_env_kwargs.update(jinja_env_kwargs)
+            env_kwargs = {**default_jinja_env_kwargs, **jinja_env_kwargs}
         self.jinja_env = Environment(**env_kwargs)
 
     def parse_placeholders(self, as_dict: bool = False) -> Union[List[str], Dict[str, Any]]:
-        """Parse the template file for placeholders. With the default setup for the jinja2.Environment, placeholders are
+        r"""Parse the template file for placeholders. With the default setup for the jinja2.Environment, placeholders are
         defined as \VAR{placeholder_name}. The placeholders are returned as a list of strings, or as a dictionary with
         the placeholder names as keys and None as values.
 
@@ -91,11 +91,11 @@ class TestReceipts:
                         plt.close()
                     else:
                         replace_dict_strings.update({placeholder: replacer})
-                filled_template = template.render(**replace_dict_strings).replace('_', '\_')
+                filled_template = template.render(**replace_dict_strings).replace('_', r'\_')
 
                 # set page number
-                filled_template = filled_template.replace('\end{document}',
-                                                          f'\setcounter{{page}}{{{page_num}}}\n\end{{document}}')
+                filled_template = filled_template.replace(r'\end{document}',
+                                                          f'\\setcounter{{page}}{{{page_num}}}\n\\end{{document}}')
                 page_num += 1
 
                 # write filled template to file
@@ -120,7 +120,7 @@ class TestReceipts:
 
         # merge pdfs
         pdfs = [os.path.join(receipts_dir, di.test_id, f'{di.test_id}_receipt.pdf') for di in ds.data_items]
-        merger = PdfMerger()
+        merger = PdfWriter()
         for pdf in pdfs:
             merger.append(pdf)
         merger.write(receipts_path)

@@ -309,8 +309,9 @@ def make_quality_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], 
         df['quality'] = 100 - df['lnZ_fit_residual'].abs().sum()/(df['lnZ_fit_residual'].count()*df[flow_stress_key].mean())*100
         return df
 
-    quality_matrix = info_table.groupby(index + columns, group_keys=False).apply(calculate_quality).groupby(index + columns, group_keys=False)[
-        'quality'].mean().unstack(columns).fillna(0)
+    # select every column explicitly so the grouping columns reach calculate_quality (pandas >= 2.2 drops them otherwise)
+    quality_matrix = info_table.groupby(index + columns, group_keys=False)[info_table.columns.tolist()].apply(
+        calculate_quality).groupby(index + columns, group_keys=False)['quality'].mean().unstack(columns).fillna(0)
 
     if not as_heatmap:
         return quality_matrix
