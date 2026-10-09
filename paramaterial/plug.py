@@ -234,7 +234,7 @@ class DataSet:
 
         Args:
             func: The function to apply to each DataItem. It must take a DataItem and optional keyword arguments and
-            return a DataItem.
+                return a DataItem.
             **kwargs: Additional keyword arguments to pass to the function.
 
         Returns:

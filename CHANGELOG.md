@@ -16,8 +16,8 @@
 
 ### Preparing data
 
-- New `format_data_file_contents` combines multi-row headers, renames columns and changes the delimiter for a folder
-  of raw CSV files.
+- New `format_data_file_contents` combines multi-row headers (leaving out blank cells), renames columns and changes
+  the delimiter for a folder of raw CSV files.
 - New `rename_data_files` renames data files to their test IDs from a rename table (xlsx, csv or DataFrame).
 - `check_formatting(data_dir, info_path=None, skip_headers=None)` reports header mismatches instead of raising, and
   checks for duplicate files. Passing a `DataSet`, as in 0.1.x, still runs the 0.1.x checks.
@@ -55,6 +55,8 @@ move in the 6th significant figure with the scipy version; the thesis reports th
   and `PyPDF2` are dropped; `pypdf` is added.
 - Added `CITATION.cff`, which cites the MSc thesis.
 - Tests run on GitHub Actions for Python 3.9 to 3.12.
+- Docs: `mkdocs build --strict` passes; example notebooks are linked from the examples repository; the hijacked
+  `polyfill.io` script is removed from the site.
 
 ## 0.1.3 (2023-09-02) and earlier
 

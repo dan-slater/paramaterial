@@ -45,7 +45,7 @@ class TestReceipts:
 
         Args:
             as_dict: If True, return a dictionary with the placeholder names as keys and None as values. If False,
-            return a list of strings.
+                return a list of strings.
         """
         template_source = self.jinja_env.loader.get_source(self.jinja_env, self.template_path)
         parsed_content = self.jinja_env.parse(template_source)

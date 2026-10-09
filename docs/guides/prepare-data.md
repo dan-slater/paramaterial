@@ -1,110 +1,118 @@
 # Preparing Data and Info
 
-After preparation, we want to have a directory structure that looks like this:
+Paramaterial reads a set of tests from two things:
+
+- a **data folder** with one CSV file per test, named `<test_id>.csv`, all with the same column headers;
+- an **info table** (`.xlsx`, `.csv` or `.ods`) with one row per test: a `test_id` column, plus any metadata you want
+  to group, filter or colour by, such as material, temperature or strain rate.
+
+After preparation, the project folder looks like this:
 
 ```shell
 project
 ├── data
-    ├── raw
-        ├── old_name_1.csv
-        ├── old_name_2.csv
-        └── ...
-    ├── prepared
-        ├── test_id_1.csv
-        ├── test_id_2.csv
-        └── ...
+│   ├── 00 raw data
+│   │   ├── old_name_1.csv
+│   │   └── ...
+│   └── 01 prepared data
+│       ├── test_01.csv
+│       └── ...
 ├── info
-    ├── prepared info.xlsx
-    └── ...
-├── repeatable-analysis.ipynb
-└── ...
+│   └── 01 prepared info.xlsx
+└── analysis.ipynb
 ```
-    
-To get there, we need to:
 
-1. Create the info table
-2. Prepare the data files
-3. Run the `check_formatting` function to check that the data files are formatted correctly and match the test IDs in the info table.
+To get there:
+
+1. Create the info table.
+2. Format the raw data files and copy them to the prepared data folder.
+3. Rename the prepared data files to their test IDs.
+4. Run `check_formatting`, then load the `DataSet`.
 
 ## Creating the info table
 
-   1. Create a single spreadsheet for the data
-   2. The first column should be the test ID
-   3. Other columns should be the info we need for each test
-   4. Save the spreadsheet as an Excel file in the `info` directory
+The info table holds everything you know about each test. The first column is the test ID; the rest are the metadata
+you need. For example:
 
-The info table is a spreadsheet that contains all the information we need for each test. It should have a column for the test ID, and then other columns for the info we need for each test. For example, if we need the test ID, the material name, the test temperature, and the test speed, the info table would look like this:
+| test_id | material | temperature | rate  |
+|---------|----------|-------------|-------|
+| test_01 | Steel    | 20          | 0.001 |
+| test_02 | Steel    | 100         | 0.001 |
+| test_03 | Steel    | 20          | 0.01  |
 
-| Test ID | Material | Temperature (C) | Speed (mm/min) | ... |
-|---------|----------|-----------------|----------------| --- |
-| test_1  | Steel    | 20              | 10             | ... |
-| test_2  | Steel    | 100             | 10             | ... |
-| test_3  | Steel    | 20              | 20             | ... |
-| test_4  | Steel    | 100             | 20             | ... |
-| ...     | ...      | ...             | ...            | ... |
-   
-This step can be done manually or using scripting, depending on the shape of your data.
+Build it by hand in a spreadsheet, or with pandas from your file names. Save it in the `info` folder. When you rename
+files in step 3, it is convenient to keep an `old filename` column in this table, or in a separate rename table, that
+maps each raw file name (without `.csv`) to its test ID.
 
-Once you have gathered all your metadata (information about the tests) into a spreadsheet, save it as an Excel file in the `info` directory.
-A CSV file can also be used.
+## Formatting the data files
 
-## Preparing the data files
+Raw files from a test machine often have headers split over several rows, inconsistent names, or a delimiter other
+than a comma. For example, this tab-separated file:
 
-1. Gather the CSV data files into a directory called `00 raw data`.
-2. Format the data file contents and copy to `01 prepared data`.
-3. Rename the data files in `01 prepared data` according to the test IDs.
+| Time | Total Strain (mm/mm) | True Stress |
+|------|----------------------|-------------|
+| (s)  |                      | (MPa)       |
+| 0    | 0.0000               | 0.2         |
+| 1    | 0.0013               | 10.7        |
 
-The `format_data_file_headers` function can be used format the headers, change the delimiter, and copy the raw data into the prepared data folder.
-
-Consider a raw data file with multi-level headers and inconsistent naming:
-
-| Time  | Total Strain (mm/mm)  | True Stress | ... |
-|----------|-----------------------|-------------| --- |
-| (s)      |                       | (MPa)       |    |
-| 0        | 0.0000                | 0.2         | ... |
-| 1        | 0.0013                | 10.7        | ... |
-| 2        | 0.0022                | 21.3        | ... |
-| ...     | ...      | ...             | ...            | 
-
-We can run the `format_data_file_headers` function to standardise the headers:
+`format_data_file_contents` combines the header rows into one, renames columns, and writes every CSV in the raw folder
+to the prepared folder with comma delimiters:
 
 ```python
-from paramaterial import format_data_file_contents
-format_data_file_contents('data/00 raw data', 'data/01 prepared data',
-                           header_rename_dict={'Total Strain (mm/mm)': 'Strain',
-                                               'True Stress (MPa)': 'Stress (MPa)'},
-                           header_rows=[0, 1], delimiter='\t')
+import paramaterial as pam
+
+pam.format_data_file_contents('data/00 raw data', 'data/01 prepared data',
+                              header_rows=[0, 1], delimiter='\t',
+                              header_rename_dict={'Total Strain (mm/mm)': 'Strain',
+                                                  'True Stress (MPa)': 'Stress_MPa'})
 ```
-This combines the header rows into a single row, and renames specified headers. 
-This also allows us to change the delimiter of the file. The resulting data file will look like this:
 
-| Time (s) | Strain | Stress (MPa) | ... |
-|----------|--------|--------------| --- |
-| 0        | 0.0000 | 0.2          | ... |
-| 1        | 0.0013 | 10.7         | ... |
-| 2        | 0.0022 | 21.3         | ... |
-| ...     | ...      | ...             | ...            | 
+The result:
 
-This will be done for every data file in the raw data folder.
+| Time (s) | Strain | Stress_MPa |
+|----------|--------|------------|
+| 0        | 0.0000 | 0.2        |
+| 1        | 0.0013 | 10.7       |
 
-### Renaming the data files
+`Strain` and `Stress_MPa` are the default column names of the processing functions. Other names work too; pass them
+as `strain_key=` and `stress_key=`.
 
-The data files can now be renamed according to the test ID using `rename_data_files`:
+## Renaming the data files
+
+`rename_data_files` renames `<old filename>.csv` to `<test_id>.csv` in place, using a table (a path to `.xlsx` or
+`.csv`, or a DataFrame) with both columns:
 
 ```python
-from paramaterial import rename_data_files
-rename_data_files(data_dir='data/01 prepared data', rename_table='info/00 rename list.xlsx',
-                  old_filename_col='old filename', test_id_col='test id')
+pam.rename_data_files('data/01 prepared data', 'info/00 rename list.xlsx',
+                      old_filename_col='old filename', test_id_col='test_id')
 ```
 
-This will rename the CSV files in `data_dir` from `<old filename>.csv` to `<test id>.csv`.
+To keep the raw folder untouched and copy and rename in one step, `copy_data_and_rename_by_test_id(data_in, data_out,
+info_table)` does the same from an info table with `old_filename` (including `.csv`) and `test_id` columns.
 
-### Running the formatting check
+## Checking the formatting
 
-The `check_formatting` function can be used:
+`check_formatting` reports any data file whose headers differ from the first file, and raises an error if two files
+have identical contents, which is a common copy-paste mistake:
 
 ```python
-
+pam.check_formatting('data/01 prepared data', 'info/01 prepared info.xlsx')
 ```
 
-I
+```text
+Headers are the same in all files as in the first file.
+Consistent headers are: Time (s), Strain, Stress_MPa
+No duplicate files (by hashing contents) found in "data/01 prepared data".
+```
+
+Columns that are allowed to differ between files can be listed with `skip_headers=[...]`.
+
+## Loading the DataSet
+
+```python
+ds = pam.DataSet('info/01 prepared info.xlsx', 'data/01 prepared data')
+```
+
+Each test is now a `DataItem` with `.data` (the CSV as a DataFrame) and `.info` (its row of the info table), ready for
+the processing functions. See the [basic usage notebook](https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-basic-usage/dan-msc-basic-usage-0.1.0.ipynb)
+for a full analysis.

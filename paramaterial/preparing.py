@@ -50,8 +50,9 @@ def format_data_file_contents(raw_data_dir: str, prepared_data_dir: str, header_
             df = pd.read_csv(file_path, header=header_rows, delimiter=delimiter)
 
             # Combine multi-level columns and rename as specified
-            new_headers = [' '.join(map(str, col)) if isinstance(col, tuple) else str(col)
-                           for col in df.columns]
+            # blank header cells come back from pandas as 'Unnamed: ...' and are left out of the combined header
+            new_headers = [' '.join(str(c) for c in col if not str(c).startswith('Unnamed')) if isinstance(col, tuple)
+                           else str(col) for col in df.columns]
             rename = header_rename_dict or {}
             df.columns = [rename.get(col, col) for col in new_headers]
 

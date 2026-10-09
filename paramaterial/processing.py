@@ -62,17 +62,21 @@ def find_fracture_point(ds: DataSet, strain_key: str = 'Strain', stress_key: str
 def find_flow_stress_values(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 'Stress_MPa',
                             temperature_key: str = None, rate_key: str = None,
                             flow_strain: Union[int, float, Tuple[float, float]] = None) -> DataSet:
-    """
+    """Find the flow stress of each test, at a strain or averaged over a range of strains.
+
+    The values are written to info as `flow_<strain_key>`, `flow_<stress_key>`, and `flow_<temperature_key>` and
+    `flow_<rate_key>` when those keys are given.
 
     Args:
-        di: DataItem with stress-strain curve
+        ds: DataSet with stress-strain curves
         strain_key: Data key for reading strain.
         stress_key: Data key for reading stress.
-        flow_strain_key: Info key for writing flow strain.
-        flow_stress_key: Info key for storing flow stress.
-        flow_strain: Strain at which to find the flow stress. If None, the maximum stress is used.
+        temperature_key: Data key for temperature, recorded alongside the flow stress if given.
+        rate_key: Data key for strain rate, recorded alongside the flow stress if given.
+        flow_strain: Strain at which to find the flow stress (the maximum stress up to that strain), or a
+            (min, max) tuple to average the stress over. If None, the maximum strain of each test is used.
 
-    Returns: DataItem with flow stress added to info.
+    Returns: DataSet with flow stress added to info.
     """
     def find_di_flow_stress_values(di, flow_strain):
         if flow_strain is None:
@@ -109,7 +113,7 @@ def find_upl_and_lpl(ds: DataSet, strain_key: str = 'Strain', stress_key: str = 
     The elastic modulus is the slope between the UPL and LPL.
 
     Args:
-        di: DataItem with stress-strain curve
+        ds: DataSet with stress-strain curves
         strain_key: key for strain data
         stress_key: key for stress data
         preload: preload value
@@ -200,7 +204,7 @@ def find_E(ds: DataSet, LPL_stress: float, UPL_stress: float, strain_key: str = 
     """Find the elastic modulus of a stress-strain curve by fitting a line to the points between the specified stresses.
 
 Args:
-        di: DataItem with stress-strain curve
+        ds: DataSet with stress-strain curves
         LPL_stress: Lower stress bound
         UPL_stress: Upper stress bound
         strain_key: Key for strain data
@@ -226,7 +230,7 @@ def find_proof_stress(ds: DataSet, proof_strain: float = 0.002, strain_key: str 
     """Find the proof stress of a stress-strain curve.
 
     Args:
-        di: DataItem with stress-strain curve
+        ds: DataSet with stress-strain curves
         proof_strain: Strain at which to find the proof stress
         strain_key: Key for strain data
         stress_key: Key for stress data
@@ -265,7 +269,7 @@ def calculate_strain_rate(ds: DataSet, strain_key: str = 'Strain', time_key: str
     """Calculate the strain rate of a stress-strain curve.
 
     Args:
-        di: DataItem with stress-strain curve
+        ds: DataSet with stress-strain curves
         strain_key: Key for strain data
         time_key: Key for time data
         strain_rate_key: Key for strain rate data
