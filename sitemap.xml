@@ -2,57 +2,50 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://dan-slater.github.io/paramaterial/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
+    </url>
+    <url>
+         <loc>https://dan-slater.github.io/paramaterial/guides/prepare-data/</loc>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/aggregating/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/example/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/modelling/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/models/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/plotting/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/plug/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/preparing/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/processing/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/receipts/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://dan-slater.github.io/paramaterial/reference/screening/</loc>
-         <lastmod>2023-08-15</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2026-10-16</lastmod>
     </url>
 </urlset>

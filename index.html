@@ -12,10 +12,14 @@
       
       
       
-        <link rel="next" href="reference/example/">
+        <link rel="next" href="guides/prepare-data/">
+      
+      
+        
+      
       
       <link rel="icon" href="img/pam-icon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -23,14 +27,14 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ded33207.min.css">
-      
-        
-        <link rel="stylesheet" href="assets/stylesheets/palette.a0c5b2b5.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
+
     
+    
+      
     
     
       
@@ -46,24 +50,17 @@
     
       <link rel="stylesheet" href="stylesheets/extra.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
-    
   </head>
   
   
-    
-    
-    
-    
-    
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+    <body dir="ltr">
   
-    
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -71,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#paramaterial-documentation" class="md-skip">
+        <a href="#paramaterial" class="md-skip">
           Skip to content
         </a>
       
@@ -91,7 +88,8 @@
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -111,29 +109,38 @@
     </div>
     
     
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
-      <label class="md-header__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
@@ -144,7 +151,20 @@
     </div>
   </div>
 </div>
+      
     
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dan-slater/paramaterial" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    dan-slater/paramaterial
+  </div>
+</a>
+      </div>
     
   </nav>
   
@@ -163,30 +183,81 @@
         
   
   
+  
     
   
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
 
-
-  <li class="md-tabs__item">
-    <a href="." class="md-tabs__link md-tabs__link--active">
-      Home
-    </a>
-  </li>
+      </a>
+    </li>
+  
 
       
         
   
   
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-basic-usage/dan-msc-basic-usage-0.1.0.ipynb" class="md-tabs__link">
+          
+  
+  
+  Example Notebooks
 
+        </a>
+      </li>
+    
+  
 
+      
+        
   
   
   
-    <li class="md-tabs__item">
-      <a href="reference/example/" class="md-tabs__link">
-        Reference
-      </a>
-    </li>
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="guides/prepare-data/" class="md-tabs__link">
+          
+  
+  
+  How-To Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="reference/example/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
   
 
       
@@ -206,6 +277,7 @@
                   <div class="md-sidebar__inner">
                     
 
+
   
 
 
@@ -221,15 +293,26 @@
     Paramaterial Documentation
   </label>
   
+    <div class="md-nav__source">
+      <a href="https://github.com/dan-slater/paramaterial" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    dan-slater/paramaterial
+  </div>
+</a>
+    </div>
+  
   <ul class="md-nav__list" data-md-scrollfix>
     
       
       
-      
-
   
   
     
+  
   
   
     <li class="md-nav__item md-nav__item--active">
@@ -241,12 +324,38 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Home
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="." class="md-nav__link md-nav__link--active">
-        Home
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
       </a>
       
         
@@ -265,36 +374,67 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
-    About
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    Installation
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#documentation-and-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation and examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Citing
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#contributing" class="md-nav__link">
-    Contributing
+    <span class="md-ellipsis">
+      
+        Contributing
+      
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#license" class="md-nav__link">
-    License
+    <span class="md-ellipsis">
+      
+        License
+      
+    </span>
   </a>
   
 </li>
@@ -309,177 +449,631 @@
     
       
       
-      
-
+  
   
   
   
     
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
+    
+    
+    
       
       
         
       
-      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
       
-      
-      
-        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-          Reference
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_2">
-          <span class="md-nav__icon md-icon"></span>
-          Reference
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example Notebooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Example Notebooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-basic-usage/dan-msc-basic-usage-0.1.0.ipynb" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-case-studies/CS1/dan-msc-cs1-0.1.0.ipynb" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CS1: tensile tests across lots and temperatures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-case-studies/CS2/dan-msc-cs2-0.1.0.ipynb" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CS2: uniaxial and plane-strain tension
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-case-studies/CS3/dan-msc-cs3-0.1.0.ipynb" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CS3: uniaxial compression, Zener-Hollomon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-case-studies/CS4/dan-msc-cs4-0.1.0.ipynb" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CS4: plane-strain compression, Zener-Hollomon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-To Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="guides/prepare-data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preparing Data and Info
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/example/" class="md-nav__link">
-        Example
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Example
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/preparing/" class="md-nav__link">
-        Preparing
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preparing
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/plug/" class="md-nav__link">
-        Plug
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plug
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/plotting/" class="md-nav__link">
-        Plotting
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotting
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/processing/" class="md-nav__link">
-        Processing
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processing
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/screening/" class="md-nav__link">
-        Screening
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screening
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/aggregating/" class="md-nav__link">
-        Aggregating
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Aggregating
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/modelling/" class="md-nav__link">
-        Modelling
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelling
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/models/" class="md-nav__link">
-        Models
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="reference/receipts/" class="md-nav__link">
-        Receipts
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Receipts
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -494,62 +1088,86 @@
           
           
             <div class="md-content" data-md-component="content">
+              
               <article class="md-content__inner md-typeset">
                 
                   
 
 
-<h1 id="paramaterial-documentation">Paramaterial Documentation</h1>
+  
+  
+
+
+<h1 id="paramaterial">Paramaterial</h1>
 <p><img alt="Paramaterial logo" src="https://github.com/dan-slater/paramaterial/blob/main/docs/img/paramaterial-logo.png?raw=true" /></p>
-<p><img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/paramaterial" />
-<a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
-<img alt="PyPI - Wheel" src="https://img.shields.io/pypi/wheel/paramaterial" />
-<img alt="Libraries.io dependency status for latest release" src="https://img.shields.io/librariesio/release/pypi/paramaterial" />
-<a href="https://badge.fury.io/py/paramaterial"><img alt="PyPI version" src="https://badge.fury.io/py/paramaterial.svg" /></a>
-<img alt="GitHub release (latest by date including pre-releases)" src="https://img.shields.io/github/v/release/dan-slater/paramaterial?include_prereleases" /></p>
-<h2 id="about">About</h2>
-<p>A Python package for parameterizing materials test data. Given a set of experimental measurements, Paramaterial can be
-used to determine material properties and constitutive model parameters.</p>
-<ul>
-<li>
-<p><strong>Source Code</strong>: <a href="https://github.com/dan-slater/paramaterial">https://github.com/dan-slater/paramaterial</a></p>
-</li>
-<li>
-<p><strong>Documentation</strong>: <a href="https://dan-slater.github.io/paramaterial/">https://dan-slater.github.io/paramaterial/</a></p>
-</li>
-<li>
-<p><strong>PyPI</strong>: <a href="https://pypi.org/project/paramaterial/">https://pypi.org/project/paramaterial/</a></p>
-</li>
-<li>
-<p><strong>Examples</strong>: <a href="https://github.com/dan-slater/paramaterial-examples">https://github.com/dan-slater/paramaterial-examples</a></p>
-</li>
-</ul>
-<p>The package was designed to help improve the quality and quantity of data available for materials modeling and
-simulation. It is hoped that using Paramaterial will help improve repeatability and reproducibility of materials test
-data analyses, and help to reduce the time and effort required to perform such analyses.</p>
-<h2 id="installation">Installation</h2>
+<p><a href="https://pypi.org/project/paramaterial/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/paramaterial" /></a>
+<img alt="Python versions" src="https://img.shields.io/pypi/pyversions/paramaterial" />
+<a href="https://github.com/dan-slater/paramaterial/actions/workflows/test.yml"><img alt="Tests" src="https://github.com/dan-slater/paramaterial/actions/workflows/test.yml/badge.svg" /></a>
+<a href="https://github.com/dan-slater/paramaterial/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a></p>
+<p>Paramaterial batch-processes mechanical test data: point it at a folder of stress-strain CSV files and a table
+describing each test, and it finds properties such as elastic modulus, proportional limits, proof stress and UTS for
+every test. It can then screen, average and plot the results, and fit constitutive models such as Ramberg-Osgood to
+them, so the whole analysis is a script you can rerun.</p>
+<h2 id="install">Install</h2>
 <div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>paramaterial
 </span></code></pre></div>
-<h2 id="usage">Usage</h2>
-<p>Please see the <a href="reference/example/">API reference</a> for details on the toolkit's
-functions and classes.</p>
-<p>Usage examples are available in the <a href="https://github.com/dan-slater/paramaterial-examples">examples repository</a>.
-These examples can be downloaded using the <code>download_example</code> function:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Download the basic usage example to the current directory</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span> <span class="nn">paramaterial</span> <span class="kn">import</span> <span class="n">download_example</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">download_example</span><span class="p">(</span><span class="s1">&#39;dan_msc_basic_usage_0.1.0&#39;</span><span class="p">)</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Other examples are also currently available:</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># download_example(&#39;dan_msc_cs1_0.1.0&#39;)</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># download_example(&#39;dan_msc_cs2_0.1.0&#39;)</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># download_example(&#39;dan_msc_cs3_0.1.0&#39;)</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># download_example(&#39;dan_msc_cs4_0.1.0&#39;)</span>
+<p>Python 3.9 or later.</p>
+<h2 id="example">Example</h2>
+<p>Given a folder <code>tensile_tests/</code> with one CSV per test, each with <code>Strain</code> (mm/mm) and <code>Stress_MPa</code> columns:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">paramaterial</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pam</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># one CSV per test, each with Strain (mm/mm) and Stress_MPa columns</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">tests</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">'tensile_tests'</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">'*.csv'</span><span class="p">))</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'test_id'</span><span class="p">:</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">stem</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tests</span><span class="p">]})</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'info.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">ds</span> <span class="o">=</span> <span class="n">pam</span><span class="o">.</span><span class="n">DataSet</span><span class="p">(</span><span class="s1">'info.csv'</span><span class="p">,</span> <span class="s1">'tensile_tests'</span><span class="p">)</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">ds</span> <span class="o">=</span> <span class="n">pam</span><span class="o">.</span><span class="n">find_UTS</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>  <span class="c1"># ultimate tensile strength: UTS_1 (MPa) at strain UTS_0</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">elastic_region</span><span class="p">(</span><span class="n">di</span><span class="p">):</span>  <span class="c1"># the modulus and proof stress are found below 1% strain</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">di</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">di</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">'Strain'</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">]</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="k">return</span> <span class="n">di</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">ds</span> <span class="o">=</span> <span class="n">pam</span><span class="o">.</span><span class="n">find_upl_and_lpl</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">elastic_region</span><span class="p">),</span> <span class="n">preload</span><span class="o">=</span><span class="mi">36</span><span class="p">)</span>  <span class="c1"># proportional limits and modulus E</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">ds</span> <span class="o">=</span> <span class="n">pam</span><span class="o">.</span><span class="n">find_proof_stress</span><span class="p">(</span><span class="n">pam</span><span class="o">.</span><span class="n">correct_foot</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">proof_strain</span><span class="o">=</span><span class="mf">0.002</span><span class="p">)</span>  <span class="c1"># 0.2% proof stress PS_0.002_1</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">info_table</span><span class="p">[[</span><span class="s1">'test_id'</span><span class="p">,</span> <span class="s1">'E'</span><span class="p">,</span> <span class="s1">'PS_0.002_1'</span><span class="p">,</span> <span class="s1">'UTS_1'</span><span class="p">]])</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">ds</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="s1">'processed_info.csv'</span><span class="p">,</span> <span class="s1">'processed_data'</span><span class="p">)</span>
 </span></code></pre></div>
-<p>The examples include datasets, notebooks, and other assets that showcase the functionality and capabilities of the Paramaterial library. These examples can be downloaded and run locally, providing an interactive way to explore and learn about the library.
-For more details see the documentation for the <code>download_example</code> function at <a href="reference/example/">reference/example</a>.</p>
+<p><code>info.csv</code> is where test metadata goes. Add columns such as temperature, material or batch, and use them to group,
+filter, colour plots and build representative curves. <code>preload=36</code> ignores points below 36 MPa when fitting the
+elastic line; set it for your machine. Different column names are passed with <code>strain_key=</code> and <code>stress_key=</code>.</p>
+<h2 id="documentation-and-examples">Documentation and examples</h2>
+<ul>
+<li>How-to guide: <a href="guides/prepare-data/">preparing data and info</a>. API reference: start with <a href="reference/plug/">plug</a> (<code>DataSet</code>, <code>DataItem</code>) and <a href="reference/processing/">processing</a>.</li>
+<li>Example notebooks with data: https://github.com/dan-slater/paramaterial-examples. These are the basic-usage
+  walkthrough and the four case studies from the thesis: tensile tests across lots and temperatures, uniaxial versus
+  plane-strain tension, and uniaxial and plane-strain compression with Zener-Hollomon fits. Download one with <code>pam.download_example('dan_msc_basic_usage_0.1.0')</code>.</li>
+<li>Changes between versions: <a href="https://github.com/dan-slater/paramaterial/blob/main/CHANGELOG.md">CHANGELOG.md</a></li>
+<li>Web lab: coming.</li>
+</ul>
+<h2 id="citing">Citing</h2>
+<p>Paramaterial was developed for an MSc at the University of Cape Town:</p>
+<blockquote>
+<p>Slater, D. (2023). <em>Development of Open-Source Software for Repeatable Processing of Mechanical Test Data.</em>
+MSc thesis, University of Cape Town. http://hdl.handle.net/11427/39860</p>
+</blockquote>
+<p><a href="https://github.com/dan-slater/paramaterial/blob/main/CITATION.cff">CITATION.cff</a> has the details. GitHub's "Cite this repository" button reads it.</p>
 <h2 id="contributing">Contributing</h2>
-<p>Please go to the GitHub repository and submit an issue or pull request.</p>
+<p>Issues and pull requests are welcome at https://github.com/dan-slater/paramaterial. To run the tests:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[test]"</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pytest
+</span></code></pre></div>
+<p><a href="https://github.com/dan-slater/paramaterial/blob/main/tests/reference/README.md">tests/reference</a> explains how the thesis example results are checked across dependency versions.</p>
 <h2 id="license">License</h2>
-<p>Paramaterial is licensed under the MIT license. </p>
+<p>MIT</p>
+
+
+
+
+
+
+
 
 
 
@@ -560,12 +1178,14 @@ For more details see the documentation for the <code>download_example</code> fun
             </div>
           
           
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
-            Back to top
-          </button>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
         
       </main>
       
@@ -592,14 +1212,16 @@ For more details see the documentation for the <code>download_example</code> fun
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate", "navigation.top", "navigation.instant", "content.code.copy", "content.code.prettify"], "search": "assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.51198bba.min.js"></script>
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate", "navigation.top", "navigation.instant", "content.code.copy"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="javascripts/mathjax.js"></script>
-      
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
