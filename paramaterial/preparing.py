@@ -11,9 +11,6 @@ import seaborn as sns
 
 from paramaterial.plug import DataSet
 
-import os
-import pandas as pd
-
 # todo: figure out docstring convention to work with both pycharm and mkdocs
 # todo: setting up plotting how to guide
 # todo: experimental matrix multi plot easy.. use subplot wrapper?
@@ -53,9 +50,11 @@ def format_data_file_contents(raw_data_dir: str, prepared_data_dir: str, header_
             df = pd.read_csv(file_path, header=header_rows, delimiter=delimiter)
 
             # Combine multi-level columns and rename as specified
-            new_headers = [' '.join(map(str, col)) if isinstance(col, tuple) else str(col)
-                           for col in df.columns]
-            df.columns = [header_rename_dict.get(col, col) for col in new_headers]
+            # blank header cells come back from pandas as 'Unnamed: ...' and are left out of the combined header
+            new_headers = [' '.join(str(c) for c in col if not str(c).startswith('Unnamed')) if isinstance(col, tuple)
+                           else str(col) for col in df.columns]
+            rename = header_rename_dict or {}
+            df.columns = [rename.get(col, col) for col in new_headers]
 
             # Save the formatted DataFrame to the new directory
             new_file_path = os.path.join(prepared_data_dir, file)
@@ -115,15 +114,21 @@ def rename_data_files(data_dir: str, rename_table: Union[pd.DataFrame, str],
             print(f'Renamed {old_filepath} to {new_filepath} and replaced {new_filepath}.')
 
 
-def check_formatting(data_dir: str, info_path: str, skip_headers: List[str] = None):
+def check_formatting(data_dir: Union[str, DataSet], info_path: str = None, skip_headers: List[str] = None):
     """Performs various checks on the formatting of the data files and info table.
     Will print out formatting checks and warnings.
 
     Args:
-        data_dir: Path to folder containing data files.
+        data_dir: Path to folder containing data files. A DataSet is also accepted, as in paramaterial 0.1.x, in which
+            case the 0.1.x checks are run on its data_dir (`check_column_headers` and `check_for_duplicate_files`).
         info_path: Path to info table spreadsheet.
         skip_headers: Headers that can be different across data files. Other headers must be consistent.
     """
+    if isinstance(data_dir, DataSet):
+        check_column_headers(data_dir.data_dir)
+        check_for_duplicate_files(data_dir.data_dir)
+        return
+
     # check column headers
     file_list = os.listdir(data_dir)
     first_file = pd.read_csv(f'{data_dir}/{file_list[0]}')
@@ -169,6 +174,55 @@ def check_formatting(data_dir: str, info_path: str, skip_headers: List[str] = No
     # check that test IDs match across data files and info table
     # todo
 
+
+def check_column_headers(data_dir: str, exception_headers: List[str] = None):
+    """Check that all files in a directory have the same column headers and that column headers don't contain spaces.
+    A ValueError will be raised if the column headers don't match or if a column header contains a space.
+
+    Args:
+        data_dir: Path to the directory containing the files to be checked.
+        exception_headers: List of column headers that are allowed to be different between files.
+    """
+    file_list = os.listdir(data_dir)
+    first_file = pd.read_csv(f'{data_dir}/{file_list[0]}')
+    first_columns = first_file.columns
+    if exception_headers is not None:
+        for exception_header in exception_headers:
+            if exception_header in first_columns:
+                first_columns = first_columns.drop(exception_header)
+    print("Checking column headers...")
+    for column_header in first_file.columns:
+        if len(column_header.split(' ')) > 1:
+            raise ValueError(f'Column header "{column_header}" contains a space.')
+    print(f'First file headers:\n\t{list(first_file.columns)}')
+    for file in file_list[1:]:
+        df = pd.read_csv(f'{data_dir}/{file}')
+        df_columns = df.columns
+        if exception_headers is not None:
+            for exception_header in exception_headers:
+                if exception_header in df_columns:
+                    df_columns = df_columns.drop(exception_header)
+        if not df_columns.equals(first_columns):
+            raise ValueError(f'Column headers in {file} don\'t match column headers of first file.'
+                             f'{file} headers:\n\t{list(df.columns)}')
+    print(f'Headers in all files are the same as in the first file, except for {exception_headers}.')
+
+
+def check_for_duplicate_files(data_dir: str):
+    """Check that there are no duplicate files in a directory by hashing the contents of the files.
+    A ValueError will be raised if there are duplicate files.
+
+    Args:
+        data_dir: Path to the directory containing the files to be checked.
+    """
+    print('Checking for duplicate files...')
+    hashes = [hash(open(f'{data_dir}/{file}', 'rb').read()) for file in os.listdir(data_dir)]
+    if len(hashes) != len(set(hashes)):
+        duplicates = [file for file, filehash in zip(os.listdir(data_dir), hashes) if hashes.count(filehash) > 1]
+        raise ValueError(f'There are duplicate files in {data_dir}.\n'
+                         'The duplicates are:' + '\n\t'.join(duplicates))
+    else:
+        print(f'No duplicate files found in "{data_dir}".')
 
 
 def experimental_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], columns: Union[str, List[str]],
@@ -218,3 +272,51 @@ def experimental_matrix(info_table: pd.DataFrame, index: Union[str, List[str]], 
     if tick_params:
         ax.tick_params(**tick_params)
     return ax
+
+
+def convert_gleeble_output_files_to_csv(directory_path: str):
+    """Convert all files in a directory from Gleeble output format to csv format."""
+    for file in os.listdir(directory_path):
+        if not file.endswith('.csv'):
+            df = pd.read_csv(f'{directory_path}/{file}', header=[0, 1], delimiter='\t')
+            df.columns = \
+                [col[0] if str(col[1]).startswith('Unnamed') else ' '.join(col).strip() for col in df.columns]
+            df.to_csv(f'{directory_path}/{file[:-4]}.csv', index=False)
+
+
+def copy_data_and_rename_by_test_id(data_in: str, data_out: str, info_table: pd.DataFrame, test_id_col='test_id'):
+    """Rename files in data directory by test_id in info table and copy to new directory. The info_table must have a column
+    named 'old_filename' containing the original filenames and a column named 'test_id'. The new filenames will be the
+    test_ids with the extension '.csv'.
+
+    Args:
+        data_in: Path to the directory containing the data to be copied.
+        data_out: Path to the directory where the data will be copied.
+        info_table: DataFrame containing the metadata for the tests.
+        test_id_col: Column in the info table containing the test_ids.
+
+    Returns:
+        None
+    """
+    # make data directory if it doesn't exist
+    if not os.path.exists(data_out):
+        os.mkdir(data_out)
+
+    # check info table
+    if 'old_filename' not in info_table.columns:
+        raise ValueError(f'There is no "old_filename" column in the info table.')
+    if test_id_col not in info_table.columns:
+        raise ValueError(f'There is no "{test_id_col}" column in the info table.')
+    if info_table[test_id_col].duplicated().any():
+        raise ValueError(f'There are duplicate test_ids.')
+    if info_table['old_filename'].duplicated().any():
+        raise ValueError(f'There are duplicate old_filenames.')
+
+    for filename, test_id in zip(info_table['old_filename'], info_table[test_id_col]):
+        # check that file exists
+        if not os.path.exists(f'{data_in}/{filename}'):
+            raise FileNotFoundError(f'File {filename} does not exist in {data_in}.')
+        # copy and rename file
+        shutil.copy(f'{data_in}/{filename}', f'{data_out}/{test_id}.csv')
+
+    print(f'Copied {len(info_table)} files in {data_in} to {data_out}.')

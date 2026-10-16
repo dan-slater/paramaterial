@@ -7,7 +7,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from reportlab.graphics import renderPDF
 from reportlab.lib.colors import black
 from reportlab.lib.colors import magenta, pink, blue

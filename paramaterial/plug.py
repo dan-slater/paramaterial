@@ -74,6 +74,15 @@ def _read_file(path: str) -> pd.DataFrame:
         raise UnsupportedExtensionError(path.split('.')[-1], "Read file extension not supported.")
 
 
+def _to_numeric_if_possible(column: pd.Series) -> pd.Series:
+    """Convert a column to numbers if every value converts, otherwise return it unchanged.
+    This is what `pd.to_numeric(errors='ignore')` did before pandas removed it."""
+    try:
+        return pd.to_numeric(column)
+    except (ValueError, TypeError):
+        return column
+
+
 def _write_file(df: pd.DataFrame, path: str) -> None:
     """Write a pandas DataFrame to a file.
     Args:
@@ -161,13 +170,13 @@ class DataSet:
     def info_table(self) -> pd.DataFrame:
         info_table = pd.DataFrame([di.info for di in self.data_items])
         info_table.index = range(len(info_table))
-        info_table = info_table.apply(pd.to_numeric, errors='ignore')
+        info_table = info_table.apply(_to_numeric_if_possible)
         return info_table
 
     @info_table.setter
     def info_table(self, info_table: pd.DataFrame):
         # Attempt to convert all columns to numeric, and ignore errors for non-numeric columns
-        info_table = info_table.apply(pd.to_numeric, errors='ignore')
+        info_table = info_table.apply(_to_numeric_if_possible)
 
         data_item_dict = {data_item.test_id: data_item for data_item in self.data_items}
         test_ids = info_table[self.test_id_key].tolist()
@@ -225,7 +234,7 @@ class DataSet:
 
         Args:
             func: The function to apply to each DataItem. It must take a DataItem and optional keyword arguments and
-            return a DataItem.
+                return a DataItem.
             **kwargs: Additional keyword arguments to pass to the function.
 
         Returns:
@@ -273,11 +282,7 @@ class DataSet:
         if isinstance(column, str):
             column = [column]
 
-        # Ensure that the specified columns are numeric before sorting
-        for col in column:
-            if new_ds.info_table[col].dtype == 'object':
-                new_ds.info_table[col] = pd.to_numeric(new_ds.info_table[col], errors='ignore')
-
+        # info_table already converts numeric columns
         new_ds.info_table = new_ds.info_table.sort_values(by=column, ascending=ascending).reset_index(drop=True)
         return new_ds
 
@@ -324,17 +329,18 @@ class DataSet:
             ValueError: If an invalid filter key is provided.
         """
         new_ds = self.copy()
+        info_table = new_ds.info_table
         for key, value in filter_dict.items():
-            if key not in new_ds.info_table.columns:
-                raise ValueError(f'Invalid filter key: {key}. Must be one of {new_ds.info_table.columns}.')
+            if key not in info_table.columns:
+                raise ValueError(f'Invalid filter key: {key}. Must be one of {info_table.columns}.')
             if not isinstance(value, list):
                 filter_dict[key] = [value]
-        query_string = ' and '.join([f"`{key}` in {str(values)}" for key, values in filter_dict.items()])
-        try:
-            new_info_table = new_ds.info_table.query(query_string)
-            new_ds.info_table = new_info_table
-        except Exception as e:
-            print(f'Error applying query "{query_string}" to info_table: {e}')
+        # Same selection as info_table.query('`key` in [values] and ...'), without formatting the values into a query
+        # string (numpy 2 writes np.int64(20) for a numpy integer, which the query parser cannot read).
+        mask = pd.Series(True, index=info_table.index)
+        for key, values in filter_dict.items():
+            mask &= info_table[key].isin(values)
+        new_ds.info_table = info_table[mask]
         return new_ds
 
     def __repr__(self):

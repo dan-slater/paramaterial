@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paramaterial"
+dynamic = ["version"]
+description = "Software toolkit for parameterising materials test data. Easily batch process experimental measurements to determine mechanical properties and material model parameters."
+readme = "pypi-readme.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Daniel Slater", email = "danielgslater@gmail.com" }]
+keywords = [
+    "python", "mechanical testing", "materials testing", "post-processing", "stress-strain", "flow stress",
+    "yield stress", "tensile test", "strength", "elastic modulus", "strain", "universal testing machine",
+    "fitting constitutive model", "material model", "solid mechanics", "materials science", "engineering",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+# Lower bounds are the oldest versions the test suite and the thesis example notebooks were run against.
+dependencies = [
+    "jinja2>=3.1.2",
+    "matplotlib>=3.7",
+    "numpy>=1.24",
+    "openpyxl>=3.1.2",
+    "pandas>=1.5.3",
+    "pypdf>=3.17",
+    "reportlab>=3.6",
+    "requests>=2.29.0",
+    "scipy>=1.10",
+    "seaborn>=0.12.2",
+    "svglib>=1.5",
+    "tqdm>=4.62.3",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+docs = ["mkdocs>=1.6,<2", "mkdocs-material>=9.5", "mkdocstrings[python]>=0.26"]
+
+[project.urls]
+Homepage = "https://github.com/dan-slater/paramaterial"
+Documentation = "https://dan-slater.github.io/paramaterial/"
+Examples = "https://github.com/dan-slater/paramaterial-examples"
+Changelog = "https://github.com/dan-slater/paramaterial/blob/main/CHANGELOG.md"
+Thesis = "https://open.uct.ac.za/items/c96a3d0d-5e6a-4670-829a-5b6f1e34cbd7"
+
+[tool.setuptools]
+packages = ["paramaterial"]
+
+[tool.setuptools.dynamic]
+version = { attr = "paramaterial.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

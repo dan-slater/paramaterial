@@ -1,6 +1,7 @@
 site_name: Paramaterial Documentation
-url: https://paramaterial.github.io
 site_url: https://dan-slater.github.io/paramaterial/
+repo_url: https://github.com/dan-slater/paramaterial
+repo_name: dan-slater/paramaterial
 
 theme:
   logo: img/pam-icon.png
@@ -12,34 +13,31 @@ theme:
     - navigation.expand
     - toc.integrate
     - navigation.top
-#    - search.highlight
     - navigation.instant
     - content.code.copy
-    - content.code.prettify
 
 plugins:
   - search
-  - mkdocstrings
-  - mkdocs-jupyter:
-      include_source: True
-      ignore_h1_titles: True
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            # types live in the signatures, not repeated in the docstrings
+            docstring_options:
+              warn_missing_types: false
+            show_source: true
 
 nav:
   - Home: index.md
   - Example Notebooks:
-      - examples/basic-usage.ipynb
-      - examples/dan-msc-cs1.ipynb
-      - examples/dan-msc-cs2.ipynb
-      - examples/dan-msc-cs3.ipynb
-      - examples/dan-msc-cs4.ipynb
+      - Basic usage: https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-basic-usage/dan-msc-basic-usage-0.1.0.ipynb
+      - "CS1: tensile tests across lots and temperatures": https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-case-studies/CS1/dan-msc-cs1-0.1.0.ipynb
+      - "CS2: uniaxial and plane-strain tension": https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-case-studies/CS2/dan-msc-cs2-0.1.0.ipynb
+      - "CS3: uniaxial compression, Zener-Hollomon": https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-case-studies/CS3/dan-msc-cs3-0.1.0.ipynb
+      - "CS4: plane-strain compression, Zener-Hollomon": https://github.com/dan-slater/paramaterial-examples/blob/main/examples/dan-msc-case-studies/CS4/dan-msc-cs4-0.1.0.ipynb
   - How-To Guides:
       - guides/prepare-data.md
-      - guides/plot-data.md
-      - guides/process-data.md
-      - guides/screen-data.md
-      - guides/aggregate-data.md
-      - guides/model-data.md
-      - guides/receipts.md
   - Reference:
       - reference/example.md
       - reference/preparing.md
@@ -56,6 +54,7 @@ extra_css:
   - stylesheets/extra.css
 
 markdown_extensions:
+  - admonition
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.highlight:
@@ -68,7 +67,4 @@ markdown_extensions:
 
 extra_javascript:
   - javascripts/mathjax.js
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
-
-

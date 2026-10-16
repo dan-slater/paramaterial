@@ -1,0 +1,14 @@
+# Oldest supported dependency versions (the lower bounds in pyproject.toml), tested on Python 3.9.
+# numpy 1.24.4 because seaborn 0.12.2 excludes 1.24.0.
+jinja2==3.1.2
+matplotlib==3.7.0
+numpy==1.24.4
+openpyxl==3.1.2
+pandas==1.5.3
+pypdf==3.17.0
+reportlab==3.6.0
+requests==2.29.0
+scipy==1.10.0
+seaborn==0.12.2
+svglib==1.5.0
+tqdm==4.62.3

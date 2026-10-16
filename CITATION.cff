@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: >-
+  If you use paramaterial in your work, please cite the MSc thesis that describes it
+  (preferred-citation below). To cite a specific version of the software, use the
+  software entry.
+title: paramaterial
+type: software
+authors:
+  - family-names: Slater
+    given-names: Daniel
+    email: danielgslater@gmail.com
+abstract: >-
+  Software toolkit for parameterising materials test data. Batch process experimental
+  measurements to determine mechanical properties and material model parameters.
+version: 0.2.0
+license: MIT
+repository-code: https://github.com/dan-slater/paramaterial
+url: https://dan-slater.github.io/paramaterial/
+keywords:
+  - materials testing
+  - mechanical testing
+  - stress-strain
+  - tensile test
+  - constitutive model
+  - materials science
+preferred-citation:
+  type: thesis
+  thesis-type: MSc
+  title: Development of Open-Source Software for Repeatable Processing of Mechanical Test Data
+  authors:
+    - family-names: Slater
+      given-names: Daniel
+  year: 2023
+  institution:
+    name: University of Cape Town
+    city: Cape Town
+    country: ZA
+  department: Faculty of Engineering and the Built Environment
+  url: http://hdl.handle.net/11427/39860
+  identifiers:
+    - type: url
+      value: http://hdl.handle.net/11427/39860
+      description: Handle
+    - type: url
+      value: https://open.uct.ac.za/items/c96a3d0d-5e6a-4670-829a-5b6f1e34cbd7
+      description: OpenUCT landing page

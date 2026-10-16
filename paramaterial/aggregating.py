@@ -1,12 +1,10 @@
 """
 This module provides functionalities to make representative curves from data and find statistics for metadata.
 
-Functions:
-    - `_generate_filter_permutations(info_table, group_by)` - Generates filter permutations for grouping data.
-    - `make_representative_data(ds, info_path, data_dir, repres_col, group_by_keys, interp_by, interp_res, interp_range,
-    group_info_cols)` - Creates representative curves from a dataset and saves them to a directory.
-    - `make_representative_info(ds, group_by_keys, group_info_cols)` - Creates a table of representative information for
-    each group in a DataSet.
+The main functions are:
+
+- `make_representative_data`: creates representative curves from a dataset and saves them to a directory.
+- `make_representative_info`: creates a table of representative information for each group in a DataSet.
 """
 
 import copy
@@ -67,13 +65,9 @@ def make_representative_data(ds: DataSet, info_path: str, data_dir: str, repres_
          interp_by: The data column to interpolate for the x-axis of the representative curves.
          interp_res: The resolution of the interpolation.
          interp_range: Can be either "outer", "inner", or a tuple of floats, defining the domain on the x-axis for
-         interpolation:
-
-            - If "outer", the domain is defined by the smallest minimum and the largest maximum values of the
-            interpolation column in the representative subset.
-            - If "inner", the domain is defined by the largest minimum and the smallest maximum values of the
-            interpolation column in the representative subset.
-            - If a tuple, the domain is directly defined by the values within the tuple.
+             the interpolation. If "outer", the domain runs from the smallest minimum to the largest maximum of the
+             interpolation column in the representative subset. If "inner", it runs from the largest minimum to the
+             smallest maximum. If a tuple, the domain is the values within the tuple.
          group_info_cols: The info categories to include in the aggregated info_table.
 
      Returns:
@@ -272,7 +266,10 @@ def make_repres_info(info_table: pd.DataFrame, group_by: Union[str, List[str]], 
 
     # make representative info row for each subset
     for fltr, repres_id in zip(subset_filters, repres_ids):
-        subset_info_table = info_table.query(' and '.join([f"`{key}` in {str(vals)}" for key, vals in fltr.items()]))
+        mask = pd.Series(True, index=info_table.index)
+        for key, val in fltr.items():
+            mask &= info_table[key].isin([val])
+        subset_info_table = info_table[mask]
 
         if subset_info_table.empty:  # skip empty subsets
             continue
